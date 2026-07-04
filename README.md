@@ -22,20 +22,18 @@ Questly is a gamified web platform that teaches **prompt engineering** and **Gen
 | **Styling** | Tailwind CSS 4 |
 | **Animations** | Framer Motion 11 |
 | **AI Evaluation** | Mock (Gemini / Cloudflare AI ready) |
-| **Missions** | 365 daily missions (full year coverage) |
+| **Missions** | AI generated based on difficulty (1 to 5 stars) |
 
 ---
 
 ## Features
 
 ### Fantasy World
-- Illustrated village that transforms between **dawn** (light mode) and **night** (dark mode)
-- Smooth crossfade transition with shooting star (light→dark) and sun burst (dark→light) animations
-- Twinkling stars and ambient glow effects
+- Illustrated village that transforms between **dawn** (light mode) and **night** (dark mode).
 
 ### Daily Mission System
 - One mission per day — deterministic rotation, same for all users
-- **365 missions** across 8 categories:
+- **lots of missions** across 8 categories:
   - `prompt-basics` · `context-crafting` · `chain-of-thought` · `role-prompting`
   - `few-shot` · `output-formatting` · `multimodal` · `agents`
 - Difficulty 1–5 stars · Weekend missions are harder (difficulty 4–5)
@@ -49,7 +47,7 @@ Questly is a gamified web platform that teaches **prompt engineering** and **Gen
 
 ### Gamification
 - User profile with nickname, XP, level, streak
-- 8 trophies (first mission, week streak, arcane engineer, mythic builder...)
+- Trophies system (first mission, week streak, arcane engineer, mythic builder...)
 - Badge system: Apprentice → Prompt Knight → Arcane Engineer → Mythic Builder
 - World unlock system: village evolves with your progress
 - Leaderboard (mock top-10)
