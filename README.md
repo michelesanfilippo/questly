@@ -3,7 +3,7 @@
 > Learn prompt engineering through daily fantasy missions, evaluated by AI.
 
 <p align="center">
-  <img src="assets/questly-removebg-preview.png" width="70%" alt="Questly" />
+  <img src="assets/questly-removebg-preview.png" width="200px" height="200px" alt="Questly" />
 </p>
 
 ---
