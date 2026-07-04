@@ -39,7 +39,7 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-col min-h-[100dvh]">
-      <section className="relative h-[40vh] sm:h-[45vh] lg:h-[50vh] flex-shrink-0 overflow-hidden w-full">
+      <section className="relative h-[45vh] sm:h-[52vh] lg:h-[58vh] flex-shrink-0 overflow-hidden w-full">
         <VillageScene />
       </section>
       <section className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">

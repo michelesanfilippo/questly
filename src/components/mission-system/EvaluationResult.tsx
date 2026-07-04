@@ -50,7 +50,7 @@ export function EvaluationResult({ result }: Props) {
 
   const { scores, feedback, suggestions, xpAwarded } = result;
   const total = scores.total;
-  const totalColor = total >= 80 ? 'text-emerald-400' : total >= 60 ? 'text-amber-400' : total >= 40 ? 'text-orange-400' : 'text-red-400';
+  const totalColor = total >= 80 ? 'text-emerald-600 dark:text-emerald-400' : total >= 60 ? 'text-amber-600 dark:text-amber-400' : total >= 40 ? 'text-orange-600 dark:text-orange-400' : 'text-red-600 dark:text-red-400';
 
   return (
     <motion.div
@@ -62,7 +62,7 @@ export function EvaluationResult({ result }: Props) {
       {/* Header */}
       <motion.div variants={itemVariants} className="flex items-center justify-between flex-wrap gap-2">
         <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">Evaluation Results</h3>
-        <span className="text-amber-400 font-bold text-sm bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full">
+        <span className="text-amber-700 dark:text-amber-400 font-bold text-sm bg-amber-100 dark:bg-amber-400/10 border border-amber-300 dark:border-amber-400/30 px-3 py-1 rounded-full">
           +{xpAwarded} XP
         </span>
       </motion.div>
@@ -70,7 +70,7 @@ export function EvaluationResult({ result }: Props) {
       {/* Total score */}
       <motion.div variants={itemVariants} className="flex items-baseline gap-1 justify-center py-2">
         <span className={`text-4xl sm:text-5xl font-bold ${totalColor}`}>{total}</span>
-        <span className="text-slate-500 text-lg">/ 100</span>
+        <span className="text-slate-600 dark:text-slate-500 text-lg">/ 100</span>
       </motion.div>
 
       {/* Score bars */}

@@ -101,7 +101,7 @@ export function VillageScene() {
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
-            className="object-cover object-bottom"
+            className="object-cover object-center"
             sizes="100vw"
           />
         </motion.div>
