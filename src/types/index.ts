@@ -45,14 +45,48 @@ export interface EvaluationResult {
   xpAwarded: number;
 }
 
-// Future auth slot
 export interface UserProfile {
   id: string;
-  displayName: string;
-  email: string;
-  provider: 'google' | 'microsoft' | 'apple';
+  nickname: string;
+  avatar: string; // initials derived from nickname
+  createdAt: string; // ISO date
   xp: number;
   level: number;
+  streak: number;
+  lastActiveDate: string; // YYYY-MM-DD
+  trophies: string[]; // trophy IDs
+  badges: string[]; // badge IDs earned
+  unlockedWorldFeatures: string[];
   completedMissions: string[];
-  // TODO: leaderboard rank when ranking system is implemented
+}
+
+export interface Trophy {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  condition: (profile: UserProfile, evaluation?: EvaluationResult) => boolean;
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  minLevel: number;
+  maxLevel: number;
+  color: string; // tailwind color class
+}
+
+export interface WorldFeature {
+  id: string;
+  name: string;
+  requiredLevel: number;
+  description: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  nickname: string;
+  level: number;
+  xp: number;
+  badge: string;
 }
