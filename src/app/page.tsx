@@ -39,13 +39,13 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-col min-h-[100dvh]">
-      <section className="relative h-[45vh] sm:h-[52vh] lg:h-[58vh] flex-shrink-0 overflow-hidden w-full">
+      <section className="relative h-[55vh] sm:h-[60vh] lg:h-[65vh] flex-shrink-0 overflow-hidden w-full">
         <VillageScene />
       </section>
       <section className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
         <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col gap-4">
           {loading && (
-            <p className="text-amber-400 animate-pulse text-sm text-center mt-8">
+            <p className="text-amber-600 dark:text-amber-400 animate-pulse text-sm text-center mt-8">
               Loading your daily mission...
             </p>
           )}

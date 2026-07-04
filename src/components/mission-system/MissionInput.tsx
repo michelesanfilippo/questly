@@ -52,7 +52,7 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
         transition={{ duration: 0.35 }}
         className="w-full space-y-3"
       >
-        <p className="text-xs text-slate-500 dark:text-slate-500 uppercase tracking-widest">Your Prompt</p>
+        <p className="text-xs text-slate-700 dark:text-slate-400 uppercase tracking-widest font-semibold">Your Prompt</p>
 
         <div className="relative">
           <textarea
@@ -83,14 +83,14 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`text-xs ${
+            className={`text-xs font-medium ${
               trimmedLen <= 10
-                ? 'text-red-400'
+                ? 'text-red-600 dark:text-red-400'
                 : trimmedLen < 50
-                  ? 'text-amber-400'
+                  ? 'text-amber-700 dark:text-amber-400'
                   : trimmedLen < 150
-                    ? 'text-amber-400'
-                    : 'text-emerald-400'
+                    ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-emerald-700 dark:text-emerald-400'
             }`}
           >
             {trimmedLen <= 10
