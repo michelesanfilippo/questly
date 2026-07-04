@@ -1,8 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import type { EvaluationResult } from '@/types';
+
+const MAX_CHARS = 500;
+const MIN_CHARS = 10;
 
 interface MissionInputProps {
   missionId?: string;
@@ -14,11 +18,16 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  if (!missionId) return null;
+
+  const charCount = prompt.length;
+  const trimmedLen = prompt.trim().length;
+  const isValid = trimmedLen > MIN_CHARS && charCount <= MAX_CHARS;
+
   async function handleSubmit() {
-    if (!missionId || prompt.trim().length <= 10) return;
+    if (!isValid || submitting) return;
     setSubmitting(true);
     setError(null);
-
     try {
       const res = await fetch('/api/evaluate', {
         method: 'POST',
@@ -26,39 +35,78 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
         body: JSON.stringify({ missionId, userPrompt: prompt }),
       });
       const data = await res.json() as { result: EvaluationResult };
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Evaluation failed');
       if (onResult) onResult(data.result);
-    } catch {
-      setError('Evaluation request failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Evaluation request failed');
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (!missionId) return null;
-
   return (
-    <div className="w-full max-w-lg mx-auto mt-4 space-y-3">
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Craft your prompt here, adventurer..."
-        rows={5}
-        className="
-          w-full rounded-xl border border-gold/30 bg-white dark:bg-night-blue-light
-          text-slate-800 dark:text-slate-100 placeholder-slate-400
-          p-3 text-sm resize-none focus:outline-none
-          focus:ring-2 focus:ring-mystic-purple/50 transition
-        "
-      />
-      {error && <p className="text-red-400 text-xs">{error}</p>}
-      <Button
-        onClick={handleSubmit}
-        disabled={prompt.trim().length <= 10 || submitting}
-        variant="primary"
-        className="w-full"
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="w-full space-y-3"
       >
-        {submitting ? 'Evaluating...' : 'Submit Prompt'}
-      </Button>
-    </div>
+        <p className="text-xs text-slate-500 uppercase tracking-widest">Your Prompt</p>
+
+        <div className="relative">
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value.slice(0, MAX_CHARS))}
+            placeholder="Craft your prompt here, adventurer..."
+            rows={5}
+            className="
+              w-full rounded-xl border bg-slate-800/80 text-slate-100
+              placeholder-slate-500 p-3 sm:p-4 text-sm resize-y
+              focus:outline-none focus:ring-2 focus:ring-amber-500/50
+              transition-all duration-200
+              border-white/10 focus:border-amber-500/40
+            "
+          />
+          {/* Char counter */}
+          <span className={`absolute bottom-3 right-3 text-xs ${charCount > MAX_CHARS * 0.9 ? 'text-amber-400' : 'text-slate-600'}`}>
+            {charCount}/{MAX_CHARS}
+          </span>
+        </div>
+
+        <AnimatePresence>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-red-400 text-xs"
+            >
+              {error}
+            </motion.p>
+          )}
+        </AnimatePresence>
+
+        <Button
+          onClick={handleSubmit}
+          disabled={!isValid || submitting}
+          variant="primary"
+          className="w-full text-sm sm:text-base"
+        >
+          {submitting ? (
+            <span className="flex items-center gap-2">
+              <motion.span
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+              />
+              Evaluating...
+            </span>
+          ) : (
+            'Submit Prompt'
+          )}
+        </Button>
+      </motion.div>
+    </AnimatePresence>
   );
 }

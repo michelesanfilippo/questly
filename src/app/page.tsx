@@ -39,30 +39,34 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-col h-screen overflow-hidden">
-      {/* TOP 50% — Fantasy World */}
-      <section className="h-1/2 relative overflow-hidden bg-gradient-to-b from-amber-200 via-orange-300 to-sky-300 dark:from-indigo-950 dark:via-purple-900 dark:to-slate-900">
+      {/* TOP — Fantasy Village (50% on desktop, 40% on mobile) */}
+      <section className="relative h-[40vh] sm:h-1/2 flex-shrink-0 overflow-hidden">
         <VillageScene />
       </section>
 
-      {/* BOTTOM 50% — Mission System */}
-      <section className="h-1/2 overflow-y-auto bg-slate-900 dark:bg-slate-950 px-4 py-6 flex flex-col items-center gap-4">
-        {loading && (
-          <p className="text-amber-400 animate-pulse text-sm mt-8">Loading mission...</p>
-        )}
-        {error && !loading && (
-          <p className="text-red-400 text-sm mt-8">{error}</p>
-        )}
-        {!loading && (
-          <>
-            <MissionCard onAccept={handleAccept} />
-            {accepted && !evaluation && mission && (
-              <MissionInput missionId={mission.id} onResult={setEvaluation} />
-            )}
-            {evaluation && (
-              <EvaluationResult result={evaluation} />
-            )}
-          </>
-        )}
+      {/* BOTTOM — Mission System (scrollable) */}
+      <section className="flex-1 overflow-y-auto bg-slate-900 dark:bg-slate-950">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-4">
+          {loading && (
+            <p className="text-amber-400 animate-pulse text-sm text-center mt-8">
+              Loading your daily mission...
+            </p>
+          )}
+          {error && !loading && (
+            <p className="text-red-400 text-sm text-center mt-8">{error}</p>
+          )}
+          {!loading && (
+            <>
+              <MissionCard onAccept={handleAccept} />
+              {accepted && !evaluation && mission && (
+                <MissionInput missionId={mission.id} onResult={setEvaluation} />
+              )}
+              {evaluation && (
+                <EvaluationResult result={evaluation} />
+              )}
+            </>
+          )}
+        </div>
       </section>
     </main>
   );

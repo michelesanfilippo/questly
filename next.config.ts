@@ -1,10 +1,10 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Future: add image domains for external fantasy artwork
-  // images: { remotePatterns: [] },
-  experimental: {
-    // Slot for future server actions / auth config
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    // Future: add remote patterns for CDN artwork
+    // remotePatterns: [],
   },
 };
 
