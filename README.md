@@ -6,6 +6,10 @@
   <img src="assets/questly-removebg-preview.png" width="300px" height="300px" alt="Questly" />
 </p>
 
+<p align="center">
+  <a href="https://questly-realm.vercel.app"><strong>🌐 Live — Questly Realm</strong></a>
+</p>
+
 ---
 
 ## What is Questly?
@@ -82,73 +86,6 @@ src/
 │   └── missions.json         # 365 fantasy missions
 └── types/
     └── index.ts              # TypeScript interfaces
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- npm / yarn / pnpm
-
-### Install & Run
-
-```bash
-# Clone
-git clone https://github.com/michelesanfilippo/questly.git
-cd questly
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-### Build for production
-
-```bash
-npm run build
-npm start
-```
-
----
-
-## Deployment
-
-### Vercel (Recommended — zero config)
-
-```bash
-npm i -g vercel
-vercel
-```
-
-Or connect the GitHub repo at [vercel.com](https://vercel.com):
-1. New Project → Import `michelesanfilippo/questly`
-2. Framework: Next.js (auto-detected)
-3. Deploy — live in ~60 seconds
-
-### Netlify
-
-```bash
-npm run build
-# Deploy `out/` directory or connect GitHub repo
-```
-
-### Docker
-
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
 ```
 
 ---
