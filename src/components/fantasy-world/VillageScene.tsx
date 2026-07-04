@@ -97,7 +97,7 @@ export function VillageScene() {
           transition={{ duration: 0.9, ease: 'easeInOut' }}
         >
           <Image
-            src={isDark ? '/images/village-night-16-9.jpg' : '/images/village-day-16-9.jpg'}
+            src={isDark ? '/images/village-night-16-9.png' : '/images/village-day-16-9.png'}
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
