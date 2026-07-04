@@ -2,7 +2,9 @@
 
 > Learn prompt engineering through daily fantasy missions, evaluated by AI.
 
-![Questly Village](assets/questly.jpg)
+<p align="center">
+  <img src="assets/questly-removebg-preview.png" width="70%" alt="Questly" />
+</p>
 
 ---
 

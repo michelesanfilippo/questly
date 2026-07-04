@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   title: 'Questly - Fantasy Prompt Engineering',
   description: 'A fantasy gamified platform for learning prompt engineering and GenAI through daily AI-evaluated missions.',
   icons: {
-    icon: '/images/questly.jpg',
-    apple: '/images/questly.jpg',
+    icon: '/images/questly-removebg-preview.png',
+    apple: '/images/questly-removebg-preview.png',
   },
   openGraph: {
     title: 'Questly - Fantasy Prompt Engineering',

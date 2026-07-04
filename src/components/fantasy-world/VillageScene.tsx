@@ -126,11 +126,11 @@ export function VillageScene() {
       {/* Logo — top left */}
       <div className="absolute top-4 left-4 z-20">
         <Image
-          src="/images/questly.jpg"
+          src="/images/questly-removebg-preview.png"
           alt="Questly"
-          width={40}
-          height={40}
-          className="rounded-full border-2 border-white/40 shadow-lg"
+          width={44}
+          height={44}
+          className="drop-shadow-lg"
         />
       </div>
     </div>
