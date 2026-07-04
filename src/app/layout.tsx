@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Questly - Fantasy Prompt Engineering',
+  title: 'Questly - Learn to prompt.',
   description: 'A fantasy gamified platform for learning prompt engineering and GenAI through daily AI-evaluated missions.',
   icons: {
     icon: '/images/questly-removebg-preview.png',
@@ -38,7 +38,7 @@ export default function RootLayout({
         {/* Theme init: runs before paint to prevent flash */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('questly-theme');if(t==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem('questly-theme');if(t==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark');localStorage.setItem('questly-theme','light')}}catch(e){}})()`,
           }}
         />
       </head>

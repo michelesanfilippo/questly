@@ -8,9 +8,8 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const stored = localStorage.getItem('questly-theme');
-    const dark = stored === 'dark';
-    setIsDark(dark);
-    document.documentElement.classList.toggle('dark', dark);
+    if(stored === 'dark'){setIsDark(true); document.documentElement.classList.add('dark');}
+    else{setIsDark(false); document.documentElement.classList.remove('dark'); localStorage.setItem('questly-theme','light');}
   }, []);
 
   function toggle() {

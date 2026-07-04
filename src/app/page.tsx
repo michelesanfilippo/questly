@@ -38,12 +38,12 @@ export default function HomePage() {
   }
 
   return (
-    <main className="flex flex-col h-[100dvh] overflow-hidden">
-      <section className="relative h-[35vh] sm:h-[45vh] lg:h-1/2 flex-shrink-0 overflow-hidden">
+    <main className="flex flex-col min-h-[100dvh]">
+      <section className="relative h-[40vh] sm:h-[45vh] lg:h-[50vh] flex-shrink-0 overflow-hidden w-full">
         <VillageScene />
       </section>
-      <section className="flex-1 min-h-0 overflow-y-auto bg-slate-50 dark:bg-slate-900">
-        <div className="max-w-2xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex flex-col gap-4">
+      <section className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col gap-4">
           {loading && (
             <p className="text-amber-400 animate-pulse text-sm text-center mt-8">
               Loading your daily mission...
