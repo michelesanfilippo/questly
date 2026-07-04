@@ -38,11 +38,11 @@ export default function RootLayout({
         {/* Theme init: runs before paint to prevent flash */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('questly-theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem('questly-theme');if(t==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})()`,
           }}
         />
       </head>
-      <body className={`${inter.variable} antialiased bg-slate-900 text-slate-100 overflow-hidden`}>
+      <body className={`${inter.variable} antialiased bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-x-hidden`}>
         {/* Future: wrap with AuthProvider */}
         {children}
       </body>

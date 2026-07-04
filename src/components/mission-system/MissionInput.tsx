@@ -61,7 +61,7 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
             placeholder="Craft your prompt here, adventurer..."
             rows={5}
             className="
-              w-full rounded-xl border bg-slate-800/80 text-slate-100
+              w-full min-h-[120px] rounded-xl border bg-slate-800/80 text-slate-100
               placeholder-slate-500 p-3 sm:p-4 text-sm resize-y
               focus:outline-none focus:ring-2 focus:ring-amber-500/50
               transition-all duration-200
@@ -73,6 +73,31 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
             {charCount}/{MAX_CHARS}
           </span>
         </div>
+
+        {/* Inline validation hints */}
+        {trimmedLen > 0 && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={`text-xs ${
+              trimmedLen <= 10
+                ? 'text-red-400'
+                : trimmedLen < 50
+                  ? 'text-amber-400'
+                  : trimmedLen < 150
+                    ? 'text-amber-400'
+                    : 'text-emerald-400'
+            }`}
+          >
+            {trimmedLen <= 10
+              ? 'Prompt too short — write at least 10 characters'
+              : trimmedLen < 50
+                ? 'Add more context or structure to improve your score'
+                : trimmedLen < 150
+                  ? 'Good length — try adding role, format, or constraints'
+                  : 'Detailed prompt — ready to submit'}
+          </motion.p>
+        )}
 
         <AnimatePresence>
           {error && (
@@ -91,7 +116,7 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
           onClick={handleSubmit}
           disabled={!isValid || submitting}
           variant="primary"
-          className="w-full text-sm sm:text-base"
+          className="w-full min-h-[44px] text-sm sm:text-base"
         >
           {submitting ? (
             <span className="flex items-center gap-2">

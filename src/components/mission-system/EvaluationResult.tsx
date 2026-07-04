@@ -74,7 +74,7 @@ export function EvaluationResult({ result }: Props) {
       </motion.div>
 
       {/* Score bars */}
-      <motion.div variants={itemVariants} className="space-y-3">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {Object.entries(SCORE_LABELS).map(([key, label]) => (
           <ScoreBar key={key} label={label} value={scores[key as keyof typeof scores] as number} />
         ))}

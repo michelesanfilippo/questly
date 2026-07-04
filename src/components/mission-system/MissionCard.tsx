@@ -71,7 +71,7 @@ export function MissionCard({ onAccept }: MissionCardProps) {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className={`text-xs uppercase tracking-widest font-semibold px-2.5 py-1 rounded-full border ${badgeClass}`}>
-          {mission.category.replace('-', ' ')}
+          {mission.category.replaceAll('-', ' ')}
         </span>
         <StarRating value={mission.difficulty} max={5} />
       </div>
@@ -99,7 +99,7 @@ export function MissionCard({ onAccept }: MissionCardProps) {
           </summary>
           <ul className="mt-2 space-y-1 pl-3 border-l border-white/10">
             {mission.hints.map((h, i) => (
-              <li key={i} className="text-xs text-slate-400">— {h}</li>
+              <li key={i} className="text-xs text-slate-400 break-words">— {h}</li>
             ))}
           </ul>
         </details>
@@ -109,8 +109,8 @@ export function MissionCard({ onAccept }: MissionCardProps) {
       <AnimatePresence mode="wait">
         {!accepted ? (
           <motion.div key="btn" exit={{ opacity: 0, scale: 0.95 }}>
-            <Button onClick={handleAccept} variant="primary" className="w-full text-sm sm:text-base">
-              Accetta Missione
+            <Button onClick={handleAccept} variant="primary" className="w-full min-h-[44px] text-sm sm:text-base">
+              Accept Mission
             </Button>
           </motion.div>
         ) : (
@@ -123,7 +123,7 @@ export function MissionCard({ onAccept }: MissionCardProps) {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            Missione Accettata — Craft your prompt below
+            Mission Accepted — Craft your prompt below
           </motion.div>
         )}
       </AnimatePresence>
