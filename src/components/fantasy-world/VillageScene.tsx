@@ -85,7 +85,7 @@ export function VillageScene() {
   }, []);
 
   return (
-    <div className={`relative w-full h-full overflow-hidden ${isDark ? 'bg-indigo-950' : 'bg-sky-200'}`}>
+    <div className="relative w-full h-full overflow-hidden">
       {/* Village image — crossfades on theme change */}
       <AnimatePresence mode="sync">
         <motion.div
@@ -97,11 +97,11 @@ export function VillageScene() {
           transition={{ duration: 0.9, ease: 'easeInOut' }}
         >
           <Image
-            src={isDark ? '/images/village-night.jpg' : '/images/village-day.jpg'}
+            src={isDark ? '/images/village-night-16-9.jpg' : '/images/village-day-16-9.jpg'}
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
-            className="object-contain object-bottom"
+            className="object-cover object-center"
             sizes="100vw"
           />
         </motion.div>
