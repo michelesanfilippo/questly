@@ -52,7 +52,7 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
         transition={{ duration: 0.35 }}
         className="w-full space-y-3"
       >
-        <p className="text-xs text-slate-500 uppercase tracking-widest">Your Prompt</p>
+        <p className="text-xs text-slate-500 dark:text-slate-500 uppercase tracking-widest">Your Prompt</p>
 
         <div className="relative">
           <textarea
@@ -61,15 +61,19 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
             placeholder="Craft your prompt here, adventurer..."
             rows={5}
             className="
-              w-full min-h-[120px] rounded-xl border bg-slate-800/80 text-slate-100
-              placeholder-slate-500 p-3 sm:p-4 text-sm resize-y
+              w-full min-h-[120px] rounded-xl border
+              bg-white dark:bg-slate-800/80
+              text-slate-900 dark:text-slate-100
+              placeholder-slate-400 dark:placeholder-slate-500
+              border-slate-200 dark:border-white/10
+              p-3 sm:p-4 text-sm resize-y
               focus:outline-none focus:ring-2 focus:ring-amber-500/50
+              focus:border-amber-400 dark:focus:border-amber-500/40
               transition-all duration-200
-              border-white/10 focus:border-amber-500/40
             "
           />
           {/* Char counter */}
-          <span className={`absolute bottom-3 right-3 text-xs ${charCount > MAX_CHARS * 0.9 ? 'text-amber-400' : 'text-slate-600'}`}>
+          <span className={`absolute bottom-3 right-3 text-xs ${charCount > MAX_CHARS * 0.9 ? 'text-amber-500' : 'text-slate-400 dark:text-slate-600'}`}>
             {charCount}/{MAX_CHARS}
           </span>
         </div>

@@ -7,14 +7,14 @@ import { Button } from '@/components/ui/Button';
 import type { Mission } from '@/types';
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'prompt-basics':      'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  'context-crafting':   'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  'chain-of-thought':   'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  'role-prompting':     'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  'few-shot':           'bg-pink-500/20 text-pink-300 border-pink-500/30',
-  'output-formatting':  'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-  'multimodal':         'bg-orange-500/20 text-orange-300 border-orange-500/30',
-  'agents':             'bg-red-500/20 text-red-300 border-red-500/30',
+  'prompt-basics':      'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/30',
+  'context-crafting':   'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-300 dark:border-purple-500/30',
+  'chain-of-thought':   'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30',
+  'role-prompting':     'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30',
+  'few-shot':           'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-500/20 dark:text-pink-300 dark:border-pink-500/30',
+  'output-formatting':  'bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-500/30',
+  'multimodal':         'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:border-orange-500/30',
+  'agents':             'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/30',
 };
 
 interface MissionCardProps {
@@ -42,11 +42,11 @@ export function MissionCard({ onAccept }: MissionCardProps) {
 
   if (loading) {
     return (
-      <div className="w-full rounded-2xl border border-white/10 bg-white/5 p-6 space-y-3 animate-pulse">
-        <div className="h-4 w-24 bg-white/10 rounded" />
-        <div className="h-6 w-3/4 bg-white/10 rounded" />
-        <div className="h-16 w-full bg-white/10 rounded" />
-        <div className="h-10 w-full bg-white/10 rounded-xl" />
+      <div className="w-full rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-6 space-y-3 animate-pulse">
+        <div className="h-4 w-24 bg-slate-200 dark:bg-white/10 rounded" />
+        <div className="h-6 w-3/4 bg-slate-200 dark:bg-white/10 rounded" />
+        <div className="h-16 w-full bg-slate-200 dark:bg-white/10 rounded" />
+        <div className="h-10 w-full bg-slate-200 dark:bg-white/10 rounded-xl" />
       </div>
     );
   }
@@ -66,7 +66,7 @@ export function MissionCard({ onAccept }: MissionCardProps) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full rounded-2xl border border-white/10 bg-slate-800/60 backdrop-blur-sm p-5 sm:p-6 shadow-xl space-y-4"
+      className="w-full rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-5 sm:p-6 shadow-sm dark:shadow-xl space-y-4"
     >
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -77,29 +77,29 @@ export function MissionCard({ onAccept }: MissionCardProps) {
       </div>
 
       {/* Title */}
-      <h2 className="text-lg sm:text-xl font-bold text-amber-300 leading-snug">
+      <h2 className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-300 leading-snug">
         {mission.title}
       </h2>
 
       {/* Narrative */}
-      <p className="text-sm text-slate-400 italic leading-relaxed">
+      <p className="text-sm text-slate-500 dark:text-slate-400 italic leading-relaxed">
         {mission.narrativeDescription}
       </p>
 
       {/* Task box */}
-      <div className="rounded-xl bg-white/5 border border-white/10 p-3 sm:p-4">
-        <p className="text-sm text-slate-200 leading-relaxed">{mission.task}</p>
+      <div className="rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-3 sm:p-4">
+        <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed">{mission.task}</p>
       </div>
 
       {/* Hints */}
       {mission.hints && mission.hints.length > 0 && (
         <details className="group">
-          <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-300 transition-colors select-none">
+          <summary className="text-xs text-slate-500 dark:text-slate-500 cursor-pointer hover:text-slate-700 dark:hover:text-slate-300 transition-colors select-none">
             Show hints ({mission.hints.length})
           </summary>
-          <ul className="mt-2 space-y-1 pl-3 border-l border-white/10">
+          <ul className="mt-2 space-y-1 pl-3 border-l border-slate-200 dark:border-white/10">
             {mission.hints.map((h, i) => (
-              <li key={i} className="text-xs text-slate-400 break-words">— {h}</li>
+              <li key={i} className="text-xs text-slate-500 dark:text-slate-400 break-words">— {h}</li>
             ))}
           </ul>
         </details>
