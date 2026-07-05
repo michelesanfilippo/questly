@@ -54,11 +54,13 @@ export async function updateProfileXP(
   userId: string,
   xp: number,
   level: number,
-  missions_completed: number
+  missions_completed: number,
+  last_mission_id?: string,
+  last_mission_date?: string
 ) {
   return supabase
     .from('profiles')
-    .update({ xp, level, missions_completed })
+    .update({ xp, level, missions_completed, ...(last_mission_id ? { last_mission_id, last_mission_date } : {}) })
     .eq('id', userId);
 }
 

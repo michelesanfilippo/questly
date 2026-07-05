@@ -28,6 +28,7 @@ export default function HomePage() {
   const [earnedBadges, setEarnedBadges] = useState<number[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showNicknameSetup, setShowNicknameSetup] = useState(false);
+  const [missionAlreadyDone, setMissionAlreadyDone] = useState(false);
 
   // Mission fetch
   useEffect(() => {
@@ -37,7 +38,19 @@ export default function HomePage() {
         const res = await fetch('/api/mission');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json() as { mission: Mission };
-        if (!cancelled) setMission(data.mission);
+        if (!cancelled) {
+          setMission(data.mission);
+          // Check if logged-in user already completed today's mission
+          setProfile(prev => {
+            if (prev && data.mission) {
+              const today = new Date().toISOString().split('T')[0];
+              if (prev.last_mission_id === data.mission.id && prev.last_mission_date === today) {
+                setMissionAlreadyDone(true);
+              }
+            }
+            return prev;
+          });
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load mission');
       } finally {
@@ -56,6 +69,16 @@ export default function HomePage() {
         const { data: prof } = await getProfile(session.user.id);
         if (prof) {
           setProfile(prof);
+          // Check if today's mission already completed
+          setMission(prev => {
+            if (prev) {
+              const today = new Date().toISOString().split('T')[0];
+              if (prof.last_mission_id === prev.id && prof.last_mission_date === today) {
+                setMissionAlreadyDone(true);
+              }
+            }
+            return prev;
+          });
           const { data: badges } = await getUserBadges(session.user.id);
           setEarnedBadges(badges?.map((b: { badge_index: number }) => b.badge_index) ?? []);
         } else {
@@ -83,7 +106,9 @@ export default function HomePage() {
     async function processGamification() {
       const { newXP, newLevel } = addXPToProfile(profile!, evaluation!.xpAwarded);
       const newMissions = profile!.missions_completed + 1;
-      await updateProfileXP(profile!.id, newXP, newLevel, newMissions);
+      const today = new Date().toISOString().split('T')[0];
+      await updateProfileXP(profile!.id, newXP, newLevel, newMissions, mission?.id, today);
+      setMissionAlreadyDone(true);
       const newBadges = checkNewBadges(
         { ...profile!, xp: newXP, level: newLevel, missions_completed: newMissions },
         { scores: evaluation!.scores },
@@ -117,8 +142,13 @@ export default function HomePage() {
       )}
       {!loading && (
         <>
-          <MissionCard onAccept={handleAccept} />
-          {accepted && !evaluation && mission && (
+          <MissionCard onAccept={!missionAlreadyDone ? handleAccept : undefined} />
+          {missionAlreadyDone && !evaluation && (
+            <p className="text-center text-sm text-amber-700 dark:text-amber-400 italic py-2">
+              You have already completed today&apos;s mission. Come back tomorrow!
+            </p>
+          )}
+          {accepted && !evaluation && mission && !missionAlreadyDone && (
             <MissionInput missionId={mission.id} onResult={setEvaluation} />
           )}
           {evaluation && <EvaluationResult result={evaluation} />}

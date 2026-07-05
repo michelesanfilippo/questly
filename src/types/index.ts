@@ -100,6 +100,8 @@ export interface SupabaseProfile {
   xp: number;
   missions_completed: number;
   created_at: string;
+  last_mission_id: string | null;
+  last_mission_date: string | null;
 }
 
 export interface BadgeDefinition {
