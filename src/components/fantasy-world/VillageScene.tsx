@@ -121,7 +121,7 @@ export function VillageScene() {
 
       {/* Login button — top right */}
       <div className="absolute top-4 right-4 z-20">
-        <button className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 dark:bg-amber-500/20 dark:hover:bg-amber-500/40 dark:active:bg-amber-500/60 text-white dark:text-amber-100 border-amber-600 dark:border-amber-400/40 shadow-md">
+        <button onClick={() => window.dispatchEvent(new CustomEvent('questly:openLogin'))} className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 dark:bg-amber-500/20 dark:hover:bg-amber-500/40 dark:active:bg-amber-500/60 text-white dark:text-amber-100 border-amber-600 dark:border-amber-400/40 shadow-md">
           Login
         </button>
       </div>

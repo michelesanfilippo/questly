@@ -91,3 +91,20 @@ export interface LeaderboardEntry {
   xp: number;
   badge: string;
 }
+
+export interface SupabaseProfile {
+  id: string;
+  nickname: string;
+  email: string | null;
+  level: number;
+  xp: number;
+  missions_completed: number;
+  created_at: string;
+}
+
+export interface BadgeDefinition {
+  index: number;
+  name: string;
+  description: string;
+  requirement: string;
+}
