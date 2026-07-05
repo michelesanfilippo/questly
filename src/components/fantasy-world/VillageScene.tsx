@@ -6,26 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
 import { AmbientEffects } from './AmbientEffects';
 
-// Shooting star for dark→light transition
-function ShootingStar({ onDone }: { onDone: () => void }) {
-  return (
-    <motion.div
-      className="absolute pointer-events-none z-30"
-      style={{ top: '2%', left: '-8%' }}
-      initial={{ x: 0, y: 0, opacity: 1 }}
-      animate={{ x: '130vw', y: '90vh', opacity: 0 }}
-      transition={{ duration: 3.0, ease: 'easeIn' }}
-      onAnimationComplete={onDone}
-    >
-      <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_3px_rgba(255,255,255,0.8)]" />
-      <div
-        className="absolute top-0 right-1 w-28 h-0.5 origin-right"
-        style={{ background: 'linear-gradient(to left, rgba(255,255,255,0.8), transparent)' }}
-      />
-    </motion.div>
-  );
-}
-
 // Sun rays burst for dark→light transition
 function SunBurst({ onDone }: { onDone: () => void }) {
   return (
@@ -43,7 +23,6 @@ function SunBurst({ onDone }: { onDone: () => void }) {
 
 export function VillageScene() {
   const [isDark, setIsDark] = useState(false);
-  const [showShootingStar, setShowShootingStar] = useState(false);
   const [showSunBurst, setShowSunBurst] = useState(false);
   const prevDark = useRef(false);
 
@@ -54,9 +33,6 @@ export function VillageScene() {
         if (!dark && prevDark.current) {
           // dark → light: sun burst
           setShowSunBurst(true);
-        } else if (dark && !prevDark.current) {
-          // light → dark: shooting star
-          setShowShootingStar(true);
         }
         prevDark.current = dark;
         setIsDark(dark);
@@ -99,9 +75,6 @@ export function VillageScene() {
       <AmbientEffects />
 
       {/* Transition animations */}
-      {showShootingStar && (
-        <ShootingStar onDone={() => setShowShootingStar(false)} />
-      )}
       {showSunBurst && (
         <SunBurst onDone={() => setShowSunBurst(false)} />
       )}
@@ -111,8 +84,8 @@ export function VillageScene() {
         <Image
           src="/images/questly-removebg-preview.png"
           alt="Questly"
-          width={54}
-          height={54}
+          width={68}
+          height={68}
           className="drop-shadow-lg"
         />
         <ThemeToggle />
@@ -120,7 +93,7 @@ export function VillageScene() {
 
       {/* Login button — top right */}
       <div className="absolute top-4 right-4 z-20">
-        <button className="px-8 py-2 rounded-2xl text-sm font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
+        <button className="px-10 py-2.5 rounded-2xl text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
           Login
         </button>
       </div>
