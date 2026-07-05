@@ -6,6 +6,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
 import { AmbientEffects } from './AmbientEffects';
 
+// Shooting star for light→dark transition
+function ShootingStar({ onDone }: { onDone: () => void }) {
+  return (
+    <motion.div
+      className="absolute pointer-events-none z-30"
+      style={{ top: '5%', left: '-5%' }}
+      initial={{ x: 0, y: 0, opacity: 1 }}
+      animate={{ x: '120vw', y: '70vh', opacity: 0 }}
+      transition={{ duration: 2.5, ease: 'easeIn' }}
+      onAnimationComplete={onDone}
+    >
+      <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_3px_rgba(255,255,255,0.8)]" />
+      <div
+        className="absolute top-0 right-1 w-24 h-0.5 origin-right"
+        style={{ background: 'linear-gradient(to left, rgba(255,255,255,0.8), transparent)' }}
+      />
+    </motion.div>
+  );
+}
+
 // Sun rays burst for dark→light transition
 function SunBurst({ onDone }: { onDone: () => void }) {
   return (
@@ -24,6 +44,7 @@ function SunBurst({ onDone }: { onDone: () => void }) {
 export function VillageScene() {
   const [isDark, setIsDark] = useState(false);
   const [showSunBurst, setShowSunBurst] = useState(false);
+  const [showShootingStar, setShowShootingStar] = useState(false);
   const prevDark = useRef(false);
 
   useEffect(() => {
@@ -33,6 +54,9 @@ export function VillageScene() {
         if (!dark && prevDark.current) {
           // dark → light: sun burst
           setShowSunBurst(true);
+        } else if (dark && !prevDark.current) {
+          // light → dark: shooting star
+          setShowShootingStar(true);
         }
         prevDark.current = dark;
         setIsDark(dark);
@@ -65,7 +89,7 @@ export function VillageScene() {
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
-            className="object-cover object-[center_25%]"
+            className="object-cover object-[center_35%]"
             sizes="100vw"
             quality={100}
           />
@@ -76,6 +100,9 @@ export function VillageScene() {
       <AmbientEffects />
 
       {/* Transition animations */}
+      {showShootingStar && (
+        <ShootingStar onDone={() => setShowShootingStar(false)} />
+      )}
       {showSunBurst && (
         <SunBurst onDone={() => setShowSunBurst(false)} />
       )}
@@ -94,7 +121,7 @@ export function VillageScene() {
 
       {/* Login button — top right */}
       <div className="absolute top-4 right-4 z-20">
-        <button className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
+        <button className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 dark:bg-amber-500/20 dark:hover:bg-amber-500/40 dark:active:bg-amber-500/60 text-white dark:text-amber-100 border-amber-600 dark:border-amber-400/40 shadow-md">
           Login
         </button>
       </div>
