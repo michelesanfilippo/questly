@@ -67,6 +67,7 @@ export function VillageScene() {
             priority
             className="object-cover object-center"
             sizes="100vw"
+            quality={100}
           />
         </motion.div>
       </AnimatePresence>
