@@ -152,7 +152,7 @@ export default function HomePage() {
           )}
           {/* AUTHENTICATED: 3-col layout */}
           {profile && (
-            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-4 px-4 sm:px-6 py-6 max-w-7xl mx-auto w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-4 px-4 sm:px-6 py-6 w-full">
               <div className="order-3 lg:order-1">
                 <Leaderboard currentUserId={profile.id} />
               </div>

@@ -1,8 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { signOut } from '@/lib/supabaseAuth';
-import { BadgeGrid } from '@/components/ui/BadgeGrid';
 import { xpForLevel } from '@/lib/badges';
 import type { SupabaseProfile } from '@/types';
 
@@ -12,16 +10,11 @@ interface UserCardProps {
   onSignOut?: () => void;
 }
 
-export function UserCard({ profile, earnedBadges, onSignOut }: UserCardProps) {
+export function UserCard({ profile }: UserCardProps) {
   const xpNeeded = xpForLevel(profile.level);
   const xpCurrent = profile.xp % xpNeeded;
   const xpPercent = (xpCurrent / xpNeeded) * 100;
   const initials = profile.nickname.slice(0, 2).toUpperCase();
-
-  async function handleSignOut() {
-    await signOut();
-    onSignOut?.();
-  }
 
   return (
     <motion.div
@@ -65,19 +58,10 @@ export function UserCard({ profile, earnedBadges, onSignOut }: UserCardProps) {
         {profile.missions_completed} quests completed
       </p>
 
-      {/* Divider */}
-      <div className="border-t border-amber-800/10 dark:border-indigo-500/20 my-3" />
-
-      {/* Badges */}
-      <BadgeGrid size="sm" earnedIndexes={earnedBadges} />
-
-      {/* Sign out */}
-      <button
-        onClick={handleSignOut}
-        className="mt-3 text-xs text-stone-400 dark:text-indigo-400/50 hover:text-red-500 dark:hover:text-red-400 cursor-pointer transition-colors"
-      >
-        Sign out
-      </button>
+      {/* Badges placeholder — coming soon */}
+      <p className="text-xs text-stone-400 dark:text-indigo-400/50 italic mt-3">
+        Badges coming soon...
+      </p>
     </motion.div>
   );
 }

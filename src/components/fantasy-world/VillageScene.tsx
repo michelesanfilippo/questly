@@ -5,6 +5,8 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
 import { AmbientEffects } from './AmbientEffects';
+import { supabase } from '@/lib/supabase';
+import { signOut } from '@/lib/supabaseAuth';
 
 // Shooting star for light→dark transition
 function ShootingStar({ onDone }: { onDone: () => void }) {
@@ -45,6 +47,7 @@ export function VillageScene() {
   const [isDark, setIsDark] = useState(false);
   const [showSunBurst, setShowSunBurst] = useState(false);
   const [showShootingStar, setShowShootingStar] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const prevDark = useRef(false);
 
   useEffect(() => {
@@ -69,7 +72,14 @@ export function VillageScene() {
 
     const observer = new MutationObserver(sync);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session));
+
+    return () => { observer.disconnect(); subscription.unsubscribe(); };
   }, []);
 
   return (
@@ -119,11 +129,23 @@ export function VillageScene() {
         <ThemeToggle />
       </div>
 
-      {/* Login button — top right */}
+      {/* Login / Sign out button — top right */}
       <div className="absolute top-4 right-4 z-20">
-        <button onClick={() => window.dispatchEvent(new CustomEvent('questly:openLogin'))} className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-800/40 hover:bg-amber-700/50 active:bg-amber-800/60 text-amber-50 border-amber-600/50 shadow-md">
-          Login
-        </button>
+        {isLoggedIn ? (
+          <button
+            onClick={() => signOut()}
+            className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-800/40 hover:bg-amber-700/50 active:bg-amber-800/60 text-amber-50 border-amber-600/50 shadow-md"
+          >
+            Sign out
+          </button>
+        ) : (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('questly:openLogin'))}
+            className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-800/40 hover:bg-amber-700/50 active:bg-amber-800/60 text-amber-50 border-amber-600/50 shadow-md"
+          >
+            Login
+          </button>
+        )}
       </div>
     </div>
   );
