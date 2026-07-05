@@ -42,7 +42,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} antialiased bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-x-hidden`}>
+      <body className={`${inter.variable} antialiased bg-[#faf7f0] text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-x-hidden`}>
         {/* Future: wrap with AuthProvider */}
         {children}
       </body>

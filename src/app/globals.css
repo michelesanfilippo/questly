@@ -12,10 +12,13 @@
   --color-night: #0F172A;
   --color-forest: #16A34A;
   --color-forest-light: #4ADE80;
+  --color-parchment: #faf7f0;
+  --color-parchment-dark: #f0ead6;
+  --color-ink: #3d2b1f;
 }
 
 :root {
-  --background: #ffffff;
+  --background: #faf7f0;
   --foreground: #0f172a;
 }
 
