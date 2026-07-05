@@ -13,8 +13,8 @@ function ShootingStar({ onDone }: { onDone: () => void }) {
       className="absolute pointer-events-none z-30"
       style={{ top: '5%', left: '-5%' }}
       initial={{ x: 0, y: 0, opacity: 1 }}
-      animate={{ x: '120vw', y: '70vh', opacity: 0 }}
-      transition={{ duration: 2.5, ease: 'easeIn' }}
+      animate={{ x: '150vw', y: '95vh', opacity: 0 }}
+      transition={{ duration: 3.2, ease: 'easeIn' }}
       onAnimationComplete={onDone}
     >
       <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_3px_rgba(255,255,255,0.8)]" />
@@ -89,7 +89,7 @@ export function VillageScene() {
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
-            className="object-cover object-[center_35%]"
+            className="object-cover object-[center_28%]"
             sizes="100vw"
             quality={100}
           />
