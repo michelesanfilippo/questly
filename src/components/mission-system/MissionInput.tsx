@@ -108,7 +108,7 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
         <button
           onClick={handleSubmit}
           disabled={!isValid || submitting}
-          className="w-full min-h-[44px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 dark:bg-indigo-700 dark:hover:bg-indigo-600 dark:active:bg-indigo-800 text-amber-50 dark:text-indigo-50 font-semibold text-sm sm:text-base border border-amber-600 dark:border-indigo-500 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] dark:shadow-[1px_2px_8px_rgba(67,56,202,0.3)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 dark:bg-indigo-700 dark:hover:bg-indigo-600 dark:active:bg-indigo-800 text-amber-50 dark:text-indigo-50 font-semibold text-xs sm:text-sm border border-amber-600 dark:border-indigo-500 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] dark:shadow-[1px_2px_8px_rgba(67,56,202,0.3)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (
             <span className="flex items-center justify-center gap-2">

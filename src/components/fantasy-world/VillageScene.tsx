@@ -85,13 +85,12 @@ export function VillageScene() {
           transition={{ duration: 0.9, ease: 'easeInOut' }}
         >
           <Image
-            src={isDark ? '/images/village-night-16-9.png' : '/images/village-day-16-9.png'}
+            src={isDark ? '/images/village-night-16-9.jpg' : '/images/village-day-16-9.jpg'}
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
-            className="object-contain"
+            className="object-cover object-center"
             sizes="100vw"
-            style={{ width: '100%', height: '100%' }}
           />
         </motion.div>
       </AnimatePresence>
@@ -114,7 +113,7 @@ export function VillageScene() {
 
       {/* Login button — top right */}
       <div className="absolute top-4 right-4 z-20">
-        <button className="px-6 py-2 rounded-xl text-sm font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
+        <button className="px-8 py-2 rounded-2xl text-sm font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
           Login
         </button>
       </div>
@@ -124,8 +123,8 @@ export function VillageScene() {
         <Image
           src="/images/questly-removebg-preview.png"
           alt="Questly"
-          width={44}
-          height={44}
+          width={54}
+          height={54}
           className="drop-shadow-lg"
         />
       </div>
