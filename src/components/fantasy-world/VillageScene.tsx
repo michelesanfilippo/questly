@@ -73,7 +73,7 @@ export function VillageScene() {
   }, []);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full overflow-hidden">
       {/* Village image — crossfades on theme change */}
       <AnimatePresence mode="sync">
         <motion.div
@@ -85,7 +85,7 @@ export function VillageScene() {
           transition={{ duration: 0.9, ease: 'easeInOut' }}
         >
           <Image
-            src={isDark ? '/images/village-night-16-9.jpg' : '/images/village-day-16-9.jpg'}
+            src={isDark ? '/images/village-night-16-9.png' : '/images/village-day-16-9.png'}
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
@@ -106,8 +106,15 @@ export function VillageScene() {
         <SunBurst onDone={() => setShowSunBurst(false)} />
       )}
 
-      {/* Theme toggle — under logo, top left */}
-      <div className="absolute top-16 left-4 z-20">
+      {/* Logo + ThemeToggle stacked — top left */}
+      <div className="absolute top-4 left-4 z-20 flex flex-col items-center gap-2">
+        <Image
+          src="/images/questly-removebg-preview.png"
+          alt="Questly"
+          width={54}
+          height={54}
+          className="drop-shadow-lg"
+        />
         <ThemeToggle />
       </div>
 
@@ -116,17 +123,6 @@ export function VillageScene() {
         <button className="px-8 py-2 rounded-2xl text-sm font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
           Login
         </button>
-      </div>
-
-      {/* Logo — top left */}
-      <div className="absolute top-4 left-4 z-20">
-        <Image
-          src="/images/questly-removebg-preview.png"
-          alt="Questly"
-          width={54}
-          height={54}
-          className="drop-shadow-lg"
-        />
       </div>
     </div>
   );
