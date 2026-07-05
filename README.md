@@ -3,7 +3,7 @@
 > Learn prompt engineering through daily fantasy missions, evaluated by AI.
 
 <p align="center">
-  <img src="assets/questly-removebg-preview.png" width="300px" height="300px" alt="Questly" />
+  <img src="public/images/questly-removebg-preview.png" width="300px" height="300px" alt="Questly" />
 </p>
 
 <p align="center">
@@ -16,13 +16,17 @@
 
 Questly is a gamified web platform that teaches **prompt engineering** and **GenAI** skills through immersive daily missions set in a fantasy world. Each day, a new mission challenges you to craft the perfect prompt — the AI evaluates your work across 5 dimensions and awards XP.
 
+Sign in with **Google** to unlock your persistent profile, earn badges, track your XP and level, and compete on the global leaderboard — powered by **Supabase**.
+
 | | |
 |---|---|
 | **Stack** | Next.js 15 (App Router) + TypeScript |
 | **Styling** | Tailwind CSS 4 |
 | **Animations** | Framer Motion 11 |
+| **Auth** | Supabase + Google OAuth |
+| **Database** | Supabase PostgreSQL |
 | **AI Evaluation** | Mock (Gemini / Cloudflare AI ready) |
-| **Missions** | AI generated based on difficulty (1 to 5 stars) |
+| **Missions** | 365 daily missions (difficulty 1–5 stars) |
 
 ---
 
