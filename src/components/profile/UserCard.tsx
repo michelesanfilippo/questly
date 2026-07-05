@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { signOut } from '@/lib/supabaseAuth';
-import BadgeGrid from '@/components/ui/BadgeGrid';
+import { BadgeGrid } from '@/components/ui/BadgeGrid';
 import { xpForLevel } from '@/lib/badges';
 import type { SupabaseProfile } from '@/types';
 
@@ -12,7 +12,7 @@ interface UserCardProps {
   onSignOut?: () => void;
 }
 
-export default function UserCard({ profile, earnedBadges, onSignOut }: UserCardProps) {
+export function UserCard({ profile, earnedBadges, onSignOut }: UserCardProps) {
   const xpNeeded = xpForLevel(profile.level);
   const xpCurrent = profile.xp % xpNeeded;
   const xpPercent = (xpCurrent / xpNeeded) * 100;
@@ -81,3 +81,4 @@ export default function UserCard({ profile, earnedBadges, onSignOut }: UserCardP
     </motion.div>
   );
 }
+

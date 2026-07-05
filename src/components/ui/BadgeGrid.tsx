@@ -7,7 +7,7 @@ interface BadgeGridProps {
   size?: 'sm' | 'md';
 }
 
-export default function BadgeGrid({ earnedIndexes, size = 'md' }: BadgeGridProps) {
+export function BadgeGrid({ earnedIndexes, size = 'md' }: BadgeGridProps) {
   const dim = size === 'sm' ? '32px' : '48px';
 
   return (
@@ -47,3 +47,4 @@ export default function BadgeGrid({ earnedIndexes, size = 'md' }: BadgeGridProps
     </div>
   );
 }
+
