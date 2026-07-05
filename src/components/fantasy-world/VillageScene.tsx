@@ -89,7 +89,7 @@ export function VillageScene() {
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
-            className="object-contain"
+            className="object-cover object-[center_40%]"
             sizes="100vw"
             quality={100}
           />
