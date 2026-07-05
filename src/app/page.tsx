@@ -12,6 +12,8 @@ import { LoginModal } from '@/components/auth/LoginModal';
 import { NicknameSetup } from '@/components/auth/NicknameSetup';
 import { UserCard } from '@/components/profile/UserCard';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
+import { BadgeUnlockPopup } from '@/components/ui/BadgeUnlockPopup';
+import { BADGE_DEFINITIONS, getBadgeImagePath } from '@/lib/badges';
 import type { Mission, EvaluationResult as EvalResultType } from '@/types';
 import type { SupabaseProfile } from '@/types';
 import type { Session } from '@supabase/supabase-js';
@@ -29,6 +31,8 @@ export default function HomePage() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showNicknameSetup, setShowNicknameSetup] = useState(false);
   const [missionAlreadyDone, setMissionAlreadyDone] = useState(false);
+  const [badgePopupQueue, setBadgePopupQueue] = useState<number[]>([]);
+  const [currentBadgePopup, setCurrentBadgePopup] = useState<number | null>(null);
 
   // Mission fetch
   useEffect(() => {
@@ -121,9 +125,22 @@ export default function HomePage() {
       if (updatedProfile) setProfile(updatedProfile);
       const { data: updatedBadges } = await getUserBadges(profile!.id);
       setEarnedBadges(updatedBadges?.map((b: { badge_index: number }) => b.badge_index) ?? []);
+      // Queue badge unlock popups
+      if (newBadges.length > 0) {
+        setBadgePopupQueue(newBadges);
+        setCurrentBadgePopup(newBadges[0]);
+      }
     }
     processGamification();
   }, [evaluation]); // intentionally only evaluation
+
+  function dismissBadgePopup() {
+    setBadgePopupQueue(prev => {
+      const remaining = prev.slice(1);
+      setCurrentBadgePopup(remaining.length > 0 ? remaining[0] : null);
+      return remaining;
+    });
+  }
 
   function handleAccept(m: Mission) {
     setMission(m);
@@ -162,6 +179,18 @@ export default function HomePage() {
       {showLoginModal && (
         <LoginModal isOpen onClose={() => setShowLoginModal(false)} />
       )}
+      {currentBadgePopup !== null && profile && (() => {
+        const def = BADGE_DEFINITIONS.find(b => b.index === currentBadgePopup);
+        return def ? (
+          <BadgeUnlockPopup
+            nickname={profile.nickname}
+            badgeName={def.name}
+            badgeDescription={def.description}
+            badgeImagePath={getBadgeImagePath(currentBadgePopup)}
+            onClose={dismissBadgePopup}
+          />
+        ) : null;
+      })()}
       {showNicknameSetup && session && (
         <NicknameSetup
           userId={session.user.id}

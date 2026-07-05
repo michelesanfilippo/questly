@@ -1,7 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { xpForLevel } from '@/lib/badges';
+import { xpForLevel, BADGE_DEFINITIONS, getBadgeImagePath } from '@/lib/badges';
 import type { SupabaseProfile } from '@/types';
 
 interface UserCardProps {
@@ -10,7 +11,7 @@ interface UserCardProps {
   onSignOut?: () => void;
 }
 
-export function UserCard({ profile }: UserCardProps) {
+export function UserCard({ profile, earnedBadges }: UserCardProps) {
   const xpNeeded = xpForLevel(profile.level);
   const xpCurrent = profile.xp % xpNeeded;
   const xpPercent = (xpCurrent / xpNeeded) * 100;
@@ -58,10 +59,29 @@ export function UserCard({ profile }: UserCardProps) {
         {profile.missions_completed} quests completed
       </p>
 
-      {/* Badges placeholder — coming soon */}
-      <p className="text-xs text-stone-400 dark:text-indigo-400/50 italic mt-3">
-        Badges coming soon...
-      </p>
+      {/* Badges */}
+      {earnedBadges.length > 0 && (
+        <>
+          <div className="border-t border-amber-800/10 dark:border-indigo-500/20 my-3" />
+          <p className="text-xs uppercase tracking-widest text-stone-400 dark:text-indigo-400/50 mb-2 font-semibold">Badges</p>
+          <div className="flex flex-wrap gap-2">
+            {earnedBadges.map((idx) => {
+              const def = BADGE_DEFINITIONS.find(b => b.index === idx);
+              return (
+                <div key={idx} title={def?.name ?? `Badge ${idx}`} className="relative">
+                  <Image
+                    src={getBadgeImagePath(idx)}
+                    alt={def?.name ?? `Badge ${idx}`}
+                    width={40}
+                    height={40}
+                    className="rounded-full shadow-[0_0_8px_rgba(217,119,6,0.35)]"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }

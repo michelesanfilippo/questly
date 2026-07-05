@@ -1,5 +1,13 @@
 import type { BadgeDefinition, SupabaseProfile } from '@/types';
 
+// Maps badge index to image path in /public/images/badges/
+export function getBadgeImagePath(index: number): string {
+  const map: Record<number, string> = {
+    0: '/images/badges/badge1.png',
+  };
+  return map[index] ?? '/images/badges/badge1.png';
+}
+
 export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   { index: 0, name: 'First Step', description: 'Complete your first mission', requirement: 'Complete 1 mission' },
   { index: 1, name: 'Apprentice', description: 'Prove your dedication', requirement: 'Complete 5 missions' },
