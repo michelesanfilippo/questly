@@ -61,11 +61,11 @@ export function VillageScene() {
           transition={{ duration: 0.9, ease: 'easeInOut' }}
         >
           <Image
-            src={isDark ? '/images/village-night-16-9.png' : '/images/village-day-16-9.png'}
+            src={isDark ? '/images/night-uw.jpg' : '/images/day-uw.jpg'}
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
-            className="object-cover object-[center_80%]"
+            className="object-cover"
             sizes="100vw"
             quality={100}
           />
@@ -87,14 +87,14 @@ export function VillageScene() {
           alt="Questly"
           width={68}
           height={68}
-          className="drop-shadow-lg"
+          className="drop-shadow-lg w-10 h-10 sm:w-12 sm:h-12 lg:w-[68px] lg:h-[68px]"
         />
         <ThemeToggle />
       </div>
 
       {/* Login button — top right */}
       <div className="absolute top-4 right-4 z-20">
-        <button className="px-10 py-2.5 rounded-2xl text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
+        <button className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
           Login
         </button>
       </div>
