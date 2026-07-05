@@ -25,7 +25,7 @@ export function ThemeToggle() {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-colors duration-200 shadow-md"
+      className="px-3 py-1.5 rounded-xl flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 backdrop-blur-sm border border-amber-400/40 text-amber-100 text-xs font-semibold transition-all duration-200 shadow-md"
     >
       <motion.span
         key={isDark ? 'moon' : 'sun'}
@@ -55,6 +55,7 @@ export function ThemeToggle() {
           </svg>
         )}
       </motion.span>
+      <span>{isDark ? 'Light' : 'Dark'}</span>
     </motion.button>
   );
 }

@@ -11,15 +11,15 @@ function ShootingStar({ onDone }: { onDone: () => void }) {
   return (
     <motion.div
       className="absolute pointer-events-none z-30"
-      style={{ top: '5%', left: '-5%' }}
+      style={{ top: '2%', left: '-8%' }}
       initial={{ x: 0, y: 0, opacity: 1 }}
-      animate={{ x: '110vw', y: '80vh', opacity: 0 }}
-      transition={{ duration: 2.2, ease: 'easeIn' }}
+      animate={{ x: '130vw', y: '90vh', opacity: 0 }}
+      transition={{ duration: 3.0, ease: 'easeIn' }}
       onAnimationComplete={onDone}
     >
-      <div className="w-1 h-1 rounded-full bg-white shadow-[0_0_6px_3px_rgba(255,255,255,0.8)]" />
+      <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_3px_rgba(255,255,255,0.8)]" />
       <div
-        className="absolute top-0 right-1 w-16 h-0.5 origin-right"
+        className="absolute top-0 right-1 w-28 h-0.5 origin-right"
         style={{ background: 'linear-gradient(to left, rgba(255,255,255,0.8), transparent)' }}
       />
     </motion.div>
@@ -73,7 +73,7 @@ export function VillageScene() {
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div className="relative w-full h-full">
       {/* Village image — crossfades on theme change */}
       <AnimatePresence mode="sync">
         <motion.div
@@ -89,8 +89,9 @@ export function VillageScene() {
             alt={isDark ? 'Fantasy village at night' : 'Fantasy village at dawn'}
             fill
             priority
-            className="object-cover object-center"
+            className="object-contain"
             sizes="100vw"
+            style={{ width: '100%', height: '100%' }}
           />
         </motion.div>
       </AnimatePresence>
@@ -113,7 +114,7 @@ export function VillageScene() {
 
       {/* Login button — top right */}
       <div className="absolute top-4 right-4 z-20">
-        <button className="px-4 py-2 rounded-xl text-sm font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
+        <button className="px-6 py-2 rounded-xl text-sm font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-500/20 hover:bg-amber-500/40 active:bg-amber-500/60 text-amber-100 border-amber-400/40 shadow-md">
           Login
         </button>
       </div>

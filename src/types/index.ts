@@ -21,6 +21,7 @@ export interface Mission {
   tags: string[];
   weekendOnly: boolean;
   hints?: string[];
+  evaluationKeywords?: string[];
 }
 
 export interface EvaluateRequest {

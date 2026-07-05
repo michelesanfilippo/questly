@@ -15,11 +15,17 @@ export function evaluatePrompt(userPrompt: string, mission: Mission): Evaluation
   const hasStepByStep = /step by step|let's think|first.*then|1\.|2\./i.test(trimmed);
   const hasExamples = /example:|for instance|e\.g\./i.test(trimmed);
 
+  // Mission-specific keyword bonus
+  const missionKeywords = mission.evaluationKeywords ?? [];
+  const promptLower = trimmed.toLowerCase();
+  const keywordMatches = missionKeywords.filter(kw => promptLower.includes(kw.toLowerCase())).length;
+  const keywordBonus = Math.min(keywordMatches * 8, 24);
+
   const creativity = clamp(40 + (wordCount > 50 ? 20 : 0) + (hasExamples ? 20 : 0) + (wordCount > 100 ? 20 : 0));
-  const precision = clamp(30 + (hasOutputFormat ? 30 : 0) + (wordCount > 30 ? 20 : 0) + (hasContext ? 20 : 0));
+  const precision = clamp(30 + (hasOutputFormat ? 30 : 0) + (wordCount > 30 ? 20 : 0) + (hasContext ? 20 : 0) + keywordBonus);
   const context = clamp(20 + (hasContext ? 40 : 0) + (hasRolePrompt ? 25 : 0) + (wordCount > 40 ? 15 : 0));
   const structure = clamp(30 + (hasStepByStep ? 30 : 0) + (hasOutputFormat ? 20 : 0) + (wordCount > 60 ? 20 : 0));
-  const promptEngineering = clamp(20 + (hasRolePrompt ? 20 : 0) + (hasContext ? 15 : 0) + (hasOutputFormat ? 15 : 0) + (hasStepByStep ? 15 : 0) + (hasExamples ? 15 : 0));
+  const promptEngineering = clamp(20 + (hasRolePrompt ? 20 : 0) + (hasContext ? 15 : 0) + (hasOutputFormat ? 15 : 0) + (hasStepByStep ? 15 : 0) + (hasExamples ? 15 : 0) + keywordBonus);
 
   const total = Math.round((creativity + precision + context + structure + promptEngineering) / 5);
 

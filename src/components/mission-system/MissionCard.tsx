@@ -8,7 +8,7 @@ import type { Mission } from '@/types';
 const CATEGORY_COLORS: Record<string, string> = {
   'prompt-basics':      'bg-blue-100/80 text-blue-800 border-blue-300 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/30',
   'context-crafting':   'bg-purple-100/80 text-purple-800 border-purple-300 dark:bg-purple-500/20 dark:text-purple-300 dark:border-purple-500/30',
-  'chain-of-thought':   'bg-amber-100/80 text-amber-900 border-amber-400 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30',
+  'chain-of-thought':   'bg-amber-100/80 text-amber-900 border-amber-400 dark:bg-amber-500/20 dark:text-amber-300 dark:border-indigo-400/30',
   'role-prompting':     'bg-emerald-100/80 text-emerald-800 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30',
   'few-shot':           'bg-rose-100/80 text-rose-800 border-rose-300 dark:bg-pink-500/20 dark:text-pink-300 dark:border-pink-500/30',
   'output-formatting':  'bg-teal-100/80 text-teal-800 border-teal-300 dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-500/30',
@@ -65,11 +65,11 @@ export function MissionCard({ onAccept }: MissionCardProps) {
 
   if (loading) {
     return (
-      <div className="w-full rounded-sm border-2 border-amber-800/20 bg-[#faf7f0] dark:border-white/10 dark:bg-white/5 p-6 space-y-3 animate-pulse">
-        <div className="h-4 w-24 bg-amber-200/50 dark:bg-white/10 rounded" />
-        <div className="h-6 w-3/4 bg-amber-200/50 dark:bg-white/10 rounded" />
-        <div className="h-16 w-full bg-amber-200/50 dark:bg-white/10 rounded" />
-        <div className="h-10 w-full bg-amber-200/50 dark:bg-white/10 rounded-xl" />
+      <div className="w-full rounded-sm border-2 border-amber-800/20 bg-[#faf7f0] dark:border-indigo-500/20 dark:bg-indigo-900/30 p-6 space-y-3 animate-pulse">
+        <div className="h-4 w-24 bg-amber-200/50 dark:bg-indigo-800/40 rounded" />
+        <div className="h-6 w-3/4 bg-amber-200/50 dark:bg-indigo-800/40 rounded" />
+        <div className="h-16 w-full bg-amber-200/50 dark:bg-indigo-800/40 rounded" />
+        <div className="h-10 w-full bg-amber-200/50 dark:bg-indigo-800/40 rounded-xl" />
       </div>
     );
   }
@@ -89,10 +89,10 @@ export function MissionCard({ onAccept }: MissionCardProps) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full rounded-sm border-2 border-amber-800/30 dark:border-amber-600/20 bg-[#faf7f0] dark:bg-slate-800/60 p-5 sm:p-6 shadow-[2px_4px_12px_rgba(101,67,33,0.15)] dark:shadow-xl space-y-4 relative"
+      className="w-full rounded-sm border-2 border-amber-800/30 dark:border-indigo-500/30 bg-[#faf7f0] dark:bg-slate-900/80 p-5 sm:p-6 shadow-[2px_4px_12px_rgba(101,67,33,0.15)] dark:shadow-xl space-y-4 relative"
     >
-      <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-amber-700/40 dark:border-amber-500/30 rounded-tl-sm" />
-      <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-700/40 dark:border-amber-500/30 rounded-br-sm" />
+      <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-amber-700/40 dark:border-indigo-400/30 rounded-tl-sm" />
+      <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-700/40 dark:border-indigo-400/30 rounded-br-sm" />
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className={`text-xs uppercase tracking-widest font-semibold px-2.5 py-1 rounded-full border ${badgeClass}`}>
@@ -102,29 +102,29 @@ export function MissionCard({ onAccept }: MissionCardProps) {
       </div>
 
       {/* Title */}
-      <h2 className="text-lg sm:text-xl font-bold text-amber-900 dark:text-amber-300 leading-snug font-serif">
+      <h2 className="text-lg sm:text-xl font-bold text-amber-900 dark:text-indigo-100 leading-snug font-serif">
         {getQuestEmoji(mission)} {mission.title}
       </h2>
 
       {/* Narrative */}
-      <p className="text-sm text-stone-600 dark:text-slate-400 italic leading-relaxed">
+      <p className="text-sm text-stone-600 dark:text-indigo-200/80 italic leading-relaxed">
         {mission.narrativeDescription}
       </p>
 
       {/* Task box */}
-      <div className="rounded-sm bg-amber-50/80 dark:bg-white/5 border border-amber-200/60 dark:border-white/10 p-3 sm:p-4">
-        <p className="text-sm text-stone-700 dark:text-slate-200 leading-relaxed">{mission.task}</p>
+      <div className="rounded-sm bg-amber-50/80 dark:bg-indigo-900/30 border border-amber-200/60 dark:border-indigo-500/20 p-3 sm:p-4">
+        <p className="text-sm text-stone-700 dark:text-indigo-100 leading-relaxed">{mission.task}</p>
       </div>
 
       {/* Hints */}
       {mission.hints && mission.hints.length > 0 && (
         <details className="group">
-          <summary className="text-xs text-amber-800/70 dark:text-slate-500 cursor-pointer hover:text-amber-900 dark:hover:text-slate-300 transition-colors select-none">
+          <summary className="text-xs text-amber-800/70 dark:text-indigo-300/60 cursor-pointer hover:text-amber-900 dark:hover:text-indigo-200 transition-colors select-none">
             Show hints ({mission.hints.length})
           </summary>
-          <ul className="mt-2 space-y-1 pl-3 border-l border-amber-300/50 dark:border-white/10">
+          <ul className="mt-2 space-y-1 pl-3 border-l border-amber-300/50 dark:border-indigo-500/20">
             {mission.hints.map((h, i) => (
-              <li key={i} className="text-xs text-stone-600 dark:text-slate-400 break-words">— {h}</li>
+              <li key={i} className="text-xs text-stone-600 dark:text-indigo-200/70 break-words">— {h}</li>
             ))}
           </ul>
         </details>

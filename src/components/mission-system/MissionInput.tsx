@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
 import type { EvaluationResult } from '@/types';
 
 const MAX_CHARS = 500;
@@ -60,20 +59,10 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
             onChange={(e) => setPrompt(e.target.value.slice(0, MAX_CHARS))}
             placeholder="Craft your prompt here, adventurer..."
             rows={5}
-            className="
-              w-full min-h-[120px] rounded-xl border
-              bg-white dark:bg-slate-800/80
-              text-slate-900 dark:text-slate-100
-              placeholder-slate-400 dark:placeholder-slate-500
-              border-slate-200 dark:border-white/10
-              p-3 sm:p-4 text-sm resize-y
-              focus:outline-none focus:ring-2 focus:ring-amber-500/50
-              focus:border-amber-400 dark:focus:border-amber-500/40
-              transition-all duration-200
-            "
+            className="w-full min-h-[120px] rounded-sm border-2 bg-[#faf7f0] dark:bg-indigo-950/60 text-stone-800 dark:text-indigo-100 placeholder-stone-400 dark:placeholder-indigo-300/40 border-amber-300/60 dark:border-indigo-500/30 p-3 sm:p-4 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400/40 dark:focus:ring-indigo-500/40 focus:border-amber-500 dark:focus:border-indigo-400 transition-all duration-200"
           />
           {/* Char counter */}
-          <span className={`absolute bottom-3 right-3 text-xs ${charCount > MAX_CHARS * 0.9 ? 'text-amber-500' : 'text-slate-400 dark:text-slate-600'}`}>
+          <span className={`absolute bottom-3 right-3 text-xs ${charCount > MAX_CHARS * 0.9 ? 'text-amber-500' : 'text-stone-400 dark:text-indigo-400/50'}`}>
             {charCount}/{MAX_CHARS}
           </span>
         </div>
@@ -116,25 +105,24 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
           )}
         </AnimatePresence>
 
-        <Button
+        <button
           onClick={handleSubmit}
           disabled={!isValid || submitting}
-          variant="primary"
-          className="w-full min-h-[44px] text-sm sm:text-base"
+          className="w-full min-h-[44px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 dark:bg-indigo-700 dark:hover:bg-indigo-600 dark:active:bg-indigo-800 text-amber-50 dark:text-indigo-50 font-semibold text-sm sm:text-base border border-amber-600 dark:border-indigo-500 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] dark:shadow-[1px_2px_8px_rgba(67,56,202,0.3)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <motion.span
                 animate={{ rotate: 360 }}
                 transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                className="inline-block w-4 h-4 border-2 border-amber-200/30 dark:border-indigo-200/30 border-t-amber-100 dark:border-t-indigo-100 rounded-full"
               />
               Evaluating...
             </span>
           ) : (
             'Submit Prompt'
           )}
-        </Button>
+        </button>
       </motion.div>
     </AnimatePresence>
   );

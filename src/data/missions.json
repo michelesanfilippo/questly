@@ -16,7 +16,8 @@
       "Start with 'You are...'",
       "Specify the audience explicitly",
       "Request a concrete analogy"
-    ]
+    ],
+    "evaluationKeywords": ["role", "audience", "tone", "you are", "output format", "analogy"]
   },
   {
     "id": "quest-002",
@@ -35,7 +36,8 @@
       "Use 'Let's think step by step'",
       "Ask for numbered reasoning",
       "Separate final answer explicitly"
-    ]
+    ],
+    "evaluationKeywords": ["step by step", "reasoning", "let's think", "first", "then", "because"]
   },
   {
     "id": "quest-003",
@@ -54,7 +56,8 @@
       "Provide an example JSON schema",
       "Use triple backticks for code block request",
       "Specify strict field names"
-    ]
+    ],
+    "evaluationKeywords": ["json", "fields", "extract", "structured", "return", "format"]
   },
   {
     "id": "quest-004",
@@ -73,7 +76,8 @@
       "Show input → output pairs",
       "Keep format consistent across examples",
       "Use clear delimiters"
-    ]
+    ],
+    "evaluationKeywords": ["example", "input", "output", "classify", "sentiment", "label"]
   },
   {
     "id": "quest-005",
@@ -92,7 +96,8 @@
       "Define the code snippet inline",
       "Request numbered issues",
       "Ask for before/after code comparison"
-    ]
+    ],
+    "evaluationKeywords": ["you are", "senior", "architect", "review", "issues", "refactor"]
   },
   {
     "id": "quest-006",
@@ -112,7 +117,8 @@
       "Use XML tags for context sections",
       "Define tools as a JSON schema",
       "Specify failure behavior explicitly"
-    ]
+    ],
+    "evaluationKeywords": ["persona", "context", "tool", "steps", "agent", "constraint", "output"]
   },
   {
     "id": "quest-007",
@@ -132,7 +138,8 @@
       "Define the evaluation criteria explicitly",
       "Request a markdown table for comparison",
       "Include a winner recommendation with reasoning"
-    ]
+    ],
+    "evaluationKeywords": ["evaluate", "criteria", "ranked", "comparison", "generate", "prompts"]
   },
   {
     "id": "quest-008",
@@ -151,7 +158,8 @@
       "Define backstory in a dedicated section",
       "Include sample dialogue turns",
       "Ask AI to stay in character explicitly"
-    ]
+    ],
+    "evaluationKeywords": ["backstory", "persona", "character", "in character", "consistent", "conversation"]
   },
   {
     "id": "quest-009",

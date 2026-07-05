@@ -15,6 +15,9 @@
   --color-parchment: #faf7f0;
   --color-parchment-dark: #f0ead6;
   --color-ink: #3d2b1f;
+  --color-night-blue: #060b1a;
+  --color-night-mid: #0f172a;
+  --color-night-accent: #312e81;
 }
 
 :root {
@@ -23,8 +26,8 @@
 }
 
 .dark {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #060b1a;
+  --foreground: #e0e7ff;
 }
 
 html {
