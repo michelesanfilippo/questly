@@ -42,9 +42,10 @@ function getQuestEmoji(mission: Mission): string {
 
 interface MissionCardProps {
   onAccept?: (mission: Mission) => void;
+  disabled?: boolean;
 }
 
-export function MissionCard({ onAccept }: MissionCardProps) {
+export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
   const [mission, setMission] = useState<Mission | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -134,7 +135,15 @@ export function MissionCard({ onAccept }: MissionCardProps) {
       <AnimatePresence mode="wait">
         {!accepted ? (
           <motion.div key="btn" exit={{ opacity: 0, scale: 0.95 }}>
-            <button onClick={handleAccept} className="block w-3/4 mx-auto min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-xs sm:text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150">
+            <button
+              onClick={disabled ? undefined : handleAccept}
+              disabled={disabled}
+              className={`block w-3/4 mx-auto min-h-[38px] rounded-sm font-semibold text-xs sm:text-sm border transition-all duration-150 ${
+                disabled
+                  ? 'bg-stone-300 dark:bg-slate-700 text-stone-400 dark:text-slate-500 border-stone-300 dark:border-slate-600 cursor-not-allowed opacity-60'
+                  : 'bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)]'
+              }`}
+            >
               Accept Mission
             </button>
           </motion.div>

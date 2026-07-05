@@ -142,9 +142,9 @@ export default function HomePage() {
       )}
       {!loading && (
         <>
-          <MissionCard onAccept={!missionAlreadyDone ? handleAccept : undefined} />
+          <MissionCard onAccept={handleAccept} disabled={missionAlreadyDone} />
           {missionAlreadyDone && !evaluation && (
-            <p className="text-center text-sm text-amber-700 dark:text-amber-400 italic py-2">
+            <p className="text-center text-base font-medium text-emerald-600 dark:text-emerald-400 py-2">
               You have already completed today&apos;s mission. Come back tomorrow!
             </p>
           )}
