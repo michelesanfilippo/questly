@@ -10,6 +10,7 @@ import { getProfile, getUserBadges, updateProfileXP, awardBadge, getNpcProgress,
 import { checkNewBadges, addXPToProfile } from '@/lib/badges';
 import type { NpcProgress } from '@/types';
 import { LoginModal } from '@/components/auth/LoginModal';
+import { RegisterModal } from '@/components/auth/RegisterModal';
 import { NicknameSetup } from '@/components/auth/NicknameSetup';
 import { UserCard } from '@/components/profile/UserCard';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
@@ -31,6 +32,7 @@ export default function HomePage() {
   const [earnedBadges, setEarnedBadges] = useState<number[]>([]);
   const [npcProgress, setNpcProgress] = useState<NpcProgress[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showNicknameSetup, setShowNicknameSetup] = useState(false);
   const [missionAlreadyDone, setMissionAlreadyDone] = useState(false);
   const [badgePopupQueue, setBadgePopupQueue] = useState<number[]>([]);
@@ -201,7 +203,18 @@ export default function HomePage() {
   return (
     <>
       {showLoginModal && (
-        <LoginModal isOpen onClose={() => setShowLoginModal(false)} />
+        <LoginModal
+          isOpen
+          onClose={() => setShowLoginModal(false)}
+          onOpenRegister={() => setShowRegisterModal(true)}
+        />
+      )}
+      {showRegisterModal && (
+        <RegisterModal
+          isOpen
+          onClose={() => setShowRegisterModal(false)}
+          onBackToLogin={() => setShowLoginModal(true)}
+        />
       )}
       {currentBadgePopup !== null && profile && (() => {
         const def = BADGE_DEFINITIONS.find(b => b.index === currentBadgePopup);
