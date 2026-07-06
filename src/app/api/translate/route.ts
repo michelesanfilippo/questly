@@ -51,10 +51,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
             { role: 'user', content: text },
           ],
-          max_tokens: 600,
+          max_tokens: 2048,
           temperature: 0.2,
         }),
-        signal: AbortSignal.timeout(12000),
+        signal: AbortSignal.timeout(20000),
       }
     );
 

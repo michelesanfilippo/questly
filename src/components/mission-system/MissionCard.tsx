@@ -140,8 +140,8 @@ export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
           </ul>
         </details>
         ) : <div className="flex-1" />}
-        <span className="text-[10px] text-amber-800/60 hover:text-amber-900 transition-colors select-none text-right shrink-0 max-w-[140px] leading-snug">
-          🌐 {t('mission.write_language')}
+        <span className="text-[11px] text-amber-800/60 hover:text-amber-900 transition-colors select-none text-right shrink-0 leading-tight">
+          🧙 {t('mission.write_language')}
         </span>
       </div>
 
