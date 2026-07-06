@@ -275,7 +275,7 @@ export default function HomePage() {
             className="flex items-center gap-1.5 text-[10px] text-amber-700/60 dark:text-amber-600/50 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
           >
             ☕
-            Support Questly on Buy Me a Coffee
+            Enjoying Questly? Support us with a coffee and help us create new magical features
           </a>
         </footer>
       </main>
