@@ -1,15 +1,26 @@
 'use client';
 import { supabase } from './supabase';
 
+function oauthRedirect() {
+  return typeof window !== 'undefined' ? window.location.origin + '/auth/callback' : '';
+}
+
 export async function signInWithGoogle() {
-  return supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo:
-        typeof window !== 'undefined'
-          ? window.location.origin + '/auth/callback'
-          : '',
-    },
+  return supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: oauthRedirect() } });
+}
+
+export async function signInWithGitHub() {
+  return supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: oauthRedirect() } });
+}
+
+export async function signInWithDiscord() {
+  return supabase.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: oauthRedirect() } });
+}
+
+export async function signInWithEmail(email: string) {
+  return supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: oauthRedirect() },
   });
 }
 
