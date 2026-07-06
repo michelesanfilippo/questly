@@ -10,14 +10,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://questly-realm.vercel.app'),
-  title: 'Questly - Learn to prompt.',
+  title: 'Questly - Fantasy prompt',
   description: 'A fantasy gamified platform for learning prompt engineering and GenAI through daily missions.',
   icons: {
     icon: '/images/questly-removebg-preview.png',
     apple: '/images/questly-removebg-preview.png',
   },
   openGraph: {
-    title: 'Questly - Learn to prompt.',
+    title: 'Questly - Fantasy prompt',
     description: 'Learn prompt engineering through daily fantasy missions.',
     type: 'website',
     url: 'https://questly-realm.vercel.app',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Questly - Learn to prompt.',
+    title: 'Questly - Fantasy prompt',
     description: 'Learn prompt engineering through daily fantasy missions.',
     images: ['https://questly-realm.vercel.app/images/day-uw.png'],
   },
@@ -58,3 +58,4 @@ export default function RootLayout({
     </html>
   );
 }
+
