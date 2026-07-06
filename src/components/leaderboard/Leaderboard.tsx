@@ -207,8 +207,8 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
                             <Image
                               src={getBadgeImagePath(entry.profile_badge_index)}
                               alt=""
-                              width={80}
-                              height={80}
+                              width={120}
+                              height={120}
                               className="rounded-full shadow-[0_0_16px_rgba(217,119,6,0.5)] border-2 border-amber-300/60"
                             />
                             <div className="mt-1 px-2 py-0.5 bg-[#faf7f0] dark:bg-slate-800 border border-amber-300/40 dark:border-indigo-500/30 rounded text-xs text-amber-900 dark:text-indigo-100 font-medium whitespace-nowrap shadow">
@@ -243,3 +243,4 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
     </div>
   );
 }
+
