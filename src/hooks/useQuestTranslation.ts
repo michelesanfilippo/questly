@@ -13,9 +13,10 @@ interface TranslatedQuest {
 
 const CACHE_TTL_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
 const CACHE_PREFIX = 'qt_';
+const CACHE_VERSION = 'v2'; // bump to invalidate all cached translations
 
 function cacheKey(missionId: string, locale: string) {
-  return `${CACHE_PREFIX}${missionId}_${locale}`;
+  return `${CACHE_PREFIX}${CACHE_VERSION}_${missionId}_${locale}`;
 }
 
 function purgeStaleCache() {
