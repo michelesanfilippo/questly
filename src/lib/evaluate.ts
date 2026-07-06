@@ -65,9 +65,14 @@ Evaluate this prompt and respond with JSON only.`;
       }
     );
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('[CF AI] HTTP', res.status, errText);
+      return null;
+    }
 
     const data = await res.json() as CFResponse;
+    console.log('[CF AI] raw response:', JSON.stringify(data).slice(0, 300));
     const raw = data?.result?.response?.trim();
     if (!raw) return null;
 
