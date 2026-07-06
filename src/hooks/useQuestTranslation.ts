@@ -7,10 +7,34 @@ interface TranslatedQuest {
   narrativeDescription: string;
   task: string;
   hints?: string[];
+  cachedAt: number; // unix ms
 }
 
+const CACHE_TTL_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
+const CACHE_PREFIX = 'qt_';
+
 function cacheKey(missionId: string, locale: string) {
-  return `qt_${missionId}_${locale}`;
+  return `${CACHE_PREFIX}${missionId}_${locale}`;
+}
+
+function purgeStaleCache() {
+  try {
+    const now = Date.now();
+    const toRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith(CACHE_PREFIX)) continue;
+      try {
+        const entry = JSON.parse(localStorage.getItem(key) ?? '{}') as Partial<TranslatedQuest>;
+        if (!entry.cachedAt || now - entry.cachedAt > CACHE_TTL_MS) {
+          toRemove.push(key);
+        }
+      } catch {
+        toRemove.push(key!);
+      }
+    }
+    toRemove.forEach(k => localStorage.removeItem(k));
+  } catch { /* ignore */ }
 }
 
 async function translateField(text: string, targetLocale: string): Promise<string> {
@@ -28,6 +52,9 @@ export function useQuestTranslation(mission: Mission | null, locale: string) {
   const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
+    // Purge stale entries on every locale change
+    purgeStaleCache();
+
     if (!mission || locale === 'en') {
       setTranslated(null);
       return;
@@ -35,12 +62,17 @@ export function useQuestTranslation(mission: Mission | null, locale: string) {
 
     const key = cacheKey(mission.id, locale);
 
-    // Check localStorage cache first
+    // Check localStorage cache
     try {
-      const cached = localStorage.getItem(key);
-      if (cached) {
-        setTranslated(JSON.parse(cached) as TranslatedQuest);
-        return;
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const entry = JSON.parse(raw) as TranslatedQuest;
+        // Double-check TTL (in case purge ran before this mount)
+        if (Date.now() - (entry.cachedAt ?? 0) <= CACHE_TTL_MS) {
+          setTranslated(entry);
+          return;
+        }
+        localStorage.removeItem(key);
       }
     } catch { /* ignore */ }
 
@@ -63,12 +95,12 @@ export function useQuestTranslation(mission: Mission | null, locale: string) {
           narrativeDescription,
           task,
           hints: mission.hints ? translatedHints : undefined,
+          cachedAt: Date.now(),
         };
 
-        // Cache in localStorage
         try {
-          localStorage.setItem(cacheKey(mission.id, locale), JSON.stringify(result));
-        } catch { /* storage full, ignore */ }
+          localStorage.setItem(key, JSON.stringify(result));
+        } catch { /* storage full */ }
 
         setTranslated(result);
       } catch {
