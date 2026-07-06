@@ -1,6 +1,6 @@
 # Questly — Fantasy Prompt Engineering Platform
 
-> Learn prompt engineering through daily fantasy missions, evaluated by AI.
+> Learn prompt engineering through daily fantasy missions.
 
 <p align="center">
   <img src="public/images/questly-removebg-preview.png" width="300px" height="300px" alt="Questly" />
@@ -16,7 +16,7 @@
 
 Questly is a gamified web platform that teaches **prompt engineering** and **GenAI** skills through immersive daily missions set in a fantasy world. Each day, a new mission challenges you to craft the perfect prompt — the AI evaluates your work across 5 dimensions and awards XP.
 
-Sign in with **Google** to unlock your persistent profile, earn badges, track your XP and level, and compete on the global leaderboard — powered by **Supabase**.
+Sign in with **Google** to unlock your persistent profile, earn badges, track your XP and level, and compete on the global leaderboard — powered by **Supabase** — evaluated by **Cloudflare**.
 
 | | |
 |---|---|
@@ -25,15 +25,15 @@ Sign in with **Google** to unlock your persistent profile, earn badges, track yo
 | **Animations** | Framer Motion 11 |
 | **Auth** | Supabase + Google OAuth |
 | **Database** | Supabase PostgreSQL |
-| **AI Evaluation** | Mock (Gemini / Cloudflare AI ready) |
-| **Missions** | 365 daily missions (difficulty 1–5 stars) |
+| **AI Evaluation** | Cloudflare AI |
+| **Missions** | Custom quests generated (difficulty 1–5 stars) |
 
 ---
 
 ## Features
 
 ### Fantasy World
-- Illustrated village that transforms between **dawn** (light mode) and **night** (dark mode).
+- Illustrated village that transforms between **dawn** (light mode) and **night** (dark mode — to be **in progress**).
 
 ### Daily Mission System
 - One mission per day — deterministic rotation, same for all users
@@ -54,7 +54,7 @@ Sign in with **Google** to unlock your persistent profile, earn badges, track yo
 - Trophies system (first mission, week streak, arcane engineer, mythic builder...)
 - Badge system: Apprentice → Prompt Knight → Arcane Engineer → Mythic Builder
 - World unlock system: village evolves with your progress
-- Leaderboard (mock top-10)
+- Leaderboard
 
 ---
 
@@ -63,7 +63,7 @@ Sign in with **Google** to unlock your persistent profile, earn badges, track yo
 ```
 src/
 ├── app/
-│   ├── page.tsx              # Main page (50/50 village + mission)
+│   ├── page.tsx              # Main page
 │   ├── layout.tsx            # Root layout + theme init
 │   ├── globals.css           # Tailwind + custom CSS vars
 │   └── api/
@@ -78,32 +78,16 @@ src/
 │   └── leaderboard/          # Leaderboard component
 ├── lib/
 │   ├── daily-mission.ts      # Deterministic daily rotation
-│   ├── evaluate.ts           # Mock AI scorer (5 heuristic dimensions)
+│   ├── evaluate.ts           # Cloudflare
 │   ├── missions.ts           # Mission accessors
-│   ├── auth.ts               # localStorage profile management
+│   ├── auth.ts               # Supabase
 │   ├── progression.ts        # XP, level, trophy engine
 │   ├── badges.ts             # Badge system
 │   └── worldUnlocks.ts       # Village unlock logic
 ├── data/
-│   └── missions.json         # 365 fantasy missions
+│   └── missions.json         # missions
 └── types/
     └── index.ts              # TypeScript interfaces
-```
-
----
-
-## Upgrading AI Evaluation
-
-The mock evaluator in `src/lib/evaluate.ts` is designed for a single-function swap:
-
-```typescript
-// Replace the mock with Gemini:
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-export async function evaluatePrompt(userPrompt: string, mission: Mission): Promise<EvaluationResult> {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-  // ... call Gemini, parse response into EvaluationResult shape
-}
 ```
 
 ---
@@ -113,11 +97,11 @@ export async function evaluatePrompt(userPrompt: string, mission: Mission): Prom
 | Phase | Feature | Status |
 |---|---|---|
 | MVP | Daily missions + AI evaluation | Done |
-| Post-MVP | Auth + profile + progression + trophies | In Progress |
-| v2 | Real database (Supabase / PlanetScale) | Planned |
-| v2 | Google / Microsoft / Apple OAuth | Planned |
-| v2 | Gemini API evaluation | Planned |
-| v3 | Social leaderboard + friends | Planned |
+| Post-MVP | Auth + profile + progression + trophies | Done |
+| v2 | Real database (Supabase / PlanetScale) | Done |
+| v2 | Google / Microsoft / Apple OAuth | In progress **only Google atm** |
+| v2 | Cloudflare API evaluation | Done |
+| v3 | Social leaderboard + friends | In progress |
 | v3 | Mission creation by community | Planned |
 
 ---
