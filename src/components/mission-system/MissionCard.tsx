@@ -111,20 +111,36 @@ export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
         {getQuestEmoji(mission)} {translated?.title ?? mission.title}
       </h2>
 
-      {/* Narrative */}
-      <p className="text-sm text-stone-600 italic leading-relaxed relative">
-        {translating && (
-          <span className="absolute -top-1 right-0 text-xs text-amber-600/60 animate-pulse">translating...</span>
-        )}
-        {translated?.narrativeDescription ?? mission.narrativeDescription}
-      </p>
-
-      {/* Task box */}
-      <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-3 sm:p-4">
-        <p className="text-sm text-stone-700 leading-relaxed">
-          {translated?.task ?? mission.task}
-        </p>
-      </div>
+      {/* Narrative + Task — hidden while translating, replaced by wizard animation */}
+      {translating ? (
+        <div className="flex flex-col items-center justify-center py-6 gap-3">
+          <motion.div
+            animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+            className="text-4xl select-none"
+          >
+            🧙
+          </motion.div>
+          <motion.p
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="text-xs text-amber-700/70 font-serif italic"
+          >
+            The wizards are at work...
+          </motion.p>
+        </div>
+      ) : (
+        <>
+          <p className="text-sm text-stone-600 italic leading-relaxed">
+            {translated?.narrativeDescription ?? mission.narrativeDescription}
+          </p>
+          <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-3 sm:p-4">
+            <p className="text-sm text-stone-700 leading-relaxed">
+              {translated?.task ?? mission.task}
+            </p>
+          </div>
+        </>
+      )}
 
       {/* Hints + multilingual tip */}
       <div className="flex items-start justify-between gap-2">
