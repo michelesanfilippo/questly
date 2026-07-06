@@ -26,7 +26,7 @@ Sign in with **Google** to unlock your persistent profile, earn badges, track yo
 | **Auth** | Supabase + Google OAuth |
 | **Database** | Supabase PostgreSQL |
 | **AI Evaluation** | Cloudflare AI |
-| **Missions** | Custom quests generated (difficulty 1–5 stars) |
+| **Missions** | Custom quests generated (difficulty 1–5 stars) based on npcs |
 
 ---
 
