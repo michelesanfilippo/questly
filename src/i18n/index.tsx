@@ -35,9 +35,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 }
 export function useI18n() { return useContext(Ctx); }
 export const LOCALES: { code: Locale; label: string; flag: string }[] = [
-  { code: 'en', label: 'EN', flag: '🇬🇧' },
-  { code: 'it', label: 'IT', flag: '🇮🇹' },
-  { code: 'fr', label: 'FR', flag: '🇫🇷' },
-  { code: 'es', label: 'ES', flag: '🇪🇸' },
-  { code: 'de', label: 'DE', flag: '🇩🇪' },
+  { code: 'en', label: 'EN', flag: 'gb' },
+  { code: 'it', label: 'IT', flag: 'it' },
+  { code: 'fr', label: 'FR', flag: 'fr' },
+  { code: 'es', label: 'ES', flag: 'es' },
+  { code: 'de', label: 'DE', flag: 'de' },
 ];
