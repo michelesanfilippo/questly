@@ -267,12 +267,12 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-        <footer className="py-3 px-4 flex justify-center bg-[#faf7f0] dark:bg-[#060b1a] border-t border-amber-800/10 dark:border-indigo-500/10">
+        <footer className="py-2 px-4 flex justify-center bg-[#faf7f0] dark:bg-[#060b1a] border-t border-amber-800/10 dark:border-indigo-500/10">
           <a
             href="https://buymeacoffee.com/michelesanc"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-xs text-stone-400 dark:text-indigo-400/50 hover:text-amber-700 dark:hover:text-indigo-300 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] text-stone-300 dark:text-indigo-500/40 hover:text-amber-600 dark:hover:text-indigo-300 transition-colors"
           >
             ☕
             Support Questly on Buy Me a Coffee
