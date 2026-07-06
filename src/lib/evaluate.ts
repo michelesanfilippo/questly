@@ -7,6 +7,7 @@ const CF_MODEL = '@cf/meta/llama-3.1-8b-instruct';
 interface CFResponse {
   result?: {
     response?: string;
+    choices?: { message?: { content?: string } }[];
   };
 }
 
@@ -65,15 +66,14 @@ Evaluate this prompt and respond with JSON only.`;
       }
     );
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('[CF AI] HTTP', res.status, errText);
-      return null;
-    }
+    if (!res.ok) return null;
 
     const data = await res.json() as CFResponse;
-    console.log('[CF AI] raw response:', JSON.stringify(data).slice(0, 300));
-    const raw = data?.result?.response?.trim();
+    // Support both response formats
+    const raw = (
+      data?.result?.choices?.[0]?.message?.content ??
+      data?.result?.response
+    )?.trim();
     if (!raw) return null;
 
     // Extract JSON from response (model might add extra text)
