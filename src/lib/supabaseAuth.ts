@@ -71,6 +71,14 @@ export async function updateProfileXP(
     .eq('id', userId);
 }
 
+export async function getNpcProgress(userId: string) {
+  return supabase.from('quest_npc_progress').select('*').eq('user_id', userId);
+}
+
+export async function incrementNpcProgress(userId: string, npcSource: string) {
+  return supabase.rpc('increment_npc_progress', { p_user_id: userId, p_npc_source: npcSource });
+}
+
 export async function setProfileBadge(userId: string, badgeIndex: number | null) {
   return supabase.from('profiles').update({ profile_badge_index: badgeIndex }).eq('id', userId);
 }

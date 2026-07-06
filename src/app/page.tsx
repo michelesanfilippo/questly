@@ -6,8 +6,9 @@ import { MissionCard } from '@/components/mission-system/MissionCard';
 import { MissionInput } from '@/components/mission-system/MissionInput';
 import { EvaluationResult } from '@/components/mission-system/EvaluationResult';
 import { supabase } from '@/lib/supabase';
-import { getProfile, getUserBadges, updateProfileXP, awardBadge } from '@/lib/supabaseAuth';
+import { getProfile, getUserBadges, updateProfileXP, awardBadge, getNpcProgress, incrementNpcProgress } from '@/lib/supabaseAuth';
 import { checkNewBadges, addXPToProfile } from '@/lib/badges';
+import type { NpcProgress } from '@/types';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { NicknameSetup } from '@/components/auth/NicknameSetup';
 import { UserCard } from '@/components/profile/UserCard';
@@ -28,6 +29,7 @@ export default function HomePage() {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<SupabaseProfile | null>(null);
   const [earnedBadges, setEarnedBadges] = useState<number[]>([]);
+  const [npcProgress, setNpcProgress] = useState<NpcProgress[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showNicknameSetup, setShowNicknameSetup] = useState(false);
   const [missionAlreadyDone, setMissionAlreadyDone] = useState(false);
@@ -85,12 +87,15 @@ export default function HomePage() {
           });
           const { data: badges } = await getUserBadges(session.user.id);
           setEarnedBadges(badges?.map((b: { badge_index: number }) => b.badge_index) ?? []);
+          const { data: npc } = await getNpcProgress(session.user.id);
+          setNpcProgress((npc as NpcProgress[]) ?? []);
         } else {
           setShowNicknameSetup(true);
         }
       } else {
         setProfile(null);
         setEarnedBadges([]);
+        setNpcProgress([]);
       }
     });
     return () => subscription.unsubscribe();
@@ -120,10 +125,21 @@ export default function HomePage() {
       };
       await updateProfileXP(profile!.id, newXP, newLevel, newMissions, mission?.id, today, diffCounters);
       setMissionAlreadyDone(true);
+      // Increment NPC progress
+      const npcSource = mission?.npcSource;
+      if (npcSource) await incrementNpcProgress(profile!.id, npcSource);
+      // Updated NPC progress for badge check
+      const updatedNpc: NpcProgress[] = npcSource
+        ? npcProgress.map(p => p.npc_source === npcSource ? { ...p, quest_count: p.quest_count + 1 } : p)
+        : [...npcProgress];
+      if (npcSource && !npcProgress.find(p => p.npc_source === npcSource)) {
+        updatedNpc.push({ user_id: profile!.id, npc_source: npcSource, quest_count: 1, last_updated: today });
+      }
+      setNpcProgress(updatedNpc);
       const updatedProfileForCheck = { ...profile!, xp: newXP, level: newLevel, missions_completed: newMissions, ...diffCounters };
       const newBadges = checkNewBadges(
         updatedProfileForCheck,
-        { scores: evaluation!.scores },
+        { scores: evaluation!.scores, missionDifficulty: diff, npcProgress: updatedNpc },
         earnedBadges
       );
       for (const idx of newBadges) {

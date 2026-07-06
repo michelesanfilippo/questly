@@ -22,6 +22,14 @@ export interface Mission {
   weekendOnly: boolean;
   hints?: string[];
   evaluationKeywords?: string[];
+  npcSource?: string;
+}
+
+export interface NpcProgress {
+  user_id: string;
+  npc_source: string;
+  quest_count: number;
+  last_updated: string;
 }
 
 export interface EvaluateRequest {
