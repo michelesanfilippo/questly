@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { I18nProvider } from '@/i18n';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -33,18 +34,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Theme init: runs before paint to prevent flash */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('questly-theme');if(t==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark');localStorage.setItem('questly-theme','light')}}catch(e){}})()`,
-          }}
-        />
-      </head>
-      <body className={`${inter.variable} antialiased bg-[#faf7f0] text-slate-900 dark:bg-[#060b1a] dark:text-slate-100 overflow-x-hidden`}>
-        {/* Future: wrap with AuthProvider */}
-        {children}
+    <html lang="en">
+      <body className={`${inter.variable} antialiased bg-[#faf7f0] text-slate-900 overflow-x-hidden`}>
+        <I18nProvider>{children}</I18nProvider>
       </body>
     </html>
   );

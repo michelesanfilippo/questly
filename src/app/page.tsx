@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useI18n } from '@/i18n';
 import { VillageScene } from '@/components/fantasy-world/VillageScene';
 import { MissionCard } from '@/components/mission-system/MissionCard';
 import { MissionInput } from '@/components/mission-system/MissionInput';
@@ -21,6 +22,7 @@ import type { SupabaseProfile } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 
 export default function HomePage() {
+  const { t } = useI18n();
   const [mission, setMission] = useState<Mission | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [evaluation, setEvaluation] = useState<EvalResultType | null>(null);
@@ -176,8 +178,8 @@ export default function HomePage() {
   const missionFlow = (
     <>
       {loading && (
-        <p className="text-amber-600 dark:text-amber-400 animate-pulse text-sm text-center mt-8">
-          Loading your daily mission...
+        <p className="text-amber-600 animate-pulse text-sm text-center mt-8">
+          {t('mission.loading')}
         </p>
       )}
       {error && !loading && (
@@ -187,8 +189,8 @@ export default function HomePage() {
         <>
           <MissionCard onAccept={handleAccept} disabled={missionAlreadyDone} />
           {missionAlreadyDone && !evaluation && (
-            <p className="text-center text-base font-medium text-emerald-600 dark:text-emerald-400 py-2">
-              You have already completed today&apos;s mission. Come back tomorrow!
+            <p className="text-center text-base font-medium text-emerald-600 py-2">
+              {t('mission.already_done')}
             </p>
           )}
           {accepted && !evaluation && mission && !missionAlreadyDone && (
@@ -239,7 +241,7 @@ export default function HomePage() {
         <section className="relative h-[48vh] flex-shrink-0 overflow-hidden w-full">
           <VillageScene />
         </section>
-        <section className="flex-1 overflow-y-auto bg-[#faf7f0] dark:bg-[#060b1a]">
+        <section className="flex-1 overflow-y-auto bg-[#faf7f0]">
           {/* UNAUTHENTICATED: existing centered layout, zero changes */}
           {!profile && (
             <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col gap-4">
@@ -267,12 +269,12 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-        <footer className="py-2 px-4 flex justify-center bg-[#faf7f0] dark:bg-[#060b1a] border-t border-amber-800/10 dark:border-indigo-500/10">
+        <footer className="py-2 px-4 flex justify-center bg-[#faf7f0] border-t border-amber-800/10">
           <a
             href="https://buymeacoffee.com/michelesanc"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] text-amber-700/60 dark:text-amber-600/50 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] text-amber-700/60 hover:text-amber-500 transition-colors"
           >
             ☕
             Enjoying Questly? Support us with a coffee and help us create new magical features

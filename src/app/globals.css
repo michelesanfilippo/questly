@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-gold: #F5C842;
@@ -15,9 +14,6 @@
   --color-parchment: #faf7f0;
   --color-parchment-dark: #f0ead6;
   --color-ink: #3d2b1f;
-  --color-night-blue: #060b1a;
-  --color-night-mid: #0f172a;
-  --color-night-accent: #312e81;
 }
 
 :root {
@@ -25,16 +21,11 @@
   --foreground: #0f172a;
 }
 
-.dark {
-  --background: #060b1a;
-  --foreground: #e0e7ff;
-}
-
 html {
   scroll-behavior: smooth;
 }
 
-/* Scrollbar — thin, light/dark aware */
+/* Scrollbar — thin, light */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -49,19 +40,9 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
 * {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
-}
-.dark * {
-  scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
 }
 
 /* Selection */

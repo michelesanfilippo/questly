@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n } from '@/i18n';
 import type { EvaluationResult } from '@/types';
 
 const MAX_CHARS = 500;
@@ -13,6 +14,7 @@ interface MissionInputProps {
 }
 
 export function MissionInput({ missionId, onResult }: MissionInputProps) {
+  const { t } = useI18n();
   const [prompt, setPrompt] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
         transition={{ duration: 0.35 }}
         className="w-full space-y-3"
       >
-        <p className="text-xs text-slate-700 dark:text-slate-400 uppercase tracking-widest font-semibold">Your Prompt</p>
+        <p className="text-xs text-slate-700 uppercase tracking-widest font-semibold">{t('mission.your_prompt')}</p>
 
         <div className="relative">
           <textarea
@@ -59,10 +61,10 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
             onChange={(e) => setPrompt(e.target.value.slice(0, MAX_CHARS))}
             placeholder="Craft your prompt here, adventurer..."
             rows={5}
-            className="w-full min-h-[120px] rounded-sm border-2 bg-[#faf7f0] dark:bg-indigo-950/60 text-stone-800 dark:text-indigo-100 placeholder-stone-400 dark:placeholder-indigo-300/40 border-amber-300/60 dark:border-indigo-500/30 p-3 sm:p-4 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400/40 dark:focus:ring-indigo-500/40 focus:border-amber-500 dark:focus:border-indigo-400 transition-all duration-200"
+            className="w-full min-h-[120px] rounded-sm border-2 bg-[#faf7f0] text-stone-800 placeholder-stone-400 border-amber-300/60 p-3 sm:p-4 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-500 transition-all duration-200"
           />
           {/* Char counter */}
-          <span className={`absolute bottom-3 right-3 text-xs ${charCount > MAX_CHARS * 0.9 ? 'text-amber-500' : 'text-stone-400 dark:text-indigo-400/50'}`}>
+          <span className={`absolute bottom-3 right-3 text-xs ${charCount > MAX_CHARS * 0.9 ? 'text-amber-500' : 'text-stone-400'}`}>
             {charCount}/{MAX_CHARS}
           </span>
         </div>
@@ -74,21 +76,21 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
             animate={{ opacity: 1 }}
             className={`text-xs font-medium ${
               trimmedLen <= 10
-                ? 'text-red-600 dark:text-red-400'
+                ? 'text-red-600'
                 : trimmedLen < 50
-                  ? 'text-amber-700 dark:text-amber-400'
+                  ? 'text-amber-700'
                   : trimmedLen < 150
-                    ? 'text-amber-700 dark:text-amber-400'
-                    : 'text-emerald-700 dark:text-emerald-400'
+                    ? 'text-amber-700'
+                    : 'text-emerald-700'
             }`}
           >
             {trimmedLen <= 10
-              ? 'Prompt too short — write at least 10 characters'
+              ? t('mission.prompt_too_short')
               : trimmedLen < 50
-                ? 'Add more context or structure to improve your score'
+                ? t('mission.add_context')
                 : trimmedLen < 150
-                  ? 'Good length — try adding role, format, or constraints'
-                  : 'Detailed prompt — ready to submit'}
+                  ? t('mission.good_length')
+                  : t('mission.detailed')}
           </motion.p>
         )}
 
@@ -108,19 +110,19 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
         <button
           onClick={handleSubmit}
           disabled={!isValid || submitting}
-          className="block w-3/4 mx-auto min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 dark:bg-indigo-700 dark:hover:bg-indigo-600 dark:active:bg-indigo-800 text-amber-50 dark:text-indigo-50 font-semibold text-xs sm:text-sm border border-amber-600 dark:border-indigo-500 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] dark:shadow-[1px_2px_8px_rgba(67,56,202,0.3)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="block w-3/4 mx-auto min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-xs sm:text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (
             <span className="flex items-center justify-center gap-2">
               <motion.span
                 animate={{ rotate: 360 }}
                 transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                className="inline-block w-4 h-4 border-2 border-amber-200/30 dark:border-indigo-200/30 border-t-amber-100 dark:border-t-indigo-100 rounded-full"
+                className="inline-block w-4 h-4 border-2 border-amber-200/30 border-t-amber-100 rounded-full"
               />
-              Evaluating...
+              {t('mission.evaluating')}
             </span>
           ) : (
-            'Submit Prompt'
+            t('mission.submit')
           )}
         </button>
       </motion.div>

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n } from '@/i18n';
 
 interface BadgeUnlockPopupProps {
   nickname: string;
@@ -12,6 +13,7 @@ interface BadgeUnlockPopupProps {
 }
 
 export function BadgeUnlockPopup({ nickname, badgeName, badgeDescription, badgeImagePath, onClose }: BadgeUnlockPopupProps) {
+  const { t } = useI18n();
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
       <AnimatePresence>
@@ -51,7 +53,7 @@ export function BadgeUnlockPopup({ nickname, badgeName, badgeDescription, badgeI
 
           {/* Text */}
           <p className="text-xs uppercase tracking-widest text-amber-700/70 mb-2 font-semibold">
-            Badge Unlocked
+            {t('badge.unlocked')}
           </p>
           <h2 className="font-serif text-xl font-bold text-amber-900 mb-1">
             {badgeName}
@@ -60,7 +62,7 @@ export function BadgeUnlockPopup({ nickname, badgeName, badgeDescription, badgeI
             {badgeDescription}
           </p>
           <p className="text-sm text-stone-700">
-            Congratulations, <span className="font-semibold font-serif text-amber-800">{nickname}</span>!
+            {t('badge.congrats', { nickname })}
           </p>
 
           {/* CTA */}
@@ -68,7 +70,7 @@ export function BadgeUnlockPopup({ nickname, badgeName, badgeDescription, badgeI
             onClick={onClose}
             className="mt-5 w-3/4 mx-auto block min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 text-amber-50 font-semibold text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150"
           >
-            Claim
+            {t('badge.claim')}
           </button>
         </motion.div>
       </AnimatePresence>

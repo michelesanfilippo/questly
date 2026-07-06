@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n } from '@/i18n';
 
 interface BadgeDetailPopupProps {
   badgeName: string;
@@ -13,6 +14,7 @@ interface BadgeDetailPopupProps {
 }
 
 export function BadgeDetailPopup({ badgeName, badgeDescription, badgeImagePath, isProfileBadge, onSetAsProfile, onClose }: BadgeDetailPopupProps) {
+  const { t } = useI18n();
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
       <AnimatePresence>
@@ -47,7 +49,7 @@ export function BadgeDetailPopup({ badgeName, badgeDescription, badgeImagePath, 
             }`}
             disabled={isProfileBadge}
           >
-            {isProfileBadge ? 'Current profile image' : 'Set as profile image'}
+            {isProfileBadge ? t('badge.current_profile') : t('badge.set_profile')}
           </button>
         </motion.div>
       </AnimatePresence>

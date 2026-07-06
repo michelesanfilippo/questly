@@ -14,11 +14,10 @@ export function AmbientEffects() {
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {/* Light mode: warm dawn glow orbs */}
       {orbs.map((orb, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full opacity-20 dark:opacity-0 blur-3xl"
+          className="absolute rounded-full opacity-20 blur-3xl"
           style={{
             top: orb.top,
             left: orb.left,
@@ -30,14 +29,6 @@ export function AmbientEffects() {
           transition={{ duration: 4, delay: orb.delay, repeat: Infinity, ease: 'easeInOut' }}
         />
       ))}
-
-      {/* Dark mode: moon glow */}
-      <motion.div
-        className="absolute top-6 right-12 w-24 h-24 rounded-full opacity-0 dark:opacity-15 blur-2xl"
-        style={{ background: 'radial-gradient(circle, #A78BFA, transparent)' }}
-        animate={{ opacity: [0, 0.15, 0.08, 0.15] }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-      />
     </div>
   );
 }

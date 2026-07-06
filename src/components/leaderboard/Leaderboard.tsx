@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath, BADGE_DEFINITIONS } from '@/lib/badges';
+import { useI18n } from '@/i18n';
 
 interface SupabaseProfile {
   id: string;
@@ -28,6 +29,7 @@ interface LeaderboardProps {
 }
 
 export function Leaderboard({ currentUserId }: LeaderboardProps) {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<Tab>('Level');
   const [entries, setEntries] = useState<ProfileWithBadgeCount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,15 +108,15 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
     if (rank === 1) return 'text-amber-500';
     if (rank === 2) return 'text-slate-400';
     if (rank === 3) return 'text-amber-700';
-    return 'text-stone-400 dark:text-indigo-300/50';
+    return 'text-stone-400';
   }
 
   return (
-    <div className="bg-[#faf7f0] dark:bg-slate-900/95 border-2 border-amber-800/30 dark:border-indigo-500/30 rounded-sm shadow-[2px_4px_12px_rgba(101,67,33,0.2)] overflow-hidden">
+    <div className="bg-[#faf7f0] border-2 border-amber-800/30 rounded-sm shadow-[2px_4px_12px_rgba(101,67,33,0.2)] overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-amber-800/10 dark:border-indigo-500/20">
-        <h3 className="font-serif font-bold text-amber-900 dark:text-indigo-100">
-          Leaderboard 🏆
+      <div className="px-4 py-3 border-b border-amber-800/10">
+        <h3 className="font-serif font-bold text-amber-900">
+          {t('leaderboard.title')}
         </h3>
       </div>
 
@@ -127,11 +129,11 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
             className={[
               'text-xs px-3 py-1 rounded-sm transition-colors font-medium',
               activeTab === tab
-                ? 'bg-amber-100 dark:bg-indigo-900/60 text-amber-800 dark:text-indigo-200'
-                : 'text-stone-500 dark:text-indigo-300/70 hover:text-amber-700 dark:hover:text-indigo-200',
+                ? 'bg-amber-100 text-amber-800'
+                : 'text-stone-500 hover:text-amber-700',
             ].join(' ')}
           >
-            {tab}
+            {t(`leaderboard.${tab.toLowerCase()}`)}
           </button>
         ))}
       </div>
@@ -144,7 +146,7 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="h-8 bg-amber-100/50 dark:bg-slate-700/50 animate-pulse rounded"
+                className="h-8 bg-amber-100/50 animate-pulse rounded"
               />
             ))}
           </div>
@@ -158,8 +160,8 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
               transition={{ duration: 0.15 }}
             >
               {entries.length === 0 ? (
-                <p className="text-center text-xs text-stone-400 dark:text-indigo-300/50 py-6">
-                  No data yet
+                <p className="text-center text-xs text-stone-400 py-6">
+                  {t('leaderboard.no_data')}
                 </p>
               ) : (
                 entries.map((entry, index) => {
@@ -175,7 +177,7 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
                       className={[
                         'flex items-center gap-3 px-4 py-2.5',
                         isMe
-                          ? 'bg-amber-100/50 dark:bg-indigo-900/30 font-semibold'
+                          ? 'bg-amber-100/50 font-semibold'
                           : '',
                       ].join(' ')}
                     >
@@ -196,7 +198,7 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
                               className="w-full h-full object-cover rounded-full"
                             />
                           ) : (
-                            <div className="w-7 h-7 rounded-full bg-amber-200 dark:bg-indigo-800 flex items-center justify-center text-xs font-bold text-amber-800 dark:text-indigo-200">
+                            <div className="w-7 h-7 rounded-full bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-800">
                               {entry.nickname.slice(0, 1).toUpperCase()}
                             </div>
                           )}
@@ -211,7 +213,7 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
                               height={120}
                               className="rounded-full shadow-[0_0_16px_rgba(217,119,6,0.5)] border-2 border-amber-300/60"
                             />
-                            <div className="mt-1 px-2 py-0.5 bg-[#faf7f0] dark:bg-slate-800 border border-amber-300/40 dark:border-indigo-500/30 rounded text-xs text-amber-900 dark:text-indigo-100 font-medium whitespace-nowrap shadow">
+                            <div className="mt-1 px-2 py-0.5 bg-[#faf7f0] border border-amber-300/40 rounded text-xs text-amber-900 font-medium whitespace-nowrap shadow">
                               {(() => { const def = BADGE_DEFINITIONS.find(b => b.index === entry.profile_badge_index); return def?.name ?? 'Badge'; })()}
                             </div>
                           </div>
@@ -219,17 +221,17 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
                       </div>
 
                       {/* Nickname */}
-                      <span className="text-sm font-medium text-amber-900 dark:text-indigo-100 truncate flex-1">
+                      <span className="text-sm font-medium text-amber-900 truncate flex-1">
                         {entry.nickname}
                         {isMe && (
-                          <span className="ml-1 text-xs text-amber-600 dark:text-amber-400">
-                            (you)
+                          <span className="ml-1 text-xs text-amber-600">
+                            {t('leaderboard.you')}
                           </span>
                         )}
                       </span>
 
                       {/* Metric */}
-                      <span className="text-xs text-stone-500 dark:text-indigo-300/70 shrink-0">
+                      <span className="text-xs text-stone-500 shrink-0">
                         {getMetric(entry)}
                       </span>
                     </motion.div>
