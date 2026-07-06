@@ -248,8 +248,8 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
       {!isLoggedIn && (
         <div className="absolute inset-0 backdrop-blur-[3px] bg-[#faf7f0]/60 flex flex-col items-center justify-center gap-3 rounded-sm">
           <span className="text-4xl select-none">🔒</span>
-          <p className="text-xs text-amber-900/70 font-serif font-semibold text-center px-4">
-            {t('user.login_prompt_title')}
+          <p className="text-sm text-amber-900/80 font-serif font-semibold text-center px-4 italic">
+            {t('leaderboard.leaderboard_lock')}
           </p>
         </div>
       )}
