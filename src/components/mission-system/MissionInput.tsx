@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n';
 import type { EvaluationResult } from '@/types';
 
-const MAX_CHARS = 2000;
+const MAX_CHARS = 5000;
 const MIN_CHARS = 10;
 
 interface MissionInputProps {
