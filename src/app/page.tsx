@@ -272,7 +272,7 @@ export default function HomePage() {
             href="https://buymeacoffee.com/michelesanc"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] text-stone-300 dark:text-indigo-500/40 hover:text-amber-600 dark:hover:text-indigo-300 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] text-amber-700/60 dark:text-amber-600/50 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
           >
             ☕
             Support Questly on Buy Me a Coffee
