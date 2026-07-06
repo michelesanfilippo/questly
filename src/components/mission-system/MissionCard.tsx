@@ -117,19 +117,24 @@ export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
         <p className="text-sm text-stone-700 dark:text-indigo-100 leading-relaxed">{mission.task}</p>
       </div>
 
-      {/* Hints */}
-      {mission.hints && mission.hints.length > 0 && (
-        <details className="group">
-          <summary className="text-xs text-amber-800/70 dark:text-indigo-300/60 cursor-pointer hover:text-amber-900 dark:hover:text-indigo-200 transition-colors select-none">
-            Show hints ({mission.hints.length})
-          </summary>
-          <ul className="mt-2 space-y-1 pl-3 border-l border-amber-300/50 dark:border-indigo-500/20">
+      {/* Hints + multilingual tip */}
+      <div className="flex items-start justify-between gap-2">
+        {mission.hints && mission.hints.length > 0 ? (
+          <details className="group flex-1">
+            <summary className="text-xs text-amber-800/70 cursor-pointer hover:text-amber-900 transition-colors select-none">
+              Show hints ({mission.hints.length})
+            </summary>
+          <ul className="mt-2 space-y-1 pl-3 border-l border-amber-300/50">
             {mission.hints.map((h, i) => (
-              <li key={i} className="text-xs text-stone-600 dark:text-indigo-200/70 break-words">— {h}</li>
+              <li key={i} className="text-xs text-stone-600 break-words">— {h}</li>
             ))}
           </ul>
         </details>
-      )}
+        ) : <div className="flex-1" />}
+        <span className="text-xs text-amber-800/70 hover:text-amber-900 transition-colors select-none text-right shrink-0">
+          ✍️ Write in your language
+        </span>
+      </div>
 
       {/* CTA */}
       <AnimatePresence mode="wait">

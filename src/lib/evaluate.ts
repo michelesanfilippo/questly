@@ -128,18 +128,20 @@ function evaluateHeuristic(userPrompt: string, mission: Mission): EvaluationResu
   const trimmed = userPrompt.trim();
   const wordCount = trimmed.split(/\s+/).length;
 
-  const hasRolePrompt = /\byou are\b|act as|as a\b|you're a\b/i.test(trimmed);
+  // Role prompting — EN + IT + FR + ES + DE + PT
+  const hasRolePrompt = /\byou are\b|act as|as a\b|you're a\b|sei un|agisci come|sei la|vous êtes|agissez comme|eres un|actúa como|du bist|handle als|és um|age como/i.test(trimmed);
 
-  // Context: explicit context markers OR provides background via "given"/"assuming"/"based on"
-  const hasContext = /context:|background:|given that|given the|assuming|based on|you are given/i.test(trimmed);
+  // Context — EN + IT + FR + ES + DE + PT
+  const hasContext = /context:|background:|given that|given the|assuming|based on|you are given|contesto:|sfondo:|dato che|dato il|supponendo|basandosi su|contexte:|étant donné|en supposant|contexto:|dado que|suponiendo|kontext:|angesichts|dado que|assumindo/i.test(trimmed);
 
   // Output format: JSON/markdown/table keywords OR explicit template blocks OR "Format" instructions
   const hasOutputFormat = /json|markdown|table|format the output|format your (output|response)|output format|output as|structured (output|format)|###|```|^---/im.test(trimmed)
     || /^[A-Z][^\n]{0,40}\n[-*•]|^Slide \d|^Overall |^Main |^Conclusion/m.test(trimmed); // template headings
 
-  // Step-by-step: numbered items OR "For each" patterns OR bullet sections
+  // Step-by-step — EN + IT + FR + ES + DE + PT
   const hasStepByStep = /step by step|let'?s think|first.*then|^\d+\./m.test(trimmed)
-    || /for each|per (slide|item|image)|after (reviewing|processing)/i.test(trimmed);
+    || /for each|per (slide|item|image)|after (reviewing|processing)/i.test(trimmed)
+    || /passo per passo|prima.*poi|per ogni|pense étape|étape par étape|paso a paso|primero.*luego|para cada|schritt für schritt|für jede[sn]?|passo a passo|para cada/i.test(trimmed);
 
   // Examples: explicit examples OR few-shot patterns
   const hasExamples = /example:|for instance|e\.g\.|such as|like:|e\.g\b/i.test(trimmed);
