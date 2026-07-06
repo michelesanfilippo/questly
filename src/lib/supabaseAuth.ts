@@ -110,8 +110,21 @@ export async function getNpcProgress(userId: string) {
   return supabase.from('quest_npc_progress').select('*').eq('user_id', userId);
 }
 
-export async function incrementNpcProgress(userId: string, npcSource: string) {
-  return supabase.rpc('increment_npc_progress', { p_user_id: userId, p_npc_source: npcSource });
+export async function incrementNpcProgress(userId: string, npcSource: string, score60: boolean) {
+  return supabase.rpc('increment_npc_progress', { p_user_id: userId, p_npc_source: npcSource, p_score60: score60 });
+}
+
+export async function updateLoginStreak(userId: string): Promise<{ login_streak: number }> {
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const { data: prof } = await supabase.from('profiles').select('login_streak, last_login_date').eq('id', userId).single();
+  if (!prof) return { login_streak: 1 };
+  const lastLogin = prof.last_login_date;
+  let newStreak = 1;
+  if (lastLogin === today) return { login_streak: prof.login_streak ?? 1 }; // already logged today
+  if (lastLogin === yesterday) newStreak = (prof.login_streak ?? 0) + 1;
+  await supabase.from('profiles').update({ login_streak: newStreak, last_login_date: today }).eq('id', userId);
+  return { login_streak: newStreak };
 }
 
 export async function setProfileBadge(userId: string, badgeIndex: number | null) {

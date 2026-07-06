@@ -29,6 +29,7 @@ export interface NpcProgress {
   user_id: string;
   npc_source: string;
   quest_count: number;
+  score60_count: number;
   last_updated: string;
 }
 
@@ -116,6 +117,8 @@ export interface SupabaseProfile {
   missions_diff3plus: number;
   missions_diff4plus: number;
   missions_diff5: number;
+  login_streak: number;
+  last_login_date: string | null;
 }
 
 export interface BadgeDefinition {

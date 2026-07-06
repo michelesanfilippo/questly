@@ -7,7 +7,7 @@ import { MissionCard } from '@/components/mission-system/MissionCard';
 import { MissionInput } from '@/components/mission-system/MissionInput';
 import { EvaluationResult } from '@/components/mission-system/EvaluationResult';
 import { supabase } from '@/lib/supabase';
-import { getProfile, getUserBadges, updateProfileXP, awardBadge, getNpcProgress, incrementNpcProgress } from '@/lib/supabaseAuth';
+import { getProfile, getUserBadges, updateProfileXP, awardBadge, getNpcProgress, incrementNpcProgress, updateLoginStreak } from '@/lib/supabaseAuth';
 import { checkNewBadges, addXPToProfile } from '@/lib/badges';
 import type { NpcProgress } from '@/types';
 import { LoginModal } from '@/components/auth/LoginModal';
@@ -93,6 +93,8 @@ export default function HomePage() {
           setEarnedBadges(badges?.map((b: { badge_index: number }) => b.badge_index) ?? []);
           const { data: npc } = await getNpcProgress(session.user.id);
           setNpcProgress((npc as NpcProgress[]) ?? []);
+          // Update login streak on every login/session restore
+          await updateLoginStreak(session.user.id);
         } else {
           setShowNicknameSetup(true);
         }
@@ -129,21 +131,28 @@ export default function HomePage() {
       };
       await updateProfileXP(profile!.id, newXP, newLevel, newMissions, mission?.id, today, diffCounters);
       setMissionAlreadyDone(true);
-      // Increment NPC progress
+      // Increment NPC progress with score60 flag
       const npcSource = mission?.npcSource;
-      if (npcSource) await incrementNpcProgress(profile!.id, npcSource);
+      const score60 = (evaluation!.scores.total > 60);
+      if (npcSource) await incrementNpcProgress(profile!.id, npcSource, score60);
       // Updated NPC progress for badge check
       const updatedNpc: NpcProgress[] = npcSource
-        ? npcProgress.map(p => p.npc_source === npcSource ? { ...p, quest_count: p.quest_count + 1 } : p)
+        ? npcProgress.map(p => p.npc_source === npcSource ? {
+            ...p,
+            quest_count: p.quest_count + 1,
+            score60_count: (p.score60_count ?? 0) + (score60 ? 1 : 0),
+          } : p)
         : [...npcProgress];
       if (npcSource && !npcProgress.find(p => p.npc_source === npcSource)) {
-        updatedNpc.push({ user_id: profile!.id, npc_source: npcSource, quest_count: 1, last_updated: today });
+        updatedNpc.push({ user_id: profile!.id, npc_source: npcSource, quest_count: 1, score60_count: score60 ? 1 : 0, last_updated: today });
       }
       setNpcProgress(updatedNpc);
-      const updatedProfileForCheck = { ...profile!, xp: newXP, level: newLevel, missions_completed: newMissions, ...diffCounters };
+      // Get updated login streak
+      const { login_streak } = await updateLoginStreak(profile!.id);
+      const updatedProfileForCheck = { ...profile!, xp: newXP, level: newLevel, missions_completed: newMissions, ...diffCounters, login_streak };
       const newBadges = checkNewBadges(
         updatedProfileForCheck,
-        { scores: evaluation!.scores, missionDifficulty: diff, npcProgress: updatedNpc },
+        { scores: evaluation!.scores, missionDifficulty: diff, npcProgress: updatedNpc, submittedAt: new Date(), loginStreak: login_streak },
         earnedBadges
       );
       for (const idx of newBadges) {
