@@ -103,6 +103,7 @@ export interface SupabaseProfile {
   created_at: string;
   last_mission_id: string | null;
   last_mission_date: string | null;
+  profile_badge_index: number | null;
 }
 
 export interface BadgeDefinition {

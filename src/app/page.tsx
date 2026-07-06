@@ -222,7 +222,7 @@ export default function HomePage() {
                 <UserCard
                   profile={profile}
                   earnedBadges={earnedBadges}
-                  onSignOut={() => { setProfile(null); setEarnedBadges([]); }}
+                  onProfileUpdate={(updated) => setProfile(updated)}
                 />
               </div>
             </div>

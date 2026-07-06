@@ -64,6 +64,10 @@ export async function updateProfileXP(
     .eq('id', userId);
 }
 
+export async function setProfileBadge(userId: string, badgeIndex: number | null) {
+  return supabase.from('profiles').update({ profile_badge_index: badgeIndex }).eq('id', userId);
+}
+
 export async function getUserBadges(userId: string) {
   return supabase
     .from('user_badges')

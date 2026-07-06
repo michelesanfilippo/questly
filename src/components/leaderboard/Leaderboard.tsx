@@ -1,8 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
+import { getBadgeImagePath } from '@/lib/badges';
 
 interface SupabaseProfile {
   id: string;
@@ -12,6 +14,7 @@ interface SupabaseProfile {
   xp: number;
   missions_completed: number;
   created_at: string;
+  profile_badge_index?: number | null;
 }
 
 interface ProfileWithBadgeCount extends SupabaseProfile {
@@ -52,7 +55,7 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
         } else if (activeTab === 'Badges') {
           const { data, error } = await supabase
             .from('profiles')
-            .select('id, nickname, level, xp, missions_completed, created_at, email, user_badges(count)')
+            .select('id, nickname, level, xp, missions_completed, created_at, email, profile_badge_index, user_badges(count)')
             .limit(50);
 
           if (error || !data || cancelled) return;
@@ -111,7 +114,7 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
       {/* Header */}
       <div className="px-4 py-3 border-b border-amber-800/10 dark:border-indigo-500/20">
         <h3 className="font-serif font-bold text-amber-900 dark:text-indigo-100">
-          Leaderboard
+          Leaderboard 🏆
         </h3>
       </div>
 
@@ -180,6 +183,23 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
                       <span className={`text-sm font-bold w-5 shrink-0 ${rankColor(rank)}`}>
                         {rank}
                       </span>
+
+                      {/* Profile badge/avatar */}
+                      <div className="w-7 h-7 rounded-full shrink-0 overflow-hidden">
+                        {entry.profile_badge_index != null ? (
+                          <Image
+                            src={getBadgeImagePath(entry.profile_badge_index)}
+                            alt=""
+                            width={28}
+                            height={28}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-amber-200 dark:bg-indigo-800 flex items-center justify-center text-xs font-bold text-amber-800 dark:text-indigo-200">
+                            {entry.nickname.slice(0, 1).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
 
                       {/* Nickname */}
                       <span className="text-sm font-medium text-amber-900 dark:text-indigo-100 truncate flex-1">
