@@ -128,22 +128,74 @@ function evaluateHeuristic(userPrompt: string, mission: Mission): EvaluationResu
   const trimmed = userPrompt.trim();
   const wordCount = trimmed.split(/\s+/).length;
 
-  const hasRolePrompt = /you are|act as|as a/i.test(trimmed);
-  const hasContext = /context:|background:|given that/i.test(trimmed);
-  const hasOutputFormat = /json|markdown|table|list|format:|output:/i.test(trimmed);
-  const hasStepByStep = /step by step|let's think|first.*then|1\.|2\./i.test(trimmed);
-  const hasExamples = /example:|for instance|e\.g\./i.test(trimmed);
+  const hasRolePrompt = /\byou are\b|act as|as a\b|you're a\b/i.test(trimmed);
+
+  // Context: explicit context markers OR provides background via "given"/"assuming"/"based on"
+  const hasContext = /context:|background:|given that|given the|assuming|based on|you are given/i.test(trimmed);
+
+  // Output format: JSON/markdown/table keywords OR explicit template blocks OR "Format" instructions
+  const hasOutputFormat = /json|markdown|table|format the output|format your (output|response)|output format|output as|structured (output|format)|###|```|^---/im.test(trimmed)
+    || /^[A-Z][^\n]{0,40}\n[-*•]|^Slide \d|^Overall |^Main |^Conclusion/m.test(trimmed); // template headings
+
+  // Step-by-step: numbered items OR "For each" patterns OR bullet sections
+  const hasStepByStep = /step by step|let'?s think|first.*then|^\d+\./m.test(trimmed)
+    || /for each|per (slide|item|image)|after (reviewing|processing)/i.test(trimmed);
+
+  // Examples: explicit examples OR few-shot patterns
+  const hasExamples = /example:|for instance|e\.g\.|such as|like:|e\.g\b/i.test(trimmed);
+
+  // Bonus signals
+  const hasSections = (trimmed.match(/^[A-Z][^\n]{0,50}$/mg) ?? []).length >= 3; // 3+ capitalized section headers
+  const hasConstraints = /must|should|do not|don't|avoid|only|always|never|at least|at most|between \d/i.test(trimmed);
+  const hasAudience = /audience|reader|user|client|stakeholder|executive|non-technical/i.test(trimmed);
+  const wordCount = trimmed.split(/\s+/).length;
 
   const missionKeywords = mission.evaluationKeywords ?? [];
   const promptLower = trimmed.toLowerCase();
   const keywordMatches = missionKeywords.filter(kw => promptLower.includes(kw.toLowerCase())).length;
   const keywordBonus = Math.min(keywordMatches * 8, 24);
 
-  const creativity = clamp(40 + (wordCount > 50 ? 20 : 0) + (hasExamples ? 20 : 0) + (wordCount > 100 ? 20 : 0));
-  const precision = clamp(30 + (hasOutputFormat ? 30 : 0) + (wordCount > 30 ? 20 : 0) + (hasContext ? 20 : 0) + keywordBonus);
-  const context = clamp(20 + (hasContext ? 40 : 0) + (hasRolePrompt ? 25 : 0) + (wordCount > 40 ? 15 : 0));
-  const structure = clamp(30 + (hasStepByStep ? 30 : 0) + (hasOutputFormat ? 20 : 0) + (wordCount > 60 ? 20 : 0));
-  const promptEngineering = clamp(20 + (hasRolePrompt ? 20 : 0) + (hasContext ? 15 : 0) + (hasOutputFormat ? 15 : 0) + (hasStepByStep ? 15 : 0) + (hasExamples ? 15 : 0) + keywordBonus);
+  const creativity = clamp(
+    35
+    + (wordCount > 50 ? 15 : 0)
+    + (wordCount > 100 ? 15 : 0)
+    + (hasExamples ? 15 : 0)
+    + (hasSections ? 10 : 0)
+    + (hasAudience ? 10 : 0)
+  );
+  const precision = clamp(
+    25
+    + (hasOutputFormat ? 30 : 0)
+    + (hasConstraints ? 15 : 0)
+    + (wordCount > 30 ? 10 : 0)
+    + (hasContext ? 10 : 0)
+    + keywordBonus
+  );
+  const context = clamp(
+    15
+    + (hasContext ? 35 : 0)
+    + (hasRolePrompt ? 20 : 0)
+    + (hasAudience ? 15 : 0)
+    + (wordCount > 40 ? 15 : 0)
+  );
+  const structure = clamp(
+    20
+    + (hasStepByStep ? 25 : 0)
+    + (hasSections ? 20 : 0)
+    + (hasOutputFormat ? 20 : 0)
+    + (wordCount > 60 ? 15 : 0)
+  );
+  const promptEngineering = clamp(
+    15
+    + (hasRolePrompt ? 15 : 0)
+    + (hasContext ? 12 : 0)
+    + (hasOutputFormat ? 15 : 0)
+    + (hasStepByStep ? 12 : 0)
+    + (hasExamples ? 12 : 0)
+    + (hasSections ? 10 : 0)
+    + (hasConstraints ? 9 : 0)
+    + keywordBonus
+  );
   const total = Math.round((creativity + precision + context + structure + promptEngineering) / 5);
 
   const scores: EvaluationScore = { creativity, precision, context, structure, promptEngineering, total };
