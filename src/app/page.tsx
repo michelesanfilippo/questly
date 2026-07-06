@@ -14,6 +14,7 @@ import { LoginModal } from '@/components/auth/LoginModal';
 import { RegisterModal } from '@/components/auth/RegisterModal';
 import { NicknameSetup } from '@/components/auth/NicknameSetup';
 import { UserCard } from '@/components/profile/UserCard';
+import { LoginInviteCard } from '@/components/profile/LoginInviteCard';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
 import { BadgeUnlockPopup } from '@/components/ui/BadgeUnlockPopup';
 import { BADGE_DEFINITIONS, getBadgeImagePath } from '@/lib/badges';
@@ -251,30 +252,30 @@ export default function HomePage() {
           <VillageScene />
         </section>
         <section className="flex-1 overflow-y-auto bg-[#faf7f0]">
-          {/* UNAUTHENTICATED: existing centered layout, zero changes */}
-          {!profile && (
-            <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col gap-4">
+          {/* 3-col layout for all users */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-4 px-4 sm:px-6 py-6 w-full">
+            {/* Leaderboard — visible to all */}
+            <div className="order-3 lg:order-1">
+              <Leaderboard currentUserId={profile?.id} />
+            </div>
+            {/* Mission — center */}
+            <div className="order-1 lg:order-2 flex flex-col gap-4">
               {missionFlow}
             </div>
-          )}
-          {/* AUTHENTICATED: 3-col layout */}
-          {profile && (
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-4 px-4 sm:px-6 py-6 w-full">
-              <div className="order-3 lg:order-1">
-                <Leaderboard currentUserId={profile.id} />
-              </div>
-              <div className="order-1 lg:order-2 flex flex-col gap-4">
-                {missionFlow}
-              </div>
-              <div className="order-2 lg:order-3">
+            {/* UserCard or login invite */}
+            <div className="order-2 lg:order-3">
+              {profile ? (
                 <UserCard
                   profile={profile}
                   earnedBadges={earnedBadges}
                   onProfileUpdate={(updated) => setProfile(updated)}
                 />
+              ) : (
+                <LoginInviteCard />
+              )}
               </div>
             </div>
-          )}
+          </div>
         </section>
 
         {/* Footer */}
