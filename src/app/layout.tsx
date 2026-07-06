@@ -16,9 +16,24 @@ export const metadata: Metadata = {
     apple: '/images/questly-removebg-preview.png',
   },
   openGraph: {
-    title: 'Questly - Fantasy Prompt Engineering',
-    description: 'Learn prompt engineering through daily fantasy missions, evaluated by AI.',
+    title: 'Questly - Learn to prompt.',
+    description: 'A fantasy gamified platform for learning prompt engineering and GenAI through daily AI-evaluated missions.',
     type: 'website',
+    url: 'https://questly-realm.vercel.app',
+    images: [
+      {
+        url: 'https://questly-realm.vercel.app/images/day-uw.png',
+        width: 1024,
+        height: 434,
+        alt: 'Questly — Fantasy Prompt Engineering Platform',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Questly - Learn to prompt.',
+    description: 'A fantasy gamified platform for learning prompt engineering and GenAI through daily AI-evaluated missions.',
+    images: ['https://questly-realm.vercel.app/images/day-uw.png'],
   },
 };
 
