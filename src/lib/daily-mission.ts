@@ -1,7 +1,9 @@
 import type { Mission } from '@/types';
 
 export function getTodayDateString(): string {
-  return new Date().toISOString().split('T')[0];
+  // UTC date — consistent across all timezones
+  const d = new Date();
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
 }
 
 // Deterministic PRNG (mulberry32) — same seed = same sequence
@@ -26,11 +28,12 @@ function shuffleDeterministic<T>(arr: T[], seed: number): T[] {
 }
 
 export function getDailyMission(missions: Mission[]): Mission {
+  // Always use UTC to be consistent across all timezones and browsers
   const today = new Date();
-  const year  = today.getFullYear();
-  const month = today.getMonth() + 1; // 1-12
-  const day   = today.getDate();      // 1-31
-  const dayOfWeek = today.getDay();   // 0=Sun, 6=Sat
+  const year  = today.getUTCFullYear();
+  const month = today.getUTCMonth() + 1; // 1-12
+  const day   = today.getUTCDate();      // 1-31
+  const dayOfWeek = today.getUTCDay();   // 0=Sun, 6=Sat
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
   // Build pool: weekends prefer hard missions, weekdays prefer easier

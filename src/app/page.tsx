@@ -53,7 +53,7 @@ export default function HomePage() {
           // Check if logged-in user already completed today's mission
           setProfile(prev => {
             if (prev && data.mission) {
-              const today = new Date().toISOString().split('T')[0];
+              const today = (() => { const _d = new Date(); return `${_d.getUTCFullYear()}-${String(_d.getUTCMonth()+1).padStart(2,'0')}-${String(_d.getUTCDate()).padStart(2,'0')}`; })();
               if (prev.last_mission_id === data.mission.id && prev.last_mission_date === today) {
                 setMissionAlreadyDone(true);
               }
@@ -82,7 +82,7 @@ export default function HomePage() {
           // Check if today's mission already completed
           setMission(prev => {
             if (prev) {
-              const today = new Date().toISOString().split('T')[0];
+              const today = (() => { const _d = new Date(); return `${_d.getUTCFullYear()}-${String(_d.getUTCMonth()+1).padStart(2,'0')}-${String(_d.getUTCDate()).padStart(2,'0')}`; })();
               if (prof.last_mission_id === prev.id && prof.last_mission_date === today) {
                 setMissionAlreadyDone(true);
               }
@@ -121,7 +121,7 @@ export default function HomePage() {
     async function processGamification() {
       const { newXP, newLevel } = addXPToProfile(profile!, evaluation!.xpAwarded);
       const newMissions = profile!.missions_completed + 1;
-      const today = new Date().toISOString().split('T')[0];
+      const today = (() => { const _d = new Date(); return `${_d.getUTCFullYear()}-${String(_d.getUTCMonth()+1).padStart(2,'0')}-${String(_d.getUTCDate()).padStart(2,'0')}`; })();
       const diff = mission?.difficulty ?? 1;
       const diffCounters = {
         missions_diff2plus: (profile!.missions_diff2plus ?? 0) + (diff >= 2 ? 1 : 0),
@@ -293,3 +293,5 @@ export default function HomePage() {
     </>
   );
 }
+
+
