@@ -145,10 +145,9 @@ function evaluateHeuristic(userPrompt: string, mission: Mission): EvaluationResu
   const hasExamples = /example:|for instance|e\.g\.|such as|like:|e\.g\b/i.test(trimmed);
 
   // Bonus signals
-  const hasSections = (trimmed.match(/^[A-Z][^\n]{0,50}$/mg) ?? []).length >= 3; // 3+ capitalized section headers
+  const hasSections = (trimmed.match(/^[A-Z][^\n]{0,50}$/mg) ?? []).length >= 3;
   const hasConstraints = /must|should|do not|don't|avoid|only|always|never|at least|at most|between \d/i.test(trimmed);
   const hasAudience = /audience|reader|user|client|stakeholder|executive|non-technical/i.test(trimmed);
-  const wordCount = trimmed.split(/\s+/).length;
 
   const missionKeywords = mission.evaluationKeywords ?? [];
   const promptLower = trimmed.toLowerCase();
