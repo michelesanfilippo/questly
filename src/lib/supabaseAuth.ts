@@ -24,6 +24,30 @@ export async function signInWithEmail(email: string) {
   });
 }
 
+export async function signUpWithPassword(email: string, password: string) {
+  return supabase.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: oauthRedirect() },
+  });
+}
+
+export async function signInWithPassword(email: string, password: string) {
+  return supabase.auth.signInWithPassword({ email, password });
+}
+
+export async function checkEmailExists(email: string): Promise<boolean> {
+  // Try signing in with a wrong password — if error is "Invalid login credentials"
+  // the email exists; if "Email not confirmed" it exists too; if other error, doesn't exist.
+  // Safer: check profiles table by email
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+  return data !== null;
+}
+
 export async function signOut() {
   return supabase.auth.signOut();
 }
