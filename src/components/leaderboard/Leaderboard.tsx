@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
-import { getBadgeImagePath } from '@/lib/badges';
+import { getBadgeImagePath, BADGE_DEFINITIONS } from '@/lib/badges';
 
 interface SupabaseProfile {
   id: string;
@@ -184,19 +184,36 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
                         {rank}
                       </span>
 
-                      {/* Profile badge/avatar */}
-                      <div className="w-7 h-7 rounded-full shrink-0 overflow-hidden">
-                        {entry.profile_badge_index != null ? (
-                          <Image
-                            src={getBadgeImagePath(entry.profile_badge_index)}
-                            alt=""
-                            width={28}
-                            height={28}
-                            className="w-full h-full object-cover rounded-full"
-                          />
-                        ) : (
-                          <div className="w-7 h-7 rounded-full bg-amber-200 dark:bg-indigo-800 flex items-center justify-center text-xs font-bold text-amber-800 dark:text-indigo-200">
-                            {entry.nickname.slice(0, 1).toUpperCase()}
+                      {/* Profile badge/avatar — hover to enlarge */}
+                      <div className="relative group w-7 h-7 rounded-full shrink-0 overflow-visible">
+                        <div className="w-7 h-7 rounded-full overflow-hidden">
+                          {entry.profile_badge_index != null ? (
+                            <Image
+                              src={getBadgeImagePath(entry.profile_badge_index)}
+                              alt=""
+                              width={28}
+                              height={28}
+                              className="w-full h-full object-cover rounded-full"
+                            />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-amber-200 dark:bg-indigo-800 flex items-center justify-center text-xs font-bold text-amber-800 dark:text-indigo-200">
+                              {entry.nickname.slice(0, 1).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        {/* Hover enlarged badge */}
+                        {entry.profile_badge_index != null && (
+                          <div className="absolute left-1/2 -translate-x-1/2 bottom-9 z-30 hidden group-hover:flex flex-col items-center pointer-events-none">
+                            <Image
+                              src={getBadgeImagePath(entry.profile_badge_index)}
+                              alt=""
+                              width={80}
+                              height={80}
+                              className="rounded-full shadow-[0_0_16px_rgba(217,119,6,0.5)] border-2 border-amber-300/60"
+                            />
+                            <div className="mt-1 px-2 py-0.5 bg-[#faf7f0] dark:bg-slate-800 border border-amber-300/40 dark:border-indigo-500/30 rounded text-xs text-amber-900 dark:text-indigo-100 font-medium whitespace-nowrap shadow">
+                              {(() => { const def = BADGE_DEFINITIONS.find(b => b.index === entry.profile_badge_index); return def?.name ?? 'Badge'; })()}
+                            </div>
                           </div>
                         )}
                       </div>
