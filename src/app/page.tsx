@@ -111,10 +111,18 @@ export default function HomePage() {
       const { newXP, newLevel } = addXPToProfile(profile!, evaluation!.xpAwarded);
       const newMissions = profile!.missions_completed + 1;
       const today = new Date().toISOString().split('T')[0];
-      await updateProfileXP(profile!.id, newXP, newLevel, newMissions, mission?.id, today);
+      const diff = mission?.difficulty ?? 1;
+      const diffCounters = {
+        missions_diff2plus: (profile!.missions_diff2plus ?? 0) + (diff >= 2 ? 1 : 0),
+        missions_diff3plus: (profile!.missions_diff3plus ?? 0) + (diff >= 3 ? 1 : 0),
+        missions_diff4plus: (profile!.missions_diff4plus ?? 0) + (diff >= 4 ? 1 : 0),
+        missions_diff5:     (profile!.missions_diff5 ?? 0)     + (diff >= 5 ? 1 : 0),
+      };
+      await updateProfileXP(profile!.id, newXP, newLevel, newMissions, mission?.id, today, diffCounters);
       setMissionAlreadyDone(true);
+      const updatedProfileForCheck = { ...profile!, xp: newXP, level: newLevel, missions_completed: newMissions, ...diffCounters };
       const newBadges = checkNewBadges(
-        { ...profile!, xp: newXP, level: newLevel, missions_completed: newMissions },
+        updatedProfileForCheck,
         { scores: evaluation!.scores },
         earnedBadges
       );

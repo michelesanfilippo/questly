@@ -104,6 +104,10 @@ export interface SupabaseProfile {
   last_mission_id: string | null;
   last_mission_date: string | null;
   profile_badge_index: number | null;
+  missions_diff2plus: number;
+  missions_diff3plus: number;
+  missions_diff4plus: number;
+  missions_diff5: number;
 }
 
 export interface BadgeDefinition {
