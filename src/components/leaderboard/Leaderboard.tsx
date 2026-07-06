@@ -26,9 +26,10 @@ type Tab = 'Level' | 'Badges' | 'Missions';
 
 interface LeaderboardProps {
   currentUserId?: string;
+  isLoggedIn?: boolean;
 }
 
-export function Leaderboard({ currentUserId }: LeaderboardProps) {
+export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardProps) {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<Tab>('Level');
   const [entries, setEntries] = useState<ProfileWithBadgeCount[]>([]);
@@ -112,7 +113,7 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
   }
 
   return (
-    <div className="bg-[#faf7f0] border-2 border-amber-800/30 rounded-sm shadow-[2px_4px_12px_rgba(101,67,33,0.2)] overflow-hidden">
+    <div className="relative bg-[#faf7f0] border-2 border-amber-800/30 rounded-sm shadow-[2px_4px_12px_rgba(101,67,33,0.2)] overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-amber-800/10">
         <h3 className="font-serif font-bold text-amber-900">
@@ -242,6 +243,16 @@ export function Leaderboard({ currentUserId }: LeaderboardProps) {
           </AnimatePresence>
         )}
       </div>
+
+      {/* Lock veil for non-logged users */}
+      {!isLoggedIn && (
+        <div className="absolute inset-0 backdrop-blur-[3px] bg-[#faf7f0]/60 flex flex-col items-center justify-center gap-3 rounded-sm">
+          <span className="text-4xl select-none">🔒</span>
+          <p className="text-xs text-amber-900/70 font-serif font-semibold text-center px-4">
+            {t('user.login_prompt_title')}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

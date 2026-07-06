@@ -256,7 +256,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-4 px-4 sm:px-6 py-6 w-full">
             {/* Leaderboard — visible to all */}
             <div className="order-3 lg:order-1">
-              <Leaderboard currentUserId={profile?.id} />
+              <Leaderboard currentUserId={profile?.id} isLoggedIn={!!profile} />
             </div>
             {/* Mission — center */}
             <div className="order-1 lg:order-2 flex flex-col gap-4">
@@ -275,7 +275,6 @@ export default function HomePage() {
               )}
               </div>
             </div>
-          </div>
         </section>
 
         {/* Footer */}

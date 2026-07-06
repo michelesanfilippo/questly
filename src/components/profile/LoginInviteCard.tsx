@@ -18,7 +18,7 @@ export function LoginInviteCard() {
       <div className="absolute bottom-1.5 left-1.5 w-4 h-4 border-b-2 border-l-2 border-amber-700/40" />
       <div className="absolute bottom-1.5 right-1.5 w-4 h-4 border-b-2 border-r-2 border-amber-700/40" />
 
-      <span className="text-4xl select-none">🧙</span>
+      <span className="text-4xl select-none">⚔️</span>
 
       <h3 className="font-serif font-bold text-amber-900 text-base leading-snug">
         {t('user.login_prompt_title')}
@@ -27,13 +27,6 @@ export function LoginInviteCard() {
       <p className="text-xs text-stone-500 leading-relaxed">
         {t('user.login_prompt_sub')}
       </p>
-
-      <button
-        onClick={() => window.dispatchEvent(new CustomEvent('questly:openLogin'))}
-        className="w-3/4 min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150"
-      >
-        {t('user.login_prompt_btn')}
-      </button>
     </motion.div>
   );
 }
