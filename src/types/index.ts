@@ -44,6 +44,7 @@ export interface EvaluationResult {
   feedback: string;
   suggestions: string[];
   xpAwarded: number;
+  source?: 'ai' | 'heuristic';
 }
 
 export interface UserProfile {

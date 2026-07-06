@@ -103,6 +103,7 @@ Evaluate this prompt and respond with JSON only.`;
       feedback: parsed.feedback ?? generateFeedback(scores, mission),
       suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 3) : [],
       xpAwarded: Math.round((scores.total / 100) * mission.difficulty * 50),
+      source: 'ai' as const,
     };
   } catch {
     return null;
@@ -148,6 +149,7 @@ function evaluateHeuristic(userPrompt: string, mission: Mission): EvaluationResu
     feedback: generateFeedback(scores, mission),
     suggestions: generateSuggestions(scores),
     xpAwarded: Math.round((total / 100) * mission.difficulty * 50),
+    source: 'heuristic' as const,
   };
 }
 

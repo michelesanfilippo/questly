@@ -48,7 +48,7 @@ const itemVariants = {
 export function EvaluationResult({ result }: Props) {
   if (!result) return null;
 
-  const { scores, feedback, suggestions, xpAwarded } = result;
+  const { scores, feedback, suggestions, xpAwarded, source } = result;
   const total = scores.total;
   const totalColor = total >= 80 ? 'text-emerald-600 dark:text-emerald-400' : total >= 60 ? 'text-amber-600 dark:text-amber-400' : total >= 40 ? 'text-orange-600 dark:text-orange-400' : 'text-red-600 dark:text-red-400';
 
@@ -68,9 +68,14 @@ export function EvaluationResult({ result }: Props) {
       </motion.div>
 
       {/* Total score */}
-      <motion.div variants={itemVariants} className="flex items-baseline gap-1 justify-center py-2">
-        <span className={`text-4xl sm:text-5xl font-bold ${totalColor}`}>{total}</span>
-        <span className="text-slate-600 dark:text-slate-500 text-lg">/ 100</span>
+      <motion.div variants={itemVariants} className="flex flex-col items-center gap-1 py-2">
+        <div className="flex items-baseline gap-1">
+          <span className={`text-4xl sm:text-5xl font-bold ${totalColor}`}>{total}</span>
+          <span className="text-slate-600 dark:text-slate-500 text-lg">/ 100</span>
+        </div>
+        <span className="text-xs text-stone-400 dark:text-indigo-400/50">
+          {source === 'ai' ? 'AI evaluated' : 'heuristic evaluated'}
+        </span>
       </motion.div>
 
       {/* Score bars */}
