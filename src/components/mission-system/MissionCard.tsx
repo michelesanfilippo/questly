@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StarRating } from '@/components/ui/StarRating';
 import { useI18n } from '@/i18n';
+import { useQuestTranslation } from '@/hooks/useQuestTranslation';
 import type { Mission } from '@/types';
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -47,11 +48,12 @@ interface MissionCardProps {
 }
 
 export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [mission, setMission] = useState<Mission | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { translated, translating } = useQuestTranslation(mission, locale);
 
   useEffect(() => {
     fetch('/api/mission')
@@ -110,13 +112,18 @@ export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
       </h2>
 
       {/* Narrative */}
-      <p className="text-sm text-stone-600 italic leading-relaxed">
-        {mission.narrativeDescription}
+      <p className="text-sm text-stone-600 italic leading-relaxed relative">
+        {translating && (
+          <span className="absolute -top-1 right-0 text-xs text-amber-600/60 animate-pulse">translating...</span>
+        )}
+        {translated?.narrativeDescription ?? mission.narrativeDescription}
       </p>
 
       {/* Task box */}
       <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-3 sm:p-4">
-        <p className="text-sm text-stone-700 leading-relaxed">{mission.task}</p>
+        <p className="text-sm text-stone-700 leading-relaxed">
+          {translated?.task ?? mission.task}
+        </p>
       </div>
 
       {/* Hints + multilingual tip */}
@@ -127,7 +134,7 @@ export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
               {t('mission.show_hints')} ({mission.hints.length})
             </summary>
           <ul className="mt-2 space-y-1 pl-3 border-l border-amber-300/50">
-            {mission.hints.map((h, i) => (
+            {(translated?.hints ?? mission.hints).map((h, i) => (
               <li key={i} className="text-xs text-stone-600 break-words">— {h}</li>
             ))}
           </ul>
