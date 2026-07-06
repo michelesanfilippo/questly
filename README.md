@@ -10,6 +10,12 @@
   <a href="https://questly-realm.vercel.app"><strong>🌐 Live — Questly Realm</strong></a>
 </p>
 
+<p align="center">
+  <a href="https://buymeacoffee.com/michelesanc" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="40" />
+  </a>
+</p>
+
 ---
 
 ## What is Questly?
