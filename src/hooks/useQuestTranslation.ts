@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import type { Mission } from '@/types';
 
 interface TranslatedQuest {
+  title: string;
   narrativeDescription: string;
   task: string;
   hints?: string[];
@@ -83,7 +84,8 @@ export function useQuestTranslation(mission: Mission | null, locale: string) {
     async function doTranslate() {
       if (!mission) return;
       try {
-        const [narrativeDescription, task, ...translatedHints] = await Promise.all([
+        const [title, narrativeDescription, task, ...translatedHints] = await Promise.all([
+          translateField(mission.title, locale),
           translateField(mission.narrativeDescription, locale),
           translateField(mission.task, locale),
           ...(mission.hints?.map(h => translateField(h, locale)) ?? []),
@@ -92,6 +94,7 @@ export function useQuestTranslation(mission: Mission | null, locale: string) {
         if (cancelled) return;
 
         const result: TranslatedQuest = {
+          title,
           narrativeDescription,
           task,
           hints: mission.hints ? translatedHints : undefined,

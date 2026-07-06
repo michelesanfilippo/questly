@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n';
 import type { EvaluationResult } from '@/types';
 
-const MAX_CHARS = 500;
+const MAX_CHARS = 2000;
 const MIN_CHARS = 10;
 
 interface MissionInputProps {
@@ -59,7 +59,7 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value.slice(0, MAX_CHARS))}
-            placeholder="Craft your prompt here, adventurer..."
+            placeholder={t('mission.prompt_placeholder') || 'Craft your prompt here, adventurer...'}
             rows={5}
             className="w-full min-h-[120px] rounded-sm border-2 bg-[#faf7f0] text-stone-800 placeholder-stone-400 border-amber-300/60 p-3 sm:p-4 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-500 transition-all duration-200"
           />

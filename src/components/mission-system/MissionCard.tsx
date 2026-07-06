@@ -108,7 +108,7 @@ export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
 
       {/* Title */}
       <h2 className="text-lg sm:text-xl font-bold text-amber-900 leading-snug font-serif">
-        {getQuestEmoji(mission)} {mission.title}
+        {getQuestEmoji(mission)} {translated?.title ?? mission.title}
       </h2>
 
       {/* Narrative */}
@@ -140,8 +140,8 @@ export function MissionCard({ onAccept, disabled = false }: MissionCardProps) {
           </ul>
         </details>
         ) : <div className="flex-1" />}
-        <span className="text-xs text-amber-800/70 hover:text-amber-900 transition-colors select-none text-right shrink-0">
-          {t('mission.write_language')}
+        <span className="text-[10px] text-amber-800/60 hover:text-amber-900 transition-colors select-none text-right shrink-0 max-w-[140px] leading-snug">
+          🌐 {t('mission.write_language')}
         </span>
       </div>
 
