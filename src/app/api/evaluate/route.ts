@@ -54,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const result = evaluatePrompt(userPrompt, mission);
+    const result = await evaluatePrompt(userPrompt, mission);
     return NextResponse.json({ result }, { status: 200 });
   } catch (error) {
     console.error('[POST /api/evaluate]', error);
