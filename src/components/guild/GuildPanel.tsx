@@ -64,11 +64,8 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
 
   return (
     <div className="rounded-sm border-2 border-amber-800/30 bg-[#faf7f0] p-4 shadow-[2px_4px_12px_rgba(101,67,33,0.2)]">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3">
         <h3 className="font-serif text-lg font-bold text-amber-900">{t('guild.title')}</h3>
-        <span className="rounded-full border border-amber-800/20 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-800">
-          {accessState === 'locked' ? t('guild.locked') : accessState === 'member' ? t('guild.member') : t('guild.ready')}
-        </span>
       </div>
 
       {accessState === 'locked' ? (
@@ -108,7 +105,6 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
         </div>
       ) : (
         <div className="space-y-3 text-sm text-stone-600">
-          <p>{t('guild.ready_message')}</p>
           <GuildBrowser currentUserId={profile?.id} profile={profile} onGuildChanged={handleGuildChanged} />
           <p className="text-xs text-stone-500">{t('guild.preview_hint')}</p>
         </div>
