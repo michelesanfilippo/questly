@@ -113,7 +113,7 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
   }
 
   return (
-    <div className="relative bg-[#faf7f0] border-2 border-amber-800/30 rounded-sm shadow-[2px_4px_12px_rgba(101,67,33,0.2)] overflow-hidden">
+    <div className="relative bg-[#faf7f0] border-2 border-amber-800/30 rounded-sm shadow-[2px_4px_12px_rgba(101,67,33,0.2)]">
       {/* Header */}
       <div className="px-4 py-3 border-b border-amber-800/10">
         <h3 className="font-serif font-bold text-amber-900">
@@ -188,30 +188,30 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
                       </span>
 
                       {/* Profile badge/avatar — hover to enlarge */}
-                      <div className="relative group w-7 h-7 rounded-full shrink-0 overflow-visible">
-                        <div className="w-7 h-7 rounded-full overflow-hidden">
+                      <div className="relative group shrink-0" style={{ width: 28, height: 28 }}>
+                        <div className="rounded-full overflow-hidden" style={{ width: 28, height: 28 }}>
                           {entry.profile_badge_index != null ? (
                             <Image
                               src={getBadgeImagePath(entry.profile_badge_index)}
                               alt=""
                               width={28}
                               height={28}
-                              className="w-full h-full object-cover rounded-full"
+                              style={{ width: 28, height: 28, objectFit: 'cover', borderRadius: '50%' }}
                             />
                           ) : (
-                            <div className="w-7 h-7 rounded-full bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-800">
+                            <div className="rounded-full bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-800" style={{ width: 28, height: 28 }}>
                               {entry.nickname.slice(0, 1).toUpperCase()}
                             </div>
                           )}
                         </div>
-                        {/* Hover enlarged badge */}
+                        {/* Hover enlarged badge — positioned to the right */}
                         {entry.profile_badge_index != null && (
-                         <div className={`absolute left-1/2 -translate-x-1/2 z-30 hidden group-hover:flex flex-col items-center pointer-events-none ${index < 2 ? 'top-9' : 'bottom-9'}`}>
+                          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-30 hidden group-hover:flex flex-col items-center pointer-events-none">
                             <Image
                               src={getBadgeImagePath(entry.profile_badge_index)}
                               alt=""
-                              width={120}
-                              height={120}
+                              width={80}
+                              height={80}
                               className="rounded-full shadow-[0_0_16px_rgba(217,119,6,0.5)] border-2 border-amber-300/60"
                             />
                             <div className="mt-1 px-2 py-0.5 bg-[#faf7f0] border border-amber-300/40 rounded text-xs text-amber-900 font-medium whitespace-nowrap shadow">
