@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabaseServer';
-import { createGuildRecord, getCurrentGuild, joinGuildRecord, listGuilds } from '@/lib/guildsDb';
+import { assignRoleRecord, createGuildRecord, getCurrentGuild, joinGuildRecord, kickMemberRecord, leaveGuildRecord, listGuilds, listJoinRequestsRecord, applyToGuildRecord, respondJoinRequestRecord } from '@/lib/guildsDb';
 
 export async function GET(req: NextRequest) {
   const auth = await requireUser(req);
@@ -14,7 +14,13 @@ export async function GET(req: NextRequest) {
         guild: currentGuild?.guild ?? null,
         role: currentGuild?.role ?? null,
         members: currentGuild?.members ?? [],
+        requestCount: currentGuild?.requestCount ?? 0,
       });
+    }
+
+    if (scope === 'requests') {
+      const result = await listJoinRequestsRecord(auth.user.id);
+      return NextResponse.json(result);
     }
 
     const guildsResult = await listGuilds(auth.user.id);
@@ -29,7 +35,7 @@ export async function POST(req: NextRequest) {
   const auth = await requireUser(req);
   if (auth.error) return auth.error;
 
-  let body: { action?: 'create' | 'join'; name?: string; description?: string; guildId?: string };
+  let body: { action?: 'create' | 'join' | 'leave' | 'apply' | 'kick' | 'assign_role' | 'respond_request'; name?: string; description?: string; guildId?: string; targetUserId?: string; role?: string; demoteUserId?: string; requestId?: string; accept?: boolean };
   try {
     body = await req.json();
   } catch (err) {
@@ -40,6 +46,40 @@ export async function POST(req: NextRequest) {
   const action = body.action ?? 'create';
 
   try {
+    if (action === 'leave') {
+      const result = await leaveGuildRecord(auth.user.id);
+      return NextResponse.json(result);
+    }
+
+    if (action === 'apply') {
+      const guildId = body.guildId?.trim();
+      if (!guildId) return NextResponse.json({ error: 'Guild id is required' }, { status: 400 });
+      const result = await applyToGuildRecord(auth.user.id, guildId);
+      return NextResponse.json(result);
+    }
+
+    if (action === 'kick') {
+      const targetUserId = body.targetUserId?.trim();
+      if (!targetUserId) return NextResponse.json({ error: 'Target user id is required' }, { status: 400 });
+      const result = await kickMemberRecord(auth.user.id, targetUserId);
+      return NextResponse.json(result);
+    }
+
+    if (action === 'assign_role') {
+      const targetUserId = body.targetUserId?.trim();
+      const role = body.role as 'royal_knight' | 'wizard' | 'member' | undefined;
+      if (!targetUserId || !role) return NextResponse.json({ error: 'Target user id and role are required' }, { status: 400 });
+      const result = await assignRoleRecord(auth.user.id, targetUserId, role, body.demoteUserId?.trim());
+      return NextResponse.json(result);
+    }
+
+    if (action === 'respond_request') {
+      const requestId = body.requestId?.trim();
+      if (!requestId || body.accept === undefined) return NextResponse.json({ error: 'Request id and accept flag are required' }, { status: 400 });
+      const result = await respondJoinRequestRecord(auth.user.id, requestId, body.accept);
+      return NextResponse.json(result);
+    }
+
     if (action === 'join') {
       const guildId = body.guildId?.trim();
       if (!guildId) {

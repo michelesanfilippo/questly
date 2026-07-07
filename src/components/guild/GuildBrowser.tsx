@@ -25,7 +25,8 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
   const [guilds, setGuilds] = useState<GuildSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [joiningGuildId, setJoiningGuildId] = useState<string | null>(null);
+  const [applyingGuildId, setApplyingGuildId] = useState<string | null>(null);
+  const [appliedGuildIds, setAppliedGuildIds] = useState<Set<string>>(new Set());
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [draftName, setDraftName] = useState('');
   const [draftDescription, setDraftDescription] = useState('');
@@ -41,8 +42,9 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
           const errPayload = await res.json().catch(() => ({})) as { error?: string };
           throw new Error(errPayload.error ?? 'Failed to load guilds');
         }
-        const payload = await res.json() as { guilds?: GuildSummary[] };
+        const payload = await res.json() as { guilds?: GuildSummary[]; pendingRequestGuildIds?: string[] };
         setGuilds(payload.guilds ?? []);
+        setAppliedGuildIds(new Set(payload.pendingRequestGuildIds ?? []));
       } catch (err) {
         setError(err instanceof Error ? err.message : t('guild.load_error'));
       } finally {
@@ -94,32 +96,29 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
     }
   }
 
-  async function handleJoin(guildId: string) {
+  async function handleApply(guildId: string) {
     if (!currentUserId) return;
-    setJoiningGuildId(guildId);
+    setApplyingGuildId(guildId);
     setError(null);
     try {
       const response = await fetch('/api/guilds', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'join', guildId }),
+        body: JSON.stringify({ action: 'apply', guildId }),
       });
 
       if (response.ok) {
-        const payload = await response.json() as { guild?: GuildSummary; profile?: SupabaseProfile };
-        if (payload.guild) {
-          onGuildChanged?.(payload.guild, payload.profile ?? null);
-        }
+        setAppliedGuildIds((prev) => new Set([...prev, guildId]));
         return;
       }
 
       const payload = await response.json().catch(() => ({})) as { error?: string };
-      setError(payload.error ?? t('guild.join_error'));
+      setError(payload.error ?? t('guild.apply_error'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('guild.join_error'));
+      setError(err instanceof Error ? err.message : t('guild.apply_error'));
     } finally {
-      setJoiningGuildId(null);
+      setApplyingGuildId(null);
     }
   }
 
@@ -154,11 +153,11 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
                 </div>
                 <button
                   type="button"
-                  onClick={() => { void handleJoin(guild.id); }}
-                  disabled={!!profile?.guild_id || joiningGuildId === guild.id}
+                  onClick={() => { void handleApply(guild.id); }}
+                  disabled={!!profile?.guild_id || applyingGuildId === guild.id || appliedGuildIds.has(guild.id)}
                   className="rounded-sm border border-amber-700 px-2 py-1 text-xs font-semibold text-amber-700 disabled:cursor-not-allowed disabled:border-stone-300 disabled:text-stone-400"
                 >
-                  {profile?.guild_id === guild.id ? t('guild.joined') : joiningGuildId === guild.id ? t('guild.joining') : t('guild.join')}
+                  {appliedGuildIds.has(guild.id) ? t('guild.applied') : applyingGuildId === guild.id ? t('guild.applying') : t('guild.apply')}
                 </button>
               </div>
             </div>
