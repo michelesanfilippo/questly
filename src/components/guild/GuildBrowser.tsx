@@ -34,21 +34,24 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
   useEffect(() => {
     async function loadGuilds() {
       setLoading(true);
+      setError(null);
       try {
         const res = await fetch('/api/guilds', { method: 'GET', credentials: 'include' });
-        if (!res.ok) throw new Error('Failed to load guilds');
-        const payload = await res.json() as { guilds?: GuildSummary[] | { guilds?: GuildSummary[] } };
-        const nextGuilds = Array.isArray(payload.guilds)
-          ? payload.guilds
-          : payload.guilds?.guilds ?? [];
-        setGuilds(nextGuilds);
+        if (!res.ok) {
+          const errPayload = await res.json().catch(() => ({})) as { error?: string };
+          throw new Error(errPayload.error ?? 'Failed to load guilds');
+        }
+        const payload = await res.json() as { guilds?: GuildSummary[] };
+        setGuilds(payload.guilds ?? []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('guild.load_error'));
       } finally {
         setLoading(false);
       }
     }
 
     void loadGuilds();
-  }, []);
+  }, [t]);
 
   async function handleCreate() {
     const nextName = draftName.trim();
@@ -62,60 +65,67 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
 
     setIsSubmitting(true);
     setError(null);
-    const response = await fetch('/api/guilds', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'create', name: nextName, description: draftDescription.trim() }),
-    });
+    try {
+      const response = await fetch('/api/guilds', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', name: nextName, description: draftDescription.trim() || undefined }),
+      });
 
-    if (response.ok) {
-      setDraftName('');
-      setDraftDescription('');
-      setIsCreateOpen(false);
-      const payload = await response.json() as { guild?: GuildSummary; profile?: SupabaseProfile };
-      if (payload.guild) {
-        setGuilds((prev) => [payload.guild as GuildSummary, ...prev]);
-        onGuildChanged?.(payload.guild, payload.profile ?? null);
+      if (response.ok) {
+        const payload = await response.json() as { guild?: GuildSummary; profile?: SupabaseProfile };
+        setDraftName('');
+        setDraftDescription('');
+        setIsCreateOpen(false);
+        if (payload.guild) {
+          setGuilds((prev) => [payload.guild as GuildSummary, ...prev]);
+          onGuildChanged?.(payload.guild, payload.profile ?? null);
+        }
+        return;
       }
-      setIsSubmitting(false);
-      return;
-    }
 
-    const payload = await response.json().catch(() => ({})) as { error?: string };
-    setError(payload.error ?? t('guild.create_error'));
-    setIsSubmitting(false);
+      const payload = await response.json().catch(() => ({})) as { error?: string };
+      setError(payload.error ?? t('guild.create_error'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('guild.create_error'));
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function handleJoin(guildId: string) {
     if (!currentUserId) return;
     setJoiningGuildId(guildId);
     setError(null);
-    const response = await fetch('/api/guilds', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'join', guildId }),
-    });
+    try {
+      const response = await fetch('/api/guilds', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'join', guildId }),
+      });
 
-    if (response.ok) {
-      const payload = await response.json() as { guild?: GuildSummary; profile?: SupabaseProfile };
-      if (payload.guild) {
-        onGuildChanged?.(payload.guild, payload.profile ?? null);
+      if (response.ok) {
+        const payload = await response.json() as { guild?: GuildSummary; profile?: SupabaseProfile };
+        if (payload.guild) {
+          onGuildChanged?.(payload.guild, payload.profile ?? null);
+        }
+        return;
       }
-      setJoiningGuildId(null);
-      return;
-    }
 
-    const payload = await response.json().catch(() => ({})) as { error?: string };
-    setError(payload.error ?? t('guild.join_error'));
-    setJoiningGuildId(null);
+      const payload = await response.json().catch(() => ({})) as { error?: string };
+      setError(payload.error ?? t('guild.join_error'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('guild.join_error'));
+    } finally {
+      setJoiningGuildId(null);
+    }
   }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-serif text-lg font-bold text-amber-900">{t('guild.title')}</h3>
         <div className="flex items-center gap-2">
           <button
             type="button"
