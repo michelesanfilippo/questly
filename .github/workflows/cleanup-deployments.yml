@@ -29,12 +29,11 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           PROJECT_ID="prj_uBinjWLGdqMZuqFmdR75ZSqycbZ5"
-          
-          # Recupera tutti i deployment
-          DEPLOYMENTS=$(curl -s "https://api.vercel.com/v6/deployments?projectId=$PROJECT_ID&limit=100&state=READY" \
+
+          # Recupera tutti i deployment (tutti gli stati)
+          DEPLOYMENTS=$(curl -s "https://api.vercel.com/v6/deployments?projectId=$PROJECT_ID&limit=100" \
             -H "Authorization: Bearer $VERCEL_TOKEN" | jq -r '.deployments | sort_by(.createdAt) | reverse | .[1:] | .[].uid')
-          
-          # Elimina tutti tranne il primo
+
           for UID in $DEPLOYMENTS; do
             curl -s -X DELETE "https://api.vercel.com/v13/deployments/$UID" \
               -H "Authorization: Bearer $VERCEL_TOKEN" > /dev/null
