@@ -74,31 +74,42 @@ export default function HomePage() {
 
   // Auth state
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // Loads all user data. Must run OUTSIDE the onAuthStateChange callback:
+    // that callback holds Supabase's internal auth lock (navigator LockManager),
+    // and awaiting other Supabase queries inside it can deadlock — leaving the
+    // profile null (features locked) until a manual page reload frees the lock.
+    async function loadUserData(session: Session) {
+      if (!session.user) return;
+      const { data: prof } = await getProfile(session.user.id);
+      if (prof) {
+        setProfile(prof);
+        // Check if today's mission already completed
+        setMission(prev => {
+          if (prev) {
+            const today = (() => { const _d = new Date(); return `${_d.getUTCFullYear()}-${String(_d.getUTCMonth()+1).padStart(2,'0')}-${String(_d.getUTCDate()).padStart(2,'0')}`; })();
+            if (prof.last_mission_id === prev.id && prof.last_mission_date === today) {
+              setMissionAlreadyDone(true);
+            }
+          }
+          return prev;
+        });
+        const { data: badges } = await getUserBadges(session.user.id);
+        setEarnedBadges(badges?.map((b: { badge_index: number }) => b.badge_index) ?? []);
+        const { data: npc } = await getNpcProgress(session.user.id);
+        setNpcProgress((npc as NpcProgress[]) ?? []);
+        // Update login streak on every login/session restore
+        await updateLoginStreak(session.user.id);
+      } else {
+        setShowNicknameSetup(true);
+      }
+    }
+
+    // Keep the callback synchronous and defer all Supabase calls to a macrotask,
+    // so the auth lock is released before we query the database.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
-        const { data: prof } = await getProfile(session.user.id);
-        if (prof) {
-          setProfile(prof);
-          // Check if today's mission already completed
-          setMission(prev => {
-            if (prev) {
-              const today = (() => { const _d = new Date(); return `${_d.getUTCFullYear()}-${String(_d.getUTCMonth()+1).padStart(2,'0')}-${String(_d.getUTCDate()).padStart(2,'0')}`; })();
-              if (prof.last_mission_id === prev.id && prof.last_mission_date === today) {
-                setMissionAlreadyDone(true);
-              }
-            }
-            return prev;
-          });
-          const { data: badges } = await getUserBadges(session.user.id);
-          setEarnedBadges(badges?.map((b: { badge_index: number }) => b.badge_index) ?? []);
-          const { data: npc } = await getNpcProgress(session.user.id);
-          setNpcProgress((npc as NpcProgress[]) ?? []);
-          // Update login streak on every login/session restore
-          await updateLoginStreak(session.user.id);
-        } else {
-          setShowNicknameSetup(true);
-        }
+        setTimeout(() => { void loadUserData(session); }, 0);
       } else {
         setProfile(null);
         setEarnedBadges([]);

@@ -13,7 +13,7 @@ interface TranslatedQuest {
 
 const CACHE_TTL_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
 const CACHE_PREFIX = 'qt_';
-const CACHE_VERSION = 'v2'; // bump to invalidate all cached translations
+const CACHE_VERSION = 'v3'; // bump to invalidate all cached translations
 
 function cacheKey(missionId: string, locale: string) {
   return `${CACHE_PREFIX}${CACHE_VERSION}_${missionId}_${locale}`;
@@ -39,14 +39,17 @@ function purgeStaleCache() {
   } catch { /* ignore */ }
 }
 
-async function translateField(text: string, targetLocale: string): Promise<string> {
+async function translateBatch(items: string[], targetLocale: string): Promise<string[]> {
   const res = await fetch('/api/translate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, targetLocale }),
+    body: JSON.stringify({ items, targetLocale }),
   });
-  const data = await res.json() as { translated: string };
-  return data.translated ?? text;
+  const data = await res.json() as { translated: string[] };
+  // Fall back to the originals if the shape/length is unexpected.
+  return Array.isArray(data.translated) && data.translated.length === items.length
+    ? data.translated
+    : items;
 }
 
 export function useQuestTranslation(mission: Mission | null, locale: string) {
@@ -85,12 +88,13 @@ export function useQuestTranslation(mission: Mission | null, locale: string) {
     async function doTranslate() {
       if (!mission) return;
       try {
-        const [title, narrativeDescription, task, ...translatedHints] = await Promise.all([
-          translateField(mission.title, locale),
-          translateField(mission.narrativeDescription, locale),
-          translateField(mission.task, locale),
-          ...(mission.hints?.map(h => translateField(h, locale)) ?? []),
-        ]);
+        // Translate all quest fields in ONE request so the model has the full
+        // context of the quest (correct articles, gender/number agreement and
+        // consistent terminology), instead of translating each field blindly.
+        const hints = mission.hints ?? [];
+        const items = [mission.title, mission.narrativeDescription, mission.task, ...hints];
+        const [title, narrativeDescription, task, ...translatedHints] =
+          await translateBatch(items, locale);
 
         if (cancelled) return;
 
