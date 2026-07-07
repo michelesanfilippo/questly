@@ -4,17 +4,39 @@ on:
   deployment_status:
 
 jobs:
-  cleanup:
+  # Cleanup GitHub deployments
+  cleanup-github:
     if: github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
-
     steps:
-      - name: Delete old deployments
+      - name: Delete old GitHub deployments
         uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: Production
           onlyRemoveDeployments: true
           delay: 5
+
+  # Cleanup Vercel deployments (richiede secret VERCEL_TOKEN)
+  cleanup-vercel:
+    if: github.event.deployment_status.state == 'success' && secrets.VERCEL_TOKEN != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old Vercel deployments
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          PROJECT_ID="prj_uBinjWLGdqMZuqFmdR75ZSqycbZ5"
+          
+          # Recupera tutti i deployment
+          DEPLOYMENTS=$(curl -s "https://api.vercel.com/v6/deployments?projectId=$PROJECT_ID&limit=100&state=READY" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" | jq -r '.deployments | sort_by(.createdAt) | reverse | .[1:] | .[].uid')
+          
+          # Elimina tutti tranne il primo
+          for UID in $DEPLOYMENTS; do
+            curl -s -X DELETE "https://api.vercel.com/v13/deployments/$UID" \
+              -H "Authorization: Bearer $VERCEL_TOKEN" > /dev/null
+            echo "Eliminato: $UID"
+          done
