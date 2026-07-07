@@ -14,17 +14,20 @@ export async function GET(req: NextRequest) {
     .map((row) => (row.user_low === userId ? row.user_high : row.user_low))
     .filter(Boolean);
 
-  const incomingRows = (data ?? []).filter((row) => row.status === 'pending' && row.user_high === userId);
-  const incomingRequestUserIds = incomingRows.map((row) => row.user_low).filter(Boolean);
+  const pendingRows = (data ?? []).filter((row) => row.status === 'pending' && (row.user_low === userId || row.user_high === userId));
+  const incomingRows = pendingRows.filter((row) => row.requested_by !== userId);
+  const outgoingRows = pendingRows.filter((row) => row.requested_by === userId);
+
+  const requestedUserIds = [...incomingRows.map((row) => row.user_low), ...outgoingRows.map((row) => row.user_low)].filter(Boolean);
 
   const supabase = await createSupabaseServerClient();
   let nicknameMap: Record<string, string> = {};
 
-  if (incomingRequestUserIds.length > 0) {
+  if (requestedUserIds.length > 0) {
     const { data: profileRows, error: profileError } = await supabase
       .from('profiles')
       .select('id,nickname')
-      .in('id', incomingRequestUserIds);
+      .in('id', requestedUserIds);
 
     if (!profileError) {
       nicknameMap = Object.fromEntries((profileRows ?? []).map((profile) => [profile.id, profile.nickname ?? '']));
@@ -32,13 +35,20 @@ export async function GET(req: NextRequest) {
   }
 
   const incomingRequests = incomingRows.map((row) => ({
-    userId: row.user_low,
-    nickname: nicknameMap[row.user_low] ?? row.user_low,
+    userId: row.user_low === userId ? row.user_high : row.user_low,
+    nickname: nicknameMap[row.user_low === userId ? row.user_high : row.user_low] ?? (row.user_low === userId ? row.user_high : row.user_low),
     requestedBy: row.requested_by,
     createdAt: row.created_at,
   }));
 
-  return NextResponse.json({ friends, incomingRequests });
+  const outgoingRequests = outgoingRows.map((row) => ({
+    userId: row.user_low === userId ? row.user_high : row.user_low,
+    nickname: nicknameMap[row.user_low === userId ? row.user_high : row.user_low] ?? (row.user_low === userId ? row.user_high : row.user_low),
+    requestedBy: row.requested_by,
+    createdAt: row.created_at,
+  }));
+
+  return NextResponse.json({ friends, incomingRequests, outgoingRequests });
 }
 
 export async function POST(req: NextRequest) {

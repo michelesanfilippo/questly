@@ -227,7 +227,7 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
                       <button
                         type="button"
                         onClick={() => setPreviewUserId(entry.id)}
-                        className="flex-1 truncate text-left text-sm font-medium text-amber-900 transition-colors hover:text-amber-700"
+                        className="flex-1 truncate text-left text-sm font-medium text-amber-900 transition-all cursor-pointer hover:text-amber-700 hover:underline hover:decoration-amber-600/70 hover:decoration-2 hover:underline-offset-2"
                       >
                         {entry.nickname}
                         {isMe && (

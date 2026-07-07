@@ -23,10 +23,11 @@ export async function friendshipStatus(a: string, b: string, currentUserId?: str
   if (currentUserId && a === currentUserId && b === currentUserId) return 'self';
   const response = await fetch('/api/friends', { method: 'GET', credentials: 'include' });
   if (!response.ok) return 'none';
-  const payload = await response.json() as { friends?: string[]; incomingRequests?: Array<{ userId: string }> };
+  const payload = await response.json() as { friends?: string[]; incomingRequests?: Array<{ userId: string }>; outgoingRequests?: Array<{ userId: string }> };
   const friendIds = payload.friends ?? [];
   if (friendIds.includes(b)) return 'friends';
   if (payload.incomingRequests?.some((item) => item.userId === b)) return 'pending_incoming';
+  if (payload.outgoingRequests?.some((item) => item.userId === b)) return 'pending_outgoing';
   return 'none';
 }
 
