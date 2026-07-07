@@ -16,6 +16,7 @@ import { NicknameSetup } from '@/components/auth/NicknameSetup';
 import { UserCard } from '@/components/profile/UserCard';
 import { LoginInviteCard } from '@/components/profile/LoginInviteCard';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
+import { FriendsCard } from '@/components/social/FriendsCard';
 import { BadgeUnlockPopup } from '@/components/ui/BadgeUnlockPopup';
 import { BADGE_DEFINITIONS, getBadgeImagePath } from '@/lib/badges';
 import type { Mission, EvaluationResult as EvalResultType } from '@/types';
@@ -276,11 +277,14 @@ export default function HomePage() {
             {/* UserCard or login invite */}
             <div className="order-2 lg:order-3">
               {profile ? (
-                <UserCard
-                  profile={profile}
-                  earnedBadges={earnedBadges}
-                  onProfileUpdate={(updated) => setProfile(updated)}
-                />
+                <div className="flex flex-col gap-4">
+                  <UserCard
+                    profile={profile}
+                    earnedBadges={earnedBadges}
+                    onProfileUpdate={(updated) => setProfile(updated)}
+                  />
+                  <FriendsCard currentUserId={profile.id} profileLevel={profile.level} />
+                </div>
               ) : (
                 <LoginInviteCard />
               )}

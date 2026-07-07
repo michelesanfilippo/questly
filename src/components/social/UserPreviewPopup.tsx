@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath } from '@/lib/badges';
+import { friendshipStatus, sendRequest, type FriendshipStatus } from '@/lib/friends';
 
 interface UserPreviewPopupProps {
   userId: string;
@@ -24,6 +25,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   const { t } = useI18n();
   const [profile, setProfile] = useState<ProfilePreview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [friendship, setFriendship] = useState<FriendshipStatus>('none');
 
   useEffect(() => {
     let cancelled = false;
@@ -38,6 +40,8 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
 
       if (!cancelled && !error && data) {
         setProfile(data as ProfilePreview);
+        const status = await friendshipStatus(userId, data.id, currentUserId);
+        if (!cancelled) setFriendship(status);
       }
 
       if (!cancelled) {
@@ -49,9 +53,23 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, currentUserId]);
 
   const isMe = Boolean(currentUserId && currentUserId === userId);
+
+  async function handleFriendAction() {
+    if (!currentUserId || isMe) return;
+    const nextStatus = await sendRequest(userId, currentUserId);
+    setFriendship(nextStatus);
+  }
+
+  function getFriendButtonLabel() {
+    if (isMe) return t('social.you');
+    if (friendship === 'friends') return t('friends.accepted');
+    if (friendship === 'pending_outgoing') return t('friends.pending_outgoing');
+    if (friendship === 'pending_incoming') return t('friends.pending_incoming');
+    return t('social.friend_cta');
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
@@ -111,17 +129,18 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
               </div>
               <button
                 type="button"
-                disabled={isMe}
+                disabled={isMe || friendship === 'friends' || friendship === 'pending_outgoing' || friendship === 'pending_incoming'}
+                onClick={handleFriendAction}
                 className={`mt-4 w-full rounded-sm border px-3 py-2 text-sm font-semibold transition-colors ${
-                  isMe
+                  isMe || friendship === 'friends' || friendship === 'pending_outgoing' || friendship === 'pending_incoming'
                     ? 'cursor-not-allowed border-stone-300 bg-stone-200 text-stone-500'
                     : 'border-amber-700 bg-amber-700 text-amber-50 hover:bg-amber-800'
                 }`}
               >
-                {isMe ? t('social.you') : t('social.friend_cta')}
+                {getFriendButtonLabel()}
               </button>
               <p className="mt-2 text-center text-[11px] text-stone-500">
-                {t('social.friend_soon')}
+                {friendship === 'friends' ? t('friends.connected') : t('social.friend_soon')}
               </p>
             </>
           ) : (
