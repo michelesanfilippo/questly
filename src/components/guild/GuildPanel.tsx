@@ -6,6 +6,7 @@ import { useI18n } from '@/i18n';
 import { GuildBrowser } from '@/components/guild/GuildBrowser';
 import { getGuildAccessState } from '@/lib/guilds';
 import { getBadgeImagePath } from '@/lib/badges';
+import { UserPreviewPopup } from '@/components/social/UserPreviewPopup';
 import type { SupabaseProfile } from '@/types';
 
 interface GuildPanelProps {
@@ -56,6 +57,8 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
   const [assignHolders, setAssignHolders] = useState<HolderEntry[]>([]);
   const [isAssigning, setIsAssigning] = useState(false);
   const [assignError, setAssignError] = useState<string | null>(null);
+  // User preview
+  const [previewUserId, setPreviewUserId] = useState<string | null>(null);
 
   const loadCurrentGuild = useCallback(async () => {
     try {
@@ -297,6 +300,11 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
               <div className="space-y-1.5">
                 {members.map((member) => (
                   <div key={member.user_id} className="flex items-center gap-2 rounded-sm border border-amber-800/10 bg-amber-50/60 px-2 py-1.5">
+                    <button
+                      type="button"
+                      onClick={() => member.user_id !== currentUserId && setPreviewUserId(member.user_id)}
+                      className={`flex min-w-0 flex-1 items-center gap-2 text-left ${member.user_id !== currentUserId ? 'cursor-pointer' : ''}`}
+                    >
                     <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-amber-800/20 bg-amber-100">
                       {member.profile_badge_index != null ? (
                         <Image src={getBadgeImagePath(member.profile_badge_index)} alt="" width={32} height={32} className="h-full w-full object-cover" />
@@ -309,6 +317,7 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-amber-900">{member.nickname ?? t('guild.unknown_member')}</p>
                     </div>
+                    </button>
                     <span className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] ${roleBadgeClass(member.role)}`}>
                       {getRoleLabel(member.role)}
                     </span>
@@ -372,6 +381,14 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
           <p className="text-xs text-stone-500">{t('guild.preview_hint')}</p>
         </div>
       )}
+
+      {previewUserId ? (
+        <UserPreviewPopup
+          userId={previewUserId}
+          currentUserId={currentUserId}
+          onClose={() => setPreviewUserId(null)}
+        />
+      ) : null}
 
       {/* Quit popup */}
       {isQuitOpen ? (
