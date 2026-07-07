@@ -1,0 +1,20 @@
+name: Cleanup old deployments
+
+on:
+  deployment_status:
+
+jobs:
+  cleanup:
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+
+    steps:
+      - name: Delete old deployments
+        uses: strumwolf/delete-deployment-environment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: Production
+          onlyRemoveDeployments: true
+          delay: 5
