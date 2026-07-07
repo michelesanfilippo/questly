@@ -33,8 +33,11 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
       try {
         const res = await fetch('/api/guilds', { method: 'GET', credentials: 'include' });
         if (!res.ok) throw new Error('Failed to load guilds');
-        const payload = await res.json() as { guilds?: GuildSummary[] };
-        setGuilds(payload.guilds ?? []);
+        const payload = await res.json() as { guilds?: GuildSummary[] | { guilds?: GuildSummary[] } };
+        const nextGuilds = Array.isArray(payload.guilds)
+          ? payload.guilds
+          : payload.guilds?.guilds ?? [];
+        setGuilds(nextGuilds);
       } finally {
         setLoading(false);
       }

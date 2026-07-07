@@ -17,8 +17,8 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const guilds = await listGuilds(auth.user.id);
-    return NextResponse.json({ guilds });
+    const guildsResult = await listGuilds(auth.user.id);
+    return NextResponse.json({ guilds: guildsResult.guilds, membership: guildsResult.membership });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to load guilds' }, { status: 500 });
   }
