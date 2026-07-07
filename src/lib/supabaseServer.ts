@@ -20,23 +20,20 @@ export async function createSupabaseServerClient() {
   );
 }
 
-/** Returns a service-role client that bypasses RLS — use only server-side. */
-export function createSupabaseAdminClient() {
+/** Returns a service-role client that bypasses RLS — use only server-side.
+ *  Falls back to a cookie-based session client if SUPABASE_SERVICE_ROLE_KEY is not set.
+ *  In that case ensure the RLS policies in supabase/guild_management_rls.sql are applied. */
+export async function createSupabaseAdminClient() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceKey) {
-    // Fall back to anon key if service role key is not configured.
-    // In this case make sure to add the RLS policy from guild_members_visibility_fix.sql.
-    console.warn('[supabaseServer] SUPABASE_SERVICE_ROLE_KEY not set, falling back to anon key');
+  if (serviceKey) {
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      serviceKey,
+      { auth: { autoRefreshToken: false, persistSession: false } },
     );
   }
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    serviceKey,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  // Fallback: use the user's cookie session so auth.uid() is correct for RLS
+  return createSupabaseServerClient();
 }
 
 /** Returns the authenticated user or responds with 401. */
