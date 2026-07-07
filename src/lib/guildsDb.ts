@@ -1,8 +1,8 @@
-import { createSupabaseAdminClient } from '@/lib/supabaseServer';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { GUILD_UNLOCK_LEVEL } from '@/lib/gating';
 
 export async function getCurrentGuild(userId: string) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const { data: membershipRows, error: membershipError } = await supabase
     .from('guild_members')
     .select('guild_id,role')
@@ -78,7 +78,7 @@ export async function getCurrentGuild(userId: string) {
 }
 
 export async function leaveGuildRecord(userId: string) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: membership, error: membershipError } = await supabase
     .from('guild_members').select('guild_id,role').eq('user_id', userId).maybeSingle();
@@ -109,7 +109,7 @@ export async function leaveGuildRecord(userId: string) {
 }
 
 export async function listGuilds(userId: string) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from('guilds')
     .select('id,name,description,level,xp,founder_id,created_at')
@@ -139,7 +139,7 @@ export async function listGuilds(userId: string) {
 }
 
 export async function createGuildRecord(userId: string, name: string, description?: string) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const { data: profile, error: profileError } = await supabase.from('profiles').select('id,level,guild_id').eq('id', userId).single();
   if (profileError) throw profileError;
   if (!profile) throw new Error('Profile not found');
@@ -177,7 +177,7 @@ export async function createGuildRecord(userId: string, name: string, descriptio
 }
 
 export async function joinGuildRecord(userId: string, guildId: string) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const { data: profile, error: profileError } = await supabase.from('profiles').select('id,level,guild_id').eq('id', userId).single();
   if (profileError) throw profileError;
   if (!profile) throw new Error('Profile not found');
@@ -205,7 +205,7 @@ export async function joinGuildRecord(userId: string, guildId: string) {
 }
 
 export async function applyToGuildRecord(userId: string, guildId: string) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const { data: profile, error: profileError } = await supabase.from('profiles').select('id,level,guild_id').eq('id', userId).single();
   if (profileError) throw profileError;
   if (!profile) throw new Error('Profile not found');
@@ -226,7 +226,7 @@ export async function applyToGuildRecord(userId: string, guildId: string) {
 }
 
 export async function kickMemberRecord(actorId: string, targetUserId: string) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: actorMembership } = await supabase.from('guild_members').select('guild_id,role').eq('user_id', actorId).maybeSingle();
   if (!actorMembership?.guild_id) throw new Error('Actor not in a guild');
@@ -251,7 +251,7 @@ export async function assignRoleRecord(
   role: 'royal_knight' | 'wizard' | 'member',
   demoteUserId?: string,
 ) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: actorMembership } = await supabase.from('guild_members').select('guild_id,role').eq('user_id', actorId).maybeSingle();
   if (!actorMembership?.guild_id) throw new Error('Actor not in a guild');
@@ -273,7 +273,7 @@ export async function assignRoleRecord(
       await supabase.from('guild_members').update({ role: 'member' }).eq('user_id', demoteUserId).eq('guild_id', guildId);
       await supabase.from('guild_members').update({ role: 'royal_knight' }).eq('user_id', targetUserId).eq('guild_id', guildId);
     } else {
-      const holderIds = currentKnights.map((k) => k.user_id);
+      const holderIds = (currentKnights as { user_id: string }[]).map((k) => k.user_id);
       const { data: profiles } = await supabase.from('profiles').select('id,nickname,profile_badge_index').in('id', holderIds);
       return { needsDemote: true, role: 'royal_knight', holders: profiles ?? [] };
     }
@@ -288,7 +288,7 @@ export async function assignRoleRecord(
       await supabase.from('guild_members').update({ role: 'member' }).eq('user_id', demoteUserId).eq('guild_id', guildId);
       await supabase.from('guild_members').update({ role: 'wizard' }).eq('user_id', targetUserId).eq('guild_id', guildId);
     } else {
-      const holderIds = currentWizards.map((w) => w.user_id);
+      const holderIds = (currentWizards as { user_id: string }[]).map((w) => w.user_id);
       const { data: profiles } = await supabase.from('profiles').select('id,nickname,profile_badge_index').in('id', holderIds);
       return { needsDemote: true, role: 'wizard', holders: profiles ?? [] };
     }
@@ -300,7 +300,7 @@ export async function assignRoleRecord(
 }
 
 export async function listJoinRequestsRecord(actorId: string) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: membership } = await supabase.from('guild_members').select('guild_id,role').eq('user_id', actorId).maybeSingle();
   if (!membership?.guild_id) throw new Error('Not in a guild');
@@ -310,12 +310,12 @@ export async function listJoinRequestsRecord(actorId: string) {
   if (error) throw error;
   if (!requests || requests.length === 0) return { requests: [] };
 
-  const userIds = requests.map((r) => r.user_id);
+  const userIds = (requests as { id: string; user_id: string; created_at: string }[]).map((r) => r.user_id);
   const { data: profiles } = await supabase.from('profiles').select('id,nickname,profile_badge_index,level').in('id', userIds);
-  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+  const profileMap = new Map((profiles as { id: string; nickname: string | null; profile_badge_index: number | null; level: number | null }[] ?? []).map((p) => [p.id, p]));
 
   return {
-    requests: requests.map((r) => ({
+    requests: (requests as { id: string; user_id: string; created_at: string }[]).map((r) => ({
       id: r.id,
       user_id: r.user_id,
       created_at: r.created_at,
@@ -327,7 +327,7 @@ export async function listJoinRequestsRecord(actorId: string) {
 }
 
 export async function respondJoinRequestRecord(actorId: string, requestId: string, accept: boolean) {
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: actorMembership } = await supabase.from('guild_members').select('guild_id,role').eq('user_id', actorId).maybeSingle();
   if (!actorMembership?.guild_id) throw new Error('Not in a guild');
