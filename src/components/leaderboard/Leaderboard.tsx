@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath, BADGE_DEFINITIONS } from '@/lib/badges';
 import { useI18n } from '@/i18n';
+import { UserPreviewPopup } from '@/components/social/UserPreviewPopup';
 
 interface SupabaseProfile {
   id: string;
@@ -34,6 +35,7 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
   const [activeTab, setActiveTab] = useState<Tab>('Level');
   const [entries, setEntries] = useState<ProfileWithBadgeCount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewUserId, setPreviewUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -222,14 +224,18 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
                       </div>
 
                       {/* Nickname */}
-                      <span className="text-sm font-medium text-amber-900 truncate flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewUserId(entry.id)}
+                        className="flex-1 truncate text-left text-sm font-medium text-amber-900 transition-colors hover:text-amber-700"
+                      >
                         {entry.nickname}
                         {isMe && (
                           <span className="ml-1 text-xs text-amber-600">
                             {t('leaderboard.you')}
                           </span>
                         )}
-                      </span>
+                      </button>
 
                       {/* Metric */}
                       <span className="text-xs text-stone-500 shrink-0">
@@ -243,6 +249,14 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
           </AnimatePresence>
         )}
       </div>
+
+      {previewUserId && (
+        <UserPreviewPopup
+          userId={previewUserId}
+          currentUserId={currentUserId}
+          onClose={() => setPreviewUserId(null)}
+        />
+      )}
 
       {/* Lock veil for non-logged users */}
       {!isLoggedIn && (
