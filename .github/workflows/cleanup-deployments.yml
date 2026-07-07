@@ -4,22 +4,28 @@ on:
   deployment_status:
 
 jobs:
-  # Cleanup GitHub deployments
   cleanup-github:
     if: github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
+
     steps:
       - name: Delete old GitHub deployments
-        uses: strumwolf/delete-deployment-environment@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          environment: Production
-          onlyRemoveDeployments: true
-          delay: 5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Prendi tutti i deployment, ordina per data desc, salta il primo (più recente)
+          gh api repos/${{ github.repository }}/deployments --paginate \
+            --jq 'sort_by(.created_at) | reverse | .[1:] | .[].id' | while read id; do
+            # Marca inactive (obbligatorio prima del delete)
+            gh api repos/${{ github.repository }}/deployments/$id/statuses \
+              -X POST -f state=inactive 2>/dev/null || true
+            # Elimina
+            gh api repos/${{ github.repository }}/deployments/$id \
+              -X DELETE 2>/dev/null && echo "Deleted deployment $id" || true
+          done
 
-  # Cleanup Vercel deployments (richiede secret VERCEL_TOKEN)
   cleanup-vercel:
     if: github.event.deployment_status.state == 'success' && secrets.VERCEL_TOKEN != ''
     runs-on: ubuntu-latest
@@ -30,12 +36,11 @@ jobs:
         run: |
           PROJECT_ID="prj_uBinjWLGdqMZuqFmdR75ZSqycbZ5"
 
-          # Recupera tutti i deployment (tutti gli stati)
           DEPLOYMENTS=$(curl -s "https://api.vercel.com/v6/deployments?projectId=$PROJECT_ID&limit=100" \
             -H "Authorization: Bearer $VERCEL_TOKEN" | jq -r '.deployments | sort_by(.createdAt) | reverse | .[1:] | .[].uid')
 
           for UID in $DEPLOYMENTS; do
             curl -s -X DELETE "https://api.vercel.com/v13/deployments/$UID" \
               -H "Authorization: Bearer $VERCEL_TOKEN" > /dev/null
-            echo "Eliminato: $UID"
+            echo "Deleted Vercel deployment $UID"
           done
