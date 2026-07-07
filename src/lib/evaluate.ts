@@ -1,4 +1,4 @@
-import type { Mission, EvaluationResult, EvaluationScore } from '@/types';
+import type { Mission, EvaluationResult, EvaluationScore, CoachingEntry } from '@/types';
 
 const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
 const CF_AI_TOKEN = process.env.CLOUDFLARE_AI_TOKEN;
@@ -102,11 +102,13 @@ Evaluate this prompt and respond with JSON only.`;
       (scores.creativity + scores.precision + scores.context + scores.structure + scores.promptEngineering) / 5
     );
 
+    const suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 3) : [];
     return {
       missionId: mission.id,
       scores,
       feedback: parsed.feedback ?? generateFeedback(scores, mission),
-      suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 3) : [],
+      suggestions,
+      coaching: buildCoaching(scores),
       xpAwarded: Math.round((scores.total / 100) * mission.difficulty * 50),
       source: 'ai' as const,
     };
@@ -206,6 +208,7 @@ function evaluateHeuristic(userPrompt: string, mission: Mission): EvaluationResu
     scores,
     feedback: generateFeedback(scores, mission),
     suggestions: generateSuggestions(scores),
+    coaching: buildCoaching(scores),
     xpAwarded: Math.round((total / 100) * mission.difficulty * 50),
     source: 'heuristic' as const,
   };
@@ -230,4 +233,36 @@ function generateSuggestions(scores: EvaluationScore): string[] {
   if (scores.precision < 60) tips.push('Specify the exact output format: JSON, markdown, bullet list, etc.');
   if (scores.creativity < 60) tips.push('Add concrete examples (few-shot) to demonstrate the expected response style.');
   return tips.slice(0, 3);
+}
+
+const COACHING_DATA: Record<keyof Omit<EvaluationScore, 'total'>, { tip: string; example: string }> = {
+  creativity: {
+    tip: 'Add a concrete few-shot example to show the model exactly what you expect.',
+    example: 'E.g.: "Here is a sample output: [your example]. Now do the same for..."',
+  },
+  precision: {
+    tip: 'Specify the exact output format and hard constraints.',
+    example: 'E.g.: "Respond only in JSON. Fields: title (string), score (0-100). No extra text."',
+  },
+  context: {
+    tip: 'Open with a role + background so the model knows who it is and why.',
+    example: 'E.g.: "You are a senior data analyst. The dataset contains sales from Q1 2024."',
+  },
+  structure: {
+    tip: 'Break the task into numbered steps so the model follows a clear path.',
+    example: 'E.g.: "1. Summarise the text. 2. Extract key entities. 3. Output as a table."',
+  },
+  promptEngineering: {
+    tip: 'Chain techniques: role → context → step-by-step → output format.',
+    example: 'E.g.: "You are X. Given Y, first do A, then B. Return the result as Z."',
+  },
+};
+
+export function buildCoaching(scores: EvaluationScore): CoachingEntry[] {
+  const dims = (['creativity', 'precision', 'context', 'structure', 'promptEngineering'] as const)
+    .filter(d => scores[d] < 60)
+    .sort((a, b) => scores[a] - scores[b]) // lowest first
+    .slice(0, 3);
+
+  return dims.map(d => ({ dimension: d, ...COACHING_DATA[d] }));
 }

@@ -47,11 +47,18 @@ export interface EvaluationScore {
   total: number;
 }
 
+export interface CoachingEntry {
+  dimension: keyof EvaluationScore;
+  tip: string;
+  example: string;
+}
+
 export interface EvaluationResult {
   missionId: string;
   scores: EvaluationScore;
   feedback: string;
   suggestions: string[];
+  coaching?: CoachingEntry[];
   xpAwarded: number;
   source?: 'ai' | 'heuristic';
 }
@@ -119,6 +126,10 @@ export interface SupabaseProfile {
   missions_diff5: number;
   login_streak: number;
   last_login_date: string | null;
+  // F5/F6/F2 — added via ALTER TABLE
+  pvp_wins: number;
+  pvp_losses: number;
+  guild_id: string | null;
 }
 
 export interface BadgeDefinition {

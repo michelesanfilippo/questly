@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useI18n } from '@/i18n';
-import type { EvaluationResult as EvalResultType } from '@/types';
+import type { EvaluationResult as EvalResultType, CoachingEntry } from '@/types';
 
 interface Props {
   result?: EvalResultType | null;
@@ -46,11 +46,47 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const DIMENSION_ICON: Record<string, string> = {
+  creativity: '✦',
+  precision: '◎',
+  context: '◈',
+  structure: '⊞',
+  promptEngineering: '⚡',
+};
+
+function CoachingSection({ coaching, total, t }: { coaching: CoachingEntry[]; total: number; t: (k: string, v?: Record<string, string | number>) => string }) {
+  if (total >= 80) {
+    return (
+      <motion.div variants={itemVariants} className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
+        {t('coaching.strong')}
+      </motion.div>
+    );
+  }
+  if (coaching.length === 0) return null;
+  return (
+    <motion.div variants={itemVariants} className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{t('coaching.title')}</p>
+      <ul className="space-y-3">
+        {coaching.map((c, i) => (
+          <li key={i} className={`rounded-lg border px-4 py-3 space-y-1 ${i === 0 ? 'border-red-200 bg-red-50' : 'border-amber-100 bg-amber-50/60'}`}>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+              <span>{DIMENSION_ICON[c.dimension] ?? '→'}</span>
+              <span>{t(`coaching.dimension.${c.dimension}`)}</span>
+            </div>
+            <p className="text-xs text-slate-700">{c.tip}</p>
+            <code className="block text-xs text-slate-500 bg-white/70 rounded px-2 py-1 leading-relaxed">{c.example}</code>
+          </li>
+        ))}
+      </ul>
+    </motion.div>
+  );
+}
+
 export function EvaluationResult({ result }: Props) {
   const { t } = useI18n();
   if (!result) return null;
 
-  const { scores, feedback, suggestions, xpAwarded, source } = result;
+  const { scores, feedback, suggestions, coaching, xpAwarded, source } = result;
   const total = scores.total;
   const totalColor = total >= 80 ? 'text-emerald-600' : total >= 60 ? 'text-amber-600' : total >= 40 ? 'text-orange-600' : 'text-red-600';
 
@@ -95,8 +131,11 @@ export function EvaluationResult({ result }: Props) {
         {feedback}
       </motion.blockquote>
 
-      {/* Suggestions */}
-      {suggestions.length > 0 && (
+      {/* Coaching */}
+      {coaching && <CoachingSection coaching={coaching} total={scores.total} t={t} />}
+
+      {/* Suggestions — shown only when coaching is absent or score is mid-range */}
+      {suggestions.length > 0 && !coaching?.length && (
         <motion.div variants={itemVariants} className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             {t('evaluation.suggestions')}
