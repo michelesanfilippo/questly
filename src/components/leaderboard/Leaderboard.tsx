@@ -206,7 +206,7 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
                         </div>
                         {/* Hover enlarged badge */}
                         {entry.profile_badge_index != null && (
-                          <div className="absolute left-1/2 -translate-x-1/2 bottom-9 z-30 hidden group-hover:flex flex-col items-center pointer-events-none">
+                         <div className={`absolute left-1/2 -translate-x-1/2 z-30 hidden group-hover:flex flex-col items-center pointer-events-none ${index < 2 ? 'top-9' : 'bottom-9'}`}>
                             <Image
                               src={getBadgeImagePath(entry.profile_badge_index)}
                               alt=""

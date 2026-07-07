@@ -15,6 +15,9 @@ export function getBadgeImagePath(index: number): string {
     10: '/images/badges/badge_nightowl.png',
     11: '/images/badges/badge_student.png',
     12: '/images/badges/badge_bsmithapprentice.png',
+    13: '/images/badges/badge_streak10.png',
+    14: '/images/badges/badge_crown.png',
+    15: '/images/badges/badge_hydra.png',
   };
   return map[index] ?? '/images/badges/badge1.png';
 }
@@ -24,7 +27,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   { index: 1,  name: 'Wizard Apprentice',     description: 'A promising apprentice of the arcane arts',     requirement: '5 missions (★2+), score > 60' },
   { index: 2,  name: 'Path to Castle',        description: 'You have walked the long road to the fortress', requirement: '10 missions (★3+), score > 60' },
   { index: 3,  name: 'Royal Knight',          description: 'Knighted by the realm for valor in battle',     requirement: '5 missions (★4+), score > 60' },
-  { index: 4,  name: 'Dragon Hunter',         description: 'Only legends dare face the dragon three times', requirement: '3 missions (★5), score > 60' },
+  { index: 4,  name: 'Dragon Hunter',         description: 'Only legends dare face the dragon seven times',  requirement: '7 missions (★5), score > 60' },
   { index: 5,  name: 'Sorcerer',              description: 'The arcane arts bend to your will',             requirement: '3 Wizard missions, score > 60' },
   { index: 6,  name: 'Day of Rest',           description: 'Even on rest days, heroes keep learning',       requirement: 'Complete a mission on Sunday' },
   { index: 7,  name: 'Explorer',              description: 'A true explorer of all knowledge domains',      requirement: 'Complete quests in 4 different NPC themes, score > 60' },
@@ -33,6 +36,9 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   { index: 10, name: 'Night Owl',             description: 'The realm never sleeps, and neither do you',    requirement: 'Complete a quest between midnight and 4am' },
   { index: 11, name: 'Student of the Scroll', description: 'Knowledge is the greatest weapon',              requirement: '3 Library/Scholar quests, score > 60' },
   { index: 12, name: 'Blacksmith Apprentice', description: 'Iron sharpens iron',                            requirement: '3 Blacksmith quests, score > 60' },
+  { index: 13, name: 'Undying Flame',         description: 'Ten days of unbroken dedication to the realm',  requirement: '10 consecutive days login' },
+  { index: 14, name: 'Crown Oath',            description: 'Sworn to serve the crown with excellence',      requirement: '5 royal quests, score > 60' },
+  { index: 15, name: 'Hydra Slayer',          description: 'Where one head falls, three more were defeated', requirement: '3 missions (★5), score > 60' },
 ];
 
 export interface BadgeCheckContext {
@@ -70,7 +76,7 @@ export function checkNewBadges(
   check(1,  (profile.missions_diff2plus ?? 0) >= 5  && score > 60);
   check(2,  (profile.missions_diff3plus ?? 0) >= 10 && score > 60);
   check(3,  (profile.missions_diff4plus ?? 0) >= 5  && score > 60);
-  check(4,  (profile.missions_diff5 ?? 0)     >= 3  && score > 60);
+  check(4,  (profile.missions_diff5 ?? 0)     >= 7  && score > 60);
   check(5,  npcScore60('wizard') >= 3);
   check(6,  dayOfWeek === 0);                               // Sunday
   check(7,  explorerThemes >= 4 && score > 60);
@@ -79,6 +85,9 @@ export function checkNewBadges(
   check(10, (hour >= 0 && hour < 4));                      // midnight-4am
   check(11, npcScore60('scholar') >= 3);
   check(12, npcScore60('blacksmith') >= 3);
+  check(13, (ctx.loginStreak ?? 0) >= 10);
+  check(14, npcScore60('royal') >= 5 && score > 60);
+  check(15, (profile.missions_diff5 ?? 0) >= 3 && score > 60);
 
   return newBadges;
 }
