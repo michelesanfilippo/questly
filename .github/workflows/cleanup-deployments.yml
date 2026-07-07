@@ -64,8 +64,8 @@ jobs:
           PROJECT_ID="prj_uBinjWLGdqMZuqFmdR75ZSqycbZ5"
           DEPLOYMENTS=$(curl -s "https://api.vercel.com/v6/deployments?projectId=$PROJECT_ID&limit=100" \
             -H "Authorization: Bearer $VERCEL_TOKEN" | jq -r '.deployments | sort_by(.createdAt) | reverse | .[1:] | .[].uid')
-          for UID in $DEPLOYMENTS; do
-            curl -s -X DELETE "https://api.vercel.com/v13/deployments/$UID" \
+          for DEP_UID in $DEPLOYMENTS; do
+            curl -s -X DELETE "https://api.vercel.com/v13/deployments/$DEP_UID" \
               -H "Authorization: Bearer $VERCEL_TOKEN" > /dev/null
-            echo "Deleted Vercel deployment $UID"
+            echo "Deleted Vercel deployment $DEP_UID"
           done
