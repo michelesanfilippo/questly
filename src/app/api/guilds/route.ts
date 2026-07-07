@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
     const guildsResult = await listGuilds(auth.user.id);
     return NextResponse.json({ guilds: guildsResult.guilds, membership: guildsResult.membership });
   } catch (error) {
+    console.error('[API /guilds GET] Error:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to load guilds' }, { status: 500 });
   }
 }
@@ -31,7 +32,8 @@ export async function POST(req: NextRequest) {
   let body: { action?: 'create' | 'join'; name?: string; description?: string; guildId?: string };
   try {
     body = await req.json();
-  } catch {
+  } catch (err) {
+    console.error('[API /guilds POST] JSON parse error:', err);
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
@@ -56,6 +58,7 @@ export async function POST(req: NextRequest) {
     const result = await createGuildRecord(auth.user.id, name, body.description);
     return NextResponse.json(result);
   } catch (error) {
+    console.error('[API /guilds POST] Error:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to update guild' }, { status: 400 });
   }
 }

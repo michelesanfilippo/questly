@@ -126,17 +126,14 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsCreateOpen(true)}
-            disabled={!currentUserId || !!profile?.guild_id}
-            className="rounded-sm bg-amber-700 px-2.5 py-1.5 text-xs font-semibold text-amber-50 disabled:cursor-not-allowed disabled:bg-stone-300"
-          >
-            {t('guild.create_cta')}
-          </button>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-500">{t('guild.ready')}</span>
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsCreateOpen(true)}
+          disabled={!currentUserId || !!profile?.guild_id}
+          className="rounded-sm bg-amber-700 px-2.5 py-1.5 text-xs font-semibold text-amber-50 disabled:cursor-not-allowed disabled:bg-stone-300"
+        >
+          {t('guild.create_cta')}
+        </button>
       </div>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}

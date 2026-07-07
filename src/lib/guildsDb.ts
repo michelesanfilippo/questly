@@ -9,7 +9,10 @@ export async function getCurrentGuild(userId: string) {
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (membershipError) throw membershipError;
+  if (membershipError) {
+    console.error('[guildsDb.getCurrentGuild] membership error:', membershipError);
+    throw membershipError;
+  }
   if (!membershipRows?.guild_id) return null;
 
   const { data: guild, error: guildError } = await supabase
@@ -18,22 +21,36 @@ export async function getCurrentGuild(userId: string) {
     .eq('id', membershipRows.guild_id)
     .single();
 
-  if (guildError) throw guildError;
+  if (guildError) {
+    console.error('[guildsDb.getCurrentGuild] guild error:', guildError);
+    throw guildError;
+  }
 
   const { data: memberRows, error: memberError } = await supabase
     .from('guild_members')
     .select('user_id,role')
     .eq('guild_id', membershipRows.guild_id);
 
-  if (memberError) throw memberError;
+  if (memberError) {
+    console.error('[guildsDb.getCurrentGuild] members error:', memberError);
+    throw memberError;
+  }
 
   const memberIds = (memberRows ?? []).map((member) => member.user_id);
+
+  if (memberIds.length === 0) {
+    return { guild, role: membershipRows.role, members: [] };
+  }
+
   const { data: profiles, error: profileError } = await supabase
     .from('profiles')
     .select('id,nickname')
     .in('id', memberIds);
 
-  if (profileError) throw profileError;
+  if (profileError) {
+    console.error('[guildsDb.getCurrentGuild] profiles error:', profileError);
+    throw profileError;
+  }
 
   const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile.nickname]));
   const members = (memberRows ?? []).map((member) => ({
