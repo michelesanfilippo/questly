@@ -49,7 +49,7 @@ export async function listGuilds(userId: string) {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from('guilds')
-    .select('id,name,level,xp,founder_id,created_at')
+    .select('id,name,description,level,xp,founder_id,created_at')
     .order('level', { ascending: false })
     .order('xp', { ascending: false });
 
@@ -68,7 +68,7 @@ export async function listGuilds(userId: string) {
   };
 }
 
-export async function createGuildRecord(userId: string, name: string) {
+export async function createGuildRecord(userId: string, name: string, description?: string) {
   const supabase = await createSupabaseServerClient();
   const { data: profile, error: profileError } = await supabase.from('profiles').select('id,level,guild_id').eq('id', userId).single();
   if (profileError) throw profileError;
@@ -76,10 +76,20 @@ export async function createGuildRecord(userId: string, name: string) {
   if ((profile.level ?? 0) < GUILD_UNLOCK_LEVEL) throw new Error('Guilds unlock at level 6');
   if (profile.guild_id) throw new Error('User already belongs to a guild');
 
+  const trimmedName = name.trim();
+  const { data: existingGuild, error: existingGuildError } = await supabase
+    .from('guilds')
+    .select('id')
+    .ilike('name', trimmedName)
+    .maybeSingle();
+
+  if (existingGuildError) throw existingGuildError;
+  if (existingGuild) throw new Error('Guild name already exists');
+
   const { data: guild, error: guildError } = await supabase
     .from('guilds')
-    .insert({ name, founder_id: userId, level: 1, xp: 0 })
-    .select('id,name,level,xp,founder_id,created_at')
+    .insert({ name: trimmedName, description: description?.trim() || null, founder_id: userId, level: 1, xp: 0 })
+    .select('id,name,description,level,xp,founder_id,created_at')
     .single();
 
   if (guildError) throw guildError;

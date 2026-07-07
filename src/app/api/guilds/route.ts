@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   const auth = await requireUser(req);
   if (auth.error) return auth.error;
 
-  let body: { action?: 'create' | 'join'; name?: string; guildId?: string };
+  let body: { action?: 'create' | 'join'; name?: string; description?: string; guildId?: string };
   try {
     body = await req.json();
   } catch {
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Guild name is required' }, { status: 400 });
     }
 
-    const result = await createGuildRecord(auth.user.id, name);
+    const result = await createGuildRecord(auth.user.id, name, body.description);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to update guild' }, { status: 400 });
