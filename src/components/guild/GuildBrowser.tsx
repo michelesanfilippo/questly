@@ -113,8 +113,8 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
   }
 
   return (
-    <div className="rounded-sm border-2 border-amber-800/30 bg-[#faf7f0] p-4 shadow-[2px_4px_12px_rgba(101,67,33,0.2)]">
-      <div className="mb-3 flex items-center justify-between gap-2">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2">
         <h3 className="font-serif text-lg font-bold text-amber-900">{t('guild.title')}</h3>
         <div className="flex items-center gap-2">
           <button
@@ -129,7 +129,7 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
         </div>
       </div>
 
-      {error ? <p className="mb-3 text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       {loading ? (
         <p className="text-sm text-stone-500">{t('social.loading')}</p>

@@ -105,10 +105,13 @@ src/
 | MVP | Daily missions + AI evaluation | Done |
 | Post-MVP | Auth + profile + progression + trophies | Done |
 | v2 | Real database (Supabase / PlanetScale) | Done |
-| v2 | Google / Microsoft / Apple OAuth | In progress **only Google atm** |
+| v2 | Multiple OAuth | Done |
 | v2 | Cloudflare API evaluation | Done |
-| v3 | Social leaderboard + friends | In progress |
+| v3 | Social leaderboard + friends | Done |
+| v3 | Guild system | In progress |
+| v3 | Boss and PvP system | Planned |
 | v3 | Mission creation by community | Planned |
+
 
 ---
 
