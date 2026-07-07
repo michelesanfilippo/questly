@@ -1,44 +1,69 @@
 name: Cleanup old deployments
 
 on:
+  # Ogni push su main (che innesca un nuovo deployment) pulisce i vecchi.
+  push:
+    branches: [main]
+  # Pulisce anche subito dopo che un deployment diventa "success" (Active).
   deployment_status:
+  # Esecuzione manuale, con numero di deployment da tenere configurabile.
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: "Quanti deployment recenti tenere per environment"
+        default: "1"
+
+permissions:
+  deployments: write
+
+concurrency:
+  group: cleanup-deployments
+  cancel-in-progress: false
 
 jobs:
   cleanup-github:
-    if: github.event.deployment_status.state == 'success'
+    # Sui deployment_status gira solo per gli stati "success"; su push/dispatch gira sempre.
+    if: github.event_name != 'deployment_status' || github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
-
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ENVIRONMENT: Production
+      KEEP: ${{ github.event.inputs.keep || '1' }}
     steps:
       - name: Delete old GitHub deployments
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Prendi tutti i deployment, ordina per data desc, salta il primo (più recente)
-          gh api repos/${{ github.repository }}/deployments --paginate \
-            --jq 'sort_by(.created_at) | reverse | .[1:] | .[].id' | while read id; do
-            # Marca inactive (obbligatorio prima del delete)
+          echo "Environment '$ENVIRONMENT' — tengo i $KEEP più recenti, elimino gli altri"
+          gh api "repos/${{ github.repository }}/deployments?environment=$ENVIRONMENT" --paginate \
+            --jq "sort_by(.created_at) | reverse | .[$KEEP:] | .[].id" | while read -r id; do
+            [ -z "$id" ] && continue
+            # Un deployment va marcato inactive prima di poter essere eliminato
             gh api repos/${{ github.repository }}/deployments/$id/statuses \
-              -X POST -f state=inactive 2>/dev/null || true
-            # Elimina
-            gh api repos/${{ github.repository }}/deployments/$id \
-              -X DELETE 2>/dev/null && echo "Deleted deployment $id" || true
+              -X POST -f state=inactive >/dev/null 2>&1 || true
+            if gh api repos/${{ github.repository }}/deployments/$id -X DELETE >/dev/null 2>&1; then
+              echo "Deleted deployment $id"
+            else
+              echo "Could not delete deployment $id (probabilmente è l'active)"
+            fi
           done
 
   cleanup-vercel:
-    if: github.event.deployment_status.state == 'success' && secrets.VERCEL_TOKEN != ''
+    if: github.event_name != 'deployment_status' || github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Delete old Vercel deployments
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
+          # Il controllo del secret va fatto nello step, non nell'if del job.
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN non impostato — salto la pulizia Vercel."
+            exit 0
+          fi
           PROJECT_ID="prj_uBinjWLGdqMZuqFmdR75ZSqycbZ5"
-
           DEPLOYMENTS=$(curl -s "https://api.vercel.com/v6/deployments?projectId=$PROJECT_ID&limit=100" \
             -H "Authorization: Bearer $VERCEL_TOKEN" | jq -r '.deployments | sort_by(.createdAt) | reverse | .[1:] | .[].uid')
-
           for UID in $DEPLOYMENTS; do
             curl -s -X DELETE "https://api.vercel.com/v13/deployments/$UID" \
               -H "Authorization: Bearer $VERCEL_TOKEN" > /dev/null
