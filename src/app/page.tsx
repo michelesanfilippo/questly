@@ -17,6 +17,7 @@ import { UserCard } from '@/components/profile/UserCard';
 import { LoginInviteCard } from '@/components/profile/LoginInviteCard';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
 import { FriendsCard } from '@/components/social/FriendsCard';
+import { GuildPanel } from '@/components/guild/GuildPanel';
 import { BadgeUnlockPopup } from '@/components/ui/BadgeUnlockPopup';
 import { BADGE_DEFINITIONS, getBadgeImagePath } from '@/lib/badges';
 import type { Mission, EvaluationResult as EvalResultType } from '@/types';
@@ -267,8 +268,9 @@ export default function HomePage() {
           {/* 3-col layout for all users */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-4 px-4 sm:px-6 py-6 w-full">
             {/* Leaderboard — visible to all */}
-            <div className="order-3 lg:order-1">
+            <div className="order-3 lg:order-1 flex flex-col gap-4">
               <Leaderboard currentUserId={profile?.id} isLoggedIn={!!profile} />
+              <GuildPanel profile={profile} onProfileUpdate={(updated) => setProfile(updated)} />
             </div>
             {/* Mission — center */}
             <div className="order-1 lg:order-2 flex flex-col gap-4">
