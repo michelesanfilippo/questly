@@ -93,3 +93,27 @@ export async function respondToFriendshipRequest(currentUserId: string, targetId
   if (updateError) throw updateError;
   return { status: 'accepted' as const };
 }
+
+export async function removeFriendship(currentUserId: string, targetId: string) {
+  const supabase = await createSupabaseServerClient();
+  const normalizedPair = [currentUserId, targetId].sort();
+  const { data: rows, error: lookupError } = await supabase
+    .from('friendships')
+    .select('id,user_low,user_high,status')
+    .eq('status', 'accepted')
+    .or(`user_low.eq.${currentUserId},user_high.eq.${currentUserId}`);
+
+  if (lookupError) throw lookupError;
+
+  const row = (rows ?? []).find((entry) => {
+    const pair = [entry.user_low, entry.user_high].sort();
+    return pair[0] === normalizedPair[0] && pair[1] === normalizedPair[1];
+  });
+
+  if (!row) throw new Error('Friendship not found');
+
+  const { error: deleteError } = await supabase.from('friendships').delete().eq('id', row.id);
+  if (deleteError) throw deleteError;
+
+  return { status: 'removed' as const };
+}

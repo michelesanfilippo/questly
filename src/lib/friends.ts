@@ -11,10 +11,10 @@ export async function listFriends(userId: string): Promise<string[]> {
   return payload.friends ?? [];
 }
 
-export async function listIncomingRequests(userId: string): Promise<Array<{ userId: string; requestedBy: string; createdAt: string }>> {
+export async function listIncomingRequests(userId: string): Promise<Array<{ userId: string; nickname?: string; requestedBy: string; createdAt: string }>> {
   const response = await fetch('/api/friends', { method: 'GET', credentials: 'include' });
   if (!response.ok) return [];
-  const payload = await response.json() as { incomingRequests?: Array<{ userId: string; requestedBy: string; createdAt: string }> };
+  const payload = await response.json() as { incomingRequests?: Array<{ userId: string; nickname?: string; requestedBy: string; createdAt: string }> };
   return payload.incomingRequests ?? [];
 }
 
@@ -61,6 +61,25 @@ export async function respondRequest(targetId: string, accept: boolean, currentU
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ targetId, accept }),
   });
+}
+
+export async function removeFriend(targetId: string, currentUserId?: string): Promise<boolean> {
+  if (!targetId || !currentUserId) return false;
+
+  const response = await fetch('/api/friends', {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ targetId }),
+  });
+
+  if (!response.ok) return false;
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('questly:friendshipsChanged'));
+  }
+
+  return true;
 }
 
 export function subscribeToFriendshipChanges(handler: () => void) {

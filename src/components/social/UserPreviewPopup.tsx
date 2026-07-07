@@ -66,7 +66,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   function getFriendButtonLabel() {
     if (isMe) return t('social.you');
     if (friendship === 'friends') return t('friends.accepted');
-    if (friendship === 'pending_outgoing') return t('friends.pending_outgoing');
+    if (friendship === 'pending_outgoing') return t('friends.pending_request');
     if (friendship === 'pending_incoming') return t('friends.pending_incoming');
     return t('social.friend_cta');
   }

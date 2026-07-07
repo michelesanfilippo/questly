@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useI18n } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath } from '@/lib/badges';
-import { listFriends, listIncomingRequests, respondRequest, subscribeToFriendshipChanges } from '@/lib/friends';
+import { listFriends, listIncomingRequests, removeFriend, respondRequest, subscribeToFriendshipChanges } from '@/lib/friends';
 
 interface FriendsCardProps {
   currentUserId?: string;
@@ -22,8 +22,10 @@ interface FriendProfile {
 export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
   const { t } = useI18n();
   const [friends, setFriends] = useState<FriendProfile[]>([]);
-  const [requests, setRequests] = useState<Array<{ userId: string; requestedBy: string; createdAt: string }>>([]);
+  const [requests, setRequests] = useState<Array<{ userId: string; nickname?: string; requestedBy: string; createdAt: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [friendToRemove, setFriendToRemove] = useState<FriendProfile | null>(null);
+  const [removing, setRemoving] = useState(false);
 
   const loadData = async () => {
     if (!currentUserId) return;
@@ -47,6 +49,17 @@ export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
   }, [currentUserId]);
 
   const countText = useMemo(() => `${friends.length}/20`, [friends.length]);
+
+  async function handleRemoveFriend() {
+    if (!currentUserId || !friendToRemove) return;
+    setRemoving(true);
+    const removed = await removeFriend(friendToRemove.id, currentUserId);
+    if (removed) {
+      await loadData();
+    }
+    setRemoving(false);
+    setFriendToRemove(null);
+  }
 
   return (
     <div className="rounded-sm border-2 border-amber-800/30 bg-[#faf7f0] p-4 shadow-[2px_4px_12px_rgba(101,67,33,0.2)]">
@@ -82,6 +95,14 @@ export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
                       <p className="truncate text-sm font-semibold text-amber-900">{friend.nickname}</p>
                       <p className="text-xs text-stone-500">{t('user.level', { n: friend.level })}</p>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setFriendToRemove(friend)}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-red-600 text-sm font-bold text-white transition-colors hover:bg-red-700"
+                      aria-label={t('friends.remove_friend')}
+                    >
+                      ×
+                    </button>
                   </div>
                 ))}
               </div>
@@ -98,7 +119,7 @@ export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
               <div className="space-y-2">
                 {requests.map((request) => (
                   <div key={request.userId} className="rounded-sm border border-amber-800/10 bg-white/70 p-2">
-                    <p className="text-sm font-semibold text-amber-900">{request.userId}</p>
+                    <p className="text-sm font-semibold text-amber-900">{request.nickname ?? request.userId}</p>
                     <div className="mt-2 flex gap-2">
                       <button
                         type="button"
@@ -135,6 +156,34 @@ export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
             <p className="mt-3 text-xs text-stone-500">{t('friends.locked')}</p>
           )}
         </>
+      )}
+
+      {friendToRemove && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-sm border-2 border-amber-800/30 bg-[#faf7f0] p-5 shadow-[2px_4px_16px_rgba(101,67,33,0.25)]">
+            <h4 className="font-serif text-lg font-bold text-amber-900">{t('friends.remove_confirm_title')}</h4>
+            <p className="mt-2 text-sm text-stone-600">{t('friends.remove_confirm_text', { nickname: friendToRemove.nickname })}</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setFriendToRemove(null)}
+                className="rounded-sm border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-600"
+              >
+                {t('social.close')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleRemoveFriend();
+                }}
+                disabled={removing}
+                className="rounded-sm bg-red-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {removing ? t('social.loading') : t('friends.remove_confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
