@@ -57,7 +57,7 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
       setName('');
       const payload = await response.json() as { guild?: GuildSummary; profile?: SupabaseProfile };
       if (payload.guild) {
-        setGuilds((prev) => [payload.guild, ...prev]);
+        setGuilds((prev) => [payload.guild as GuildSummary, ...prev]);
         onGuildChanged?.(payload.guild, payload.profile ?? null);
       }
       return;

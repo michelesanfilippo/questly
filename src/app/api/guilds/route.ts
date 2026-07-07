@@ -8,9 +8,13 @@ export async function GET(req: NextRequest) {
 
   try {
     const scope = req.nextUrl.searchParams.get('scope');
-    if (scope === 'current') {
+    if (scope === 'current' || scope === 'members') {
       const currentGuild = await getCurrentGuild(auth.user.id);
-      return NextResponse.json({ guild: currentGuild?.guild ?? null, role: currentGuild?.role ?? null });
+      return NextResponse.json({
+        guild: currentGuild?.guild ?? null,
+        role: currentGuild?.role ?? null,
+        members: currentGuild?.members ?? [],
+      });
     }
 
     const guilds = await listGuilds(auth.user.id);

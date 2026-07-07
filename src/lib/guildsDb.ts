@@ -20,7 +20,29 @@ export async function getCurrentGuild(userId: string) {
 
   if (guildError) throw guildError;
 
-  return { guild, role: membershipRows.role };
+  const { data: memberRows, error: memberError } = await supabase
+    .from('guild_members')
+    .select('user_id,role')
+    .eq('guild_id', membershipRows.guild_id);
+
+  if (memberError) throw memberError;
+
+  const memberIds = (memberRows ?? []).map((member) => member.user_id);
+  const { data: profiles, error: profileError } = await supabase
+    .from('profiles')
+    .select('id,nickname')
+    .in('id', memberIds);
+
+  if (profileError) throw profileError;
+
+  const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile.nickname]));
+  const members = (memberRows ?? []).map((member) => ({
+    user_id: member.user_id,
+    role: member.role,
+    nickname: profileMap.get(member.user_id) ?? null,
+  }));
+
+  return { guild, role: membershipRows.role, members };
 }
 
 export async function listGuilds(userId: string) {
