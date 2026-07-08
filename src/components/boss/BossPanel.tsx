@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n';
 import { isBossWeekend } from '@/lib/boss';
 import { supabase } from '@/lib/supabase';
+import { StarRating } from '@/components/ui/StarRating';
 import { BossSummonPopup } from './BossSummonPopup';
 import bossMissionsData from '@/data/boss_missions.json';
 
@@ -284,176 +286,179 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     [guildId, userRole, onVictory, fetchBossState, boss?.boss_key]
   );
 
-  // If not weekend, show message
-  if (!isBossWeekendFlag && !isLoading) {
-    return (
-      <div className="rounded-lg border border-amber-700 bg-amber-950/40 p-6 text-center">
-        <p className="mb-2 text-amber-300">🌙 Boss Weekends: Saturday-Sunday UTC</p>
-        <p className="text-sm text-amber-400/70">Check back this weekend!</p>
-      </div>
-    );
-  }
-
-  // Loading state
+  // Loading
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-600 bg-gray-900/40 p-6 text-center">
-        <p className="text-gray-400">Loading boss data...</p>
+      <div className="w-full rounded-sm border-2 border-amber-800/20 bg-[#faf7f0] p-6 space-y-3 animate-pulse">
+        <div className="h-4 w-32 bg-amber-200/50 rounded" />
+        <div className="h-3 w-full bg-amber-200/50 rounded-full" />
+        <div className="h-6 w-3/4 bg-amber-200/50 rounded" />
+        <div className="h-16 w-full bg-amber-200/50 rounded" />
       </div>
     );
   }
 
-  // Error state
-  if (error && !boss) {
+  // Not weekend
+  if (!isBossWeekendFlag) {
     return (
-      <div className="rounded-lg border border-red-700 bg-red-900/40 p-6">
-        <p className="text-red-300">Error: {error}</p>
+      <div className="w-full rounded-sm border-2 border-amber-800/30 bg-[#faf7f0] p-5 sm:p-6 shadow-[2px_4px_12px_rgba(101,67,33,0.15)] text-center space-y-2">
+        <p className="text-stone-700 font-semibold text-sm">Boss Weekend</p>
+        <p className="text-xs text-stone-500">I boss appaiono ogni sabato e domenica (UTC). Torna presto!</p>
       </div>
     );
   }
 
-  const rarityEmoji = ['', '⭐', '⭐⭐', '⭐⭐⭐', '⭐⭐⭐⭐', '⭐⭐⭐⭐⭐'];
+  const bossName = boss?.boss_key
+    ? boss.boss_key.charAt(0).toUpperCase() + boss.boss_key.slice(1)
+    : 'Mysterious Beast';
+  const bossRarity = boss?.boss_rarity ?? 1;
+  const currentHp = boss?.current_hp ?? 0;
+  const maxHp = boss?.max_hp ?? 100;
+  const hpPct = Math.max(0, (currentHp / maxHp) * 100);
+  const hpColor = hpPct > 50 ? 'from-emerald-600 to-emerald-400' : hpPct > 25 ? 'from-amber-600 to-amber-400' : 'from-red-700 to-red-500';
 
   return (
     <>
-      <div className="space-y-4">
-        {/* Error Alert (non-fatal) */}
-        {error && (
-          <div className="rounded-lg border border-red-700 bg-red-900/30 p-4">
-            <p className="text-red-300 text-sm">{error}</p>
-          </div>
-        )}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full rounded-sm border-2 border-amber-800/30 bg-[#faf7f0] p-5 sm:p-6 shadow-[2px_4px_12px_rgba(101,67,33,0.15)] space-y-4 relative"
+      >
+        {/* Corner decorations */}
+        <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-amber-700/40 rounded-tl-sm" />
+        <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-700/40 rounded-br-sm" />
 
-        {/* Boss Card - Simplified */}
-        {boss && isBossWeekendFlag ? (
-          <div className="rounded-lg border-2 border-amber-700 bg-gray-900 p-6">
-            {/* Boss Name + Rarity */}
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-amber-800">
-                  {boss?.boss_key?.toUpperCase() || 'MYSTERIOUS BEAST'}
-                </h3>
-                <p className="text-amber-700 text-sm font-semibold">
-                  {rarityEmoji[boss?.boss_rarity || 0] || ''}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-semibold text-amber-800">
-                  {boss?.current_hp || 0} / {boss?.max_hp || 0} HP
-                </p>
-              </div>
+        {/* Header: Boss Name + HP bar | Stars */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base font-bold text-amber-900 font-serif truncate">{bossName}</span>
+              {boss && (
+                <span className="text-xs text-stone-500 shrink-0">
+                  {currentHp} / {maxHp} HP
+                </span>
+              )}
             </div>
-
-            {/* Health Bar */}
-            <div className="mb-4 h-6 overflow-hidden rounded-full border-2 border-gray-700 bg-gray-800">
+            <StarRating value={bossRarity} max={5} />
+          </div>
+          {/* HP Bar */}
+          {boss && (
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-stone-200 border border-amber-200">
               <div
-                className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all duration-500"
-                style={{
-                  width: `${Math.max(0, ((boss?.current_hp || 0) / (boss?.max_hp || 1)) * 100)}%`,
-                }}
+                className={`h-full bg-gradient-to-r ${hpColor} transition-all duration-500`}
+                style={{ width: `${hpPct}%` }}
               />
             </div>
+          )}
+        </div>
 
-            {/* INLINE QUEST - Like Daily Quest Card (Parchment Style) */}
-            {showInlineQuest && selectedQuest && !showAttackResult ? (
-              <div className="mb-4 space-y-3 rounded-sm bg-[#faf7f0] p-4">
-                <h3 className="text-lg font-bold text-stone-800">{selectedQuest.title}</h3>
-                <p className="whitespace-pre-wrap text-sm text-stone-700 leading-relaxed">
-                  {selectedQuest.text}
-                </p>
-                <textarea
-                  value={questAnswer}
-                  onChange={(e) => setQuestAnswer(e.target.value)}
-                  disabled={isSubmitting}
-                  placeholder="Scrivi la tua risposta..."
-                  rows={3}
-                  className="w-full rounded-sm border-2 bg-[#faf7f0] text-stone-800 placeholder-stone-400 border-amber-300/60 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-500 transition-all duration-200 disabled:opacity-50"
-                />
-                <button
-                  onClick={() => handleSubmitAnswer(questAnswer)}
-                  disabled={isSubmitting || !questAnswer.trim()}
-                  className="w-full rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150 px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Sending...' : 'Submit & Attack'}
-                </button>
-              </div>
-            ) : null}
+        {/* Non-fatal error */}
+        {error && (
+          <p className="text-xs text-red-600">{error}</p>
+        )}
 
-            {/* RECAP - After Submit (Parchment Style) */}
-            {showAttackResult && attackResult ? (
-              <div className="mb-4 rounded-sm bg-[#faf7f0] border-2 border-amber-300/60 p-4">
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-stone-800 font-semibold">Danno Inflitto:</span>
-                    <span className="font-bold text-amber-700">+{damageDealt}</span>
-                  </div>
-                  {userSuggestions && userSuggestions.length > 0 && (
-                    <div className="border-t border-amber-300/60 pt-2">
-                      <p className="text-xs text-stone-800 font-semibold mb-1">Suggerimenti:</p>
-                      <ul className="space-y-1 text-xs text-stone-700">
-                        {userSuggestions.map((s, i) => (
-                          <li key={i}>• {s}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+        {/* DEFEATED */}
+        {boss?.is_defeated ? (
+          <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 text-center space-y-1">
+            <p className="text-lg font-bold text-amber-900 font-serif">Boss Sconfitto!</p>
+            <p className="text-xs text-stone-600">La tua gilda ha trionfato questa settimana.</p>
+          </div>
+        ) : showAttackResult && attackResult ? (
+          /* RECAP after submission */
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-stone-700 font-semibold">Danno Inflitto</span>
+                  <span className="font-bold text-amber-800">+{damageDealt}</span>
                 </div>
-              </div>
-            ) : null}
-
-            {/* Attack Button - Only visible if NOT showing quest or result */}
-            {boss && !boss.is_defeated && !showInlineQuest && !showAttackResult && (
-              <button
-                onClick={handleAttackClick}
-                disabled={isSubmitting || hasUserAttacked}
-                className="w-full rounded-lg border-2 border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600"
-              >
-                {hasUserAttacked ? 'Already Attacked' : isSubmitting ? 'Attacking...' : 'Attack Boss'}
-              </button>
-            )}
-
-            {/* Defeated Badge */}
-            {boss?.is_defeated && (
-              <div className="rounded-lg border-2 border-yellow-700 bg-yellow-900/30 p-4 text-center">
-                <p className="text-2xl font-bold text-yellow-300">DEFEATED</p>
-                {attackResult?.rewards && (
-                  <div className="mt-2 text-sm text-yellow-200">
-                    <p>Guild XP: +{attackResult.rewards.guild_xp}</p>
-                    <p>Your XP: +{attackResult.rewards.user_xp}</p>
+                {userSuggestions.length > 0 && (
+                  <div className="border-t border-amber-200/60 pt-2 space-y-1">
+                    <p className="text-xs font-semibold text-stone-700">Suggerimenti:</p>
+                    <ul className="space-y-1">
+                      {userSuggestions.map((s, i) => (
+                        <li key={i} className="text-xs text-stone-600">• {s}</li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
+              <p className="text-center text-xs text-amber-800/60 italic">Hai già attaccato il boss questa settimana.</p>
+            </motion.div>
+          </AnimatePresence>
+        ) : showInlineQuest && selectedQuest ? (
+          /* INLINE QUEST */
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <h2 className="text-lg sm:text-xl font-bold text-amber-900 leading-snug font-serif">
+                {selectedQuest.title}
+              </h2>
+              <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-3 sm:p-4">
+                <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">
+                  {selectedQuest.text}
+                </p>
+              </div>
+              <textarea
+                value={questAnswer}
+                onChange={(e) => setQuestAnswer(e.target.value)}
+                disabled={isSubmitting}
+                placeholder="Scrivi la tua risposta, avventuriero..."
+                rows={5}
+                className="w-full min-h-[120px] rounded-sm border-2 bg-[#faf7f0] text-stone-800 placeholder-stone-400 border-amber-300/60 p-3 sm:p-4 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-500 transition-all duration-200 disabled:opacity-50"
+              />
+              <button
+                onClick={() => handleSubmitAnswer(questAnswer)}
+                disabled={isSubmitting || questAnswer.trim().length < 10}
+                className="block w-3/4 mx-auto min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-xs sm:text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                      className="inline-block w-4 h-4 border-2 border-amber-200/30 border-t-amber-100 rounded-full"
+                    />
+                    Attacco in corso...
+                  </span>
+                ) : 'Attacca il Boss'}
+              </button>
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          /* INITIAL STATE - Attack / Summon button */
+          <div className="space-y-3">
+            {!boss ? (
+              <p className="text-sm text-stone-600 italic text-center">
+                Sii il primo della tua gilda ad invocare il boss del weekend!
+              </p>
+            ) : (
+              <p className="text-sm text-stone-600 italic text-center">
+                {hasUserAttacked
+                  ? 'Hai già attaccato il boss questa settimana.'
+                  : 'Il boss ti sfida. Mostra il tuo valore!'}
+              </p>
             )}
-          </div>
-        ) : isBossWeekendFlag ? (
-          /* No Boss Yet - Weekend Active */
-          <div className="rounded-lg border-2 border-amber-700 bg-gray-900 p-6 text-center">
-            <p className="mb-3 text-lg font-bold text-amber-800">Nessun Boss Attivo</p>
-            <p className="mb-4 text-sm text-amber-700">
-              Sii il primo ad attaccare e invoca il boss!
-            </p>
-            {!showAttackResult && (
+            {!hasUserAttacked && (
               <button
                 onClick={handleAttackClick}
-                disabled={isSubmitting || hasUserAttacked}
-                className="rounded-lg border-2 border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600"
+                disabled={isSubmitting}
+                className="block w-3/4 mx-auto min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-xs sm:text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {hasUserAttacked ? 'Already Attacked' : isSubmitting ? 'Summoning...' : 'Summon Boss'}
+                {boss ? 'Attacca il Boss' : 'Invoca il Boss'}
               </button>
             )}
           </div>
-        ) : (
-          /* Not Weekend */
-          <div className="rounded-lg border-2 border-amber-700 bg-gray-900 p-6 text-center">
-            <p className="mb-3 text-lg font-bold text-amber-800">Boss Weekend Closed</p>
-            <p className="text-sm text-amber-700">
-              Boss battles available only on weekends (Saturday & Sunday UTC)
-            </p>
-          </div>
         )}
-      </div>
-
-      {/* Quest Modal - REMOVED (now inline on card) */}
+      </motion.div>
 
       {/* Boss Summon Popup */}
       {showSummonPopup && summonedBoss && (
@@ -463,9 +468,6 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           onClose={() => setShowSummonPopup(false)}
         />
       )}
-
-      {/* Attack Result Modal */}
-      {/* Report is shown on the card above - no modal needed */}
     </>
   );
 };
