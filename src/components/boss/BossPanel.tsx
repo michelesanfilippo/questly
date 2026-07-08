@@ -172,19 +172,21 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             weekStart.setUTCHours(0, 0, 0, 0);
             const weekStartStr = weekStart.toISOString().split('T')[0];
 
+            // Check existence only (id) — avoids 400 from missing columns
             const { data: attempts } = await supabase
               .from('boss_attempts')
-              .select('damage_dealt')
+              .select('id, damage_dealt')
               .eq('user_id', supabaseAuth.user.id)
               .eq('guild_id', guildId)
               .gte('created_at', weekStartStr)
-              .order('created_at', { ascending: false })
               .limit(1);
 
             if (attempts && attempts.length > 0) {
               setHasUserAttacked(true);
-              setDamageDealt(attempts[0].damage_dealt ?? 0);
-              setShowAttackResult(true); // Show recap immediately
+              // Show damage if available, otherwise 0
+              const dmg = (attempts[0] as any).damage_dealt;
+              if (typeof dmg === 'number') setDamageDealt(dmg);
+              setShowAttackResult(true);
             }
           }
         } catch (err) {

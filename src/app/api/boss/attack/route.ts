@@ -105,20 +105,25 @@ export async function POST(request: NextRequest) {
     // 5. PROCESS BOSS ATTACK (WITH PER-GUILD HP)
     // =====================================================
     
-    // Calculate week start for deterministic boss
-    const now = new Date();
-    const utcNow = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-    const weekStartStr = getWeekStart(utcNow);
+    // Calculate week start for deterministic boss (same function as state route)
+    const weekStartStr = getWeekStart();
     
     // Get or create global boss fight
     let { data: bossFight, error: bossFightError } = await supabase
       .from('boss_fights')
       .select('id, boss_key, boss_rarity, boss_max_hp')
       .eq('week_start', weekStartStr)
-      .single();
+      .maybeSingle();
     
-    // If boss doesn't exist, create it with deterministic selection
-    if (!bossFight && bossFightError?.code === 'PGRST116') {
+    // If boss doesn't exist yet, create it with deterministic selection
+    if (!bossFight) {
+      if (bossFightError) {
+        console.error('[api/boss/attack] Error fetching boss fight:', bossFightError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to fetch boss fight' },
+          { status: 500 }
+        );
+      }
       const selectedBoss = pickBoss(weekStartStr);
       
       const { data: newBoss, error: createError } = await supabase
@@ -143,12 +148,6 @@ export async function POST(request: NextRequest) {
       }
       
       bossFight = newBoss;
-    } else if (bossFightError) {
-      console.error('[api/boss/attack] Error fetching boss fight:', bossFightError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch boss fight' },
-        { status: 500 }
-      );
     }
     
     if (!bossFight) {
@@ -164,10 +163,10 @@ export async function POST(request: NextRequest) {
       .select('id, current_hp, total_damage')
       .eq('boss_fight_id', bossFight.id)
       .eq('guild_id', guildId)
-      .single();
+      .maybeSingle();
     
     // If guild hasn't attacked this boss yet, create entry with full HP
-    if (!guildState && guildStateError?.code === 'PGRST116') {
+    if (!guildState) {
       const { data: newState, error: createStateError } = await supabase
         .from('boss_guild_state')
         .insert({
@@ -189,12 +188,6 @@ export async function POST(request: NextRequest) {
       }
       
       guildState = newState;
-    } else if (guildStateError) {
-      console.error('[api/boss/attack] Error fetching guild state:', guildStateError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch guild state' },
-        { status: 500 }
-      );
     }
     
     // Calculate damage for this attack

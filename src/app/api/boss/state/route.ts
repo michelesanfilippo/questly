@@ -1,8 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { requireUser, createSupabaseAdminClient } from '@/lib/supabaseServer';
+import { getWeekStart } from '@/lib/boss';
 
 /**
  * GET /api/boss/state?guildId=<uuid>
@@ -40,37 +38,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // =====================================================
-    // CREATE CLIENT & GET AUTH TOKEN
-    // =====================================================
-    const authHeader = request.headers.get('Authorization');
-    let token: string | undefined;
+    // Verify auth
+    const auth = await requireUser(request);
+    if (auth.error) return auth.error;
 
-    if (authHeader?.startsWith('Bearer ')) {
-      token = authHeader.slice(7);
-    }
+    const supabase = await createSupabaseAdminClient();
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      global: token
-        ? {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        : undefined,
-    });
-
-    // =====================================================
-    // CALCULATE WEEK START (for deterministic boss)
-    // =====================================================
-    const now = new Date();
-    const utcNow = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-    const dayOfWeek = utcNow.getUTCDay(); // 0=Sun, 1=Mon, ...
-    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    const weekStart = new Date(utcNow);
-    weekStart.setUTCDate(weekStart.getUTCDate() - daysToMonday);
-    weekStart.setUTCHours(0, 0, 0, 0);
-    const weekStartStr = weekStart.toISOString().split('T')[0];
+    const weekStartStr = getWeekStart();
 
     // =====================================================
     // FETCH GLOBAL BOSS FIGHT STATE (same for all guilds)
@@ -110,7 +84,7 @@ export async function GET(request: NextRequest) {
       .select('current_hp, total_damage, is_defeated')
       .eq('boss_fight_id', bossData.id)
       .eq('guild_id', guildId)
-      .single();
+      .maybeSingle();
 
     // If guild hasn't attacked yet, start with full HP
     const currentHp = guildState?.current_hp ?? bossData.boss_max_hp;
