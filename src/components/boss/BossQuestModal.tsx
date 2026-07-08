@@ -40,7 +40,7 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
         {/* Header */}
         <div className="mb-4 flex items-center justify-between border-b border-amber-700/30 pb-4">
           <h2 className="text-2xl font-bold text-amber-100">
-            ⚔️ {bossName.toUpperCase()}
+            {bossName.toUpperCase()}
           </h2>
           <button
             onClick={onClose}

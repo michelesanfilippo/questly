@@ -4,7 +4,6 @@ import { isBossWeekend } from '@/lib/boss';
 import { supabase } from '@/lib/supabase';
 import { BossQuestModal } from './BossQuestModal';
 import { BossSummonPopup } from './BossSummonPopup';
-import { BossAttackResult } from './BossAttackResult';
 import bossMissionsData from '@/data/boss_missions.json';
 
 interface BossState {
@@ -337,29 +336,26 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
         {/* Boss Card - Simplified */}
         {boss && isBossWeekendFlag ? (
-          <div className="rounded-lg border-2 border-amber-700/50 bg-gradient-to-br from-amber-950 to-amber-900 p-6">
+          <div className="rounded-lg border-2 border-amber-700 bg-gray-900 p-6">
             {/* Boss Name + Rarity */}
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-amber-50">
-                  🐉 {boss?.boss_key?.toUpperCase() || 'MYSTERIOUS BEAST'}
+                <h3 className="text-xl font-bold text-amber-800">
+                  {boss?.boss_key?.toUpperCase() || 'MYSTERIOUS BEAST'}
                 </h3>
-                <p className="text-amber-300 text-sm">
-                  {rarityEmoji[boss?.boss_rarity || 0] || '⭐'}
+                <p className="text-amber-700 text-sm font-semibold">
+                  {rarityEmoji[boss?.boss_rarity || 0] || ''}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-semibold text-amber-50">
+                <p className="text-lg font-semibold text-amber-800">
                   {boss?.current_hp || 0} / {boss?.max_hp || 0} HP
-                </p>
-                <p className="text-xs text-amber-300">
-                  Damage: {boss?.total_damage || 0}
                 </p>
               </div>
             </div>
 
             {/* Health Bar */}
-            <div className="mb-4 h-6 overflow-hidden rounded-full border-2 border-amber-900 bg-gray-900">
+            <div className="mb-4 h-6 overflow-hidden rounded-full border-2 border-gray-700 bg-gray-800">
               <div
                 className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all duration-500"
                 style={{
@@ -368,10 +364,25 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               />
             </div>
 
-            {/* Attack Result */}
-            {attackResult && !attackResult.boss_state.is_defeated && (
-              <div className="mb-4 rounded-lg bg-green-900/30 p-3 text-green-300 text-sm">
-                ⚔️ Hit for <span className="font-bold">{attackResult.attack.damage_dealt}</span> damage!
+            {/* Show Report on Card (not popup) */}
+            {showAttackResult && attackResult && (
+              <div className="mb-4 rounded-lg border border-amber-700 bg-gray-800 p-4">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-amber-800">Danno Inflitto:</span>
+                    <span className="font-bold text-amber-600">+{damageDealt}</span>
+                  </div>
+                  {userSuggestions && userSuggestions.length > 0 && (
+                    <div className="border-t border-amber-700 pt-2">
+                      <p className="text-xs text-amber-800 font-semibold mb-1">Suggerimenti:</p>
+                      <ul className="space-y-1 text-xs text-amber-700">
+                        {userSuggestions.map((s, i) => (
+                          <li key={i}>- {s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -380,16 +391,16 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               <button
                 onClick={handleAttackClick}
                 disabled={isSubmitting || hasUserAttacked}
-                className="w-full rounded-lg border-2 border-amber-700 bg-amber-700 px-4 py-2 font-bold text-amber-50 transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600"
+                className="w-full rounded-lg border-2 border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600"
               >
-                {hasUserAttacked ? '✓ Already Attacked' : isSubmitting ? 'Attacking...' : '⚔️ Attack Boss'}
+                {hasUserAttacked ? 'Already Attacked' : isSubmitting ? 'Attacking...' : 'Attack Boss'}
               </button>
             )}
 
             {/* Defeated Badge */}
             {boss?.is_defeated && (
               <div className="rounded-lg border-2 border-yellow-700 bg-yellow-900/30 p-4 text-center">
-                <p className="text-2xl font-bold text-yellow-300">✨ DEFEATED ✨</p>
+                <p className="text-2xl font-bold text-yellow-300">DEFEATED</p>
                 {attackResult?.rewards && (
                   <div className="mt-2 text-sm text-yellow-200">
                     <p>Guild XP: +{attackResult.rewards.guild_xp}</p>
@@ -401,26 +412,26 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           </div>
         ) : isBossWeekendFlag ? (
           /* No Boss Yet - Weekend Active */
-          <div className="rounded-lg border-2 border-amber-700/50 bg-gradient-to-br from-amber-950 to-amber-900 p-6 text-center">
-            <p className="mb-3 text-lg font-bold text-amber-50">🐉 Nessun Boss Attivo</p>
-            <p className="mb-4 text-sm text-amber-200">
+          <div className="rounded-lg border-2 border-amber-700 bg-gray-900 p-6 text-center">
+            <p className="mb-3 text-lg font-bold text-amber-800">Nessun Boss Attivo</p>
+            <p className="mb-4 text-sm text-amber-700">
               Sii il primo ad attaccare e invoca il boss!
             </p>
             {!showAttackResult && (
               <button
                 onClick={handleAttackClick}
                 disabled={isSubmitting || hasUserAttacked}
-                className="rounded-lg border-2 border-amber-700 bg-amber-700 px-4 py-2 font-bold text-amber-50 transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600"
+                className="rounded-lg border-2 border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600"
               >
-                {hasUserAttacked ? '✓ Already Attacked' : isSubmitting ? 'Summoning...' : '⚔️ Summon Boss'}
+                {hasUserAttacked ? 'Already Attacked' : isSubmitting ? 'Summoning...' : 'Summon Boss'}
               </button>
             )}
           </div>
         ) : (
           /* Not Weekend */
-          <div className="rounded-lg border-2 border-amber-700/50 bg-gradient-to-br from-amber-950 to-amber-900 p-6 text-center">
-            <p className="mb-3 text-lg font-bold text-amber-50">📅 Boss Weekend Closed</p>
-            <p className="text-sm text-amber-200">
+          <div className="rounded-lg border-2 border-amber-700 bg-gray-900 p-6 text-center">
+            <p className="mb-3 text-lg font-bold text-amber-800">Boss Weekend Closed</p>
+            <p className="text-sm text-amber-700">
               Boss battles available only on weekends (Saturday & Sunday UTC)
             </p>
           </div>
@@ -428,7 +439,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       </div>
 
       {/* Quest Modal */}
-      {showQuestModal && selectedQuest && (
+      {showQuestModal && selectedQuest && !showAttackResult && (
         <BossQuestModal
           quest={selectedQuest}
           bossName={boss?.boss_key ?? 'Mystery Boss'}
@@ -448,20 +459,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       )}
 
       {/* Attack Result Modal */}
-      {showAttackResult && attackResult && attackResult.boss_state && (
-        <BossAttackResult
-          bossName={attackResult.boss_state?.boss_key || 'MYSTERIOUS BEAST'}
-          bossRarity={attackResult.boss_state?.boss_rarity || 0}
-          maxHp={attackResult.boss_state?.max_hp || 100}
-          currentHp={attackResult.boss_state?.current_hp || 0}
-          damageDealt={damageDealt}
-          totalDamage={attackResult.boss_state?.total_damage || 0}
-          userScore={userLastScore}
-          feedback={userFeedback}
-          suggestions={userSuggestions}
-          onClose={() => setShowAttackResult(false)}
-        />
-      )}
+      {/* Report is shown on the card above - no modal needed */}
     </>
   );
 };
