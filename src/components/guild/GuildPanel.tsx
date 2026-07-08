@@ -106,6 +106,7 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
         const payload = await response.json() as { profile?: SupabaseProfile };
         setIsQuitOpen(false);
         onProfileUpdate?.(payload.profile ?? null);
+        window.location.reload();
         return;
       }
       const payload = await response.json().catch(() => ({})) as { error?: string };
@@ -130,7 +131,7 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
       });
       if (response.ok) {
         setKickTarget(null);
-        void loadCurrentGuild();
+        window.location.reload();
         return;
       }
       const payload = await response.json().catch(() => ({})) as { error?: string };
@@ -201,7 +202,7 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
       if (response.ok) {
         setPendingRequests((prev) => prev.filter((r) => r.id !== requestId));
         setRequestCount((prev) => Math.max(0, prev - 1));
-        if (accept) void loadCurrentGuild();
+        if (accept) window.location.reload();
       }
     } finally {
       setRespondingId(null);

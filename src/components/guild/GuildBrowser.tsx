@@ -84,6 +84,7 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
           setGuilds((prev) => [payload.guild as GuildSummary, ...prev]);
           onGuildChanged?.(payload.guild, payload.profile ?? null);
         }
+        window.location.reload();
         return;
       }
 

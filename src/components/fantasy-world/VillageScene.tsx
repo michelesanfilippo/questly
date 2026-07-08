@@ -52,7 +52,9 @@ export function VillageScene() {
       <div className="absolute top-4 right-4 z-20">
         {isLoggedIn ? (
           <button
-            onClick={() => signOut()}
+            onClick={() => {
+              signOut().then(() => window.location.reload());
+            }}
             className="px-4 py-1.5 sm:px-6 sm:py-2 lg:px-10 lg:py-2.5 rounded-2xl text-xs sm:text-sm lg:text-base font-semibold border backdrop-blur-sm transition-all duration-200 bg-amber-800/40 hover:bg-amber-700/50 active:bg-amber-800/60 text-amber-50 border-amber-600/50 shadow-md"
           >
             {t('nav.signout')}
