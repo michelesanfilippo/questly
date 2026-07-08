@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
-import { evaluateBossAnswer } from '@/lib/boss-evaluate';
+import { evaluateBossAnswer, calculateDamage } from '@/lib/boss-evaluate';
 import type { BossEvaluation } from '@/lib/boss-evaluate';
+import { getWeekStart, pickBoss, calculateDamage } from '@/lib/boss';
 import bossMissionsData from '@/data/boss_missions.json';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -123,35 +124,144 @@ export async function POST(request: NextRequest) {
     console.log(`[api/boss/attack] Evaluated score: ${evaluation.score} for user answer`);
 
     // =====================================================
-    // 5. CALL RPC FUNCTION WITH EVALUATED SCORE
+    // 5. PROCESS BOSS ATTACK (WITH PER-GUILD HP)
     // =====================================================
-    const { data, error } = await supabase.rpc('attack_boss', {
-      p_guild_id: guildId,
-      p_mission_score: evaluation.score,
-      p_user_role: userRole,
-    });
-
-    if (error) {
-      console.error('[api/boss/attack] RPC error:', error);
+    
+    // Calculate week start for deterministic boss
+    const now = new Date();
+    const utcNow = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const weekStartStr = getWeekStart(utcNow);
+    
+    // Get or create global boss fight
+    let { data: bossFight, error: bossFightError } = await supabase
+      .from('boss_fights')
+      .select('id, boss_key, boss_rarity, boss_max_hp')
+      .eq('week_start', weekStartStr)
+      .single();
+    
+    // If boss doesn't exist, create it with deterministic selection
+    if (!bossFight && bossFightError?.code === 'PGRST116') {
+      const selectedBoss = pickBoss(weekStartStr);
+      
+      const { data: newBoss, error: createError } = await supabase
+        .from('boss_fights')
+        .insert({
+          week_start: weekStartStr,
+          boss_key: selectedBoss.key,
+          boss_rarity: selectedBoss.rarity,
+          boss_max_hp: selectedBoss.hp,
+          damage_dealt: 0,
+          status: 'active',
+        })
+        .select('id, boss_key, boss_rarity, boss_max_hp')
+        .single();
+      
+      if (createError) {
+        console.error('[api/boss/attack] Failed to create boss fight:', createError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to create boss fight' },
+          { status: 500 }
+        );
+      }
+      
+      bossFight = newBoss;
+    } else if (bossFightError) {
+      console.error('[api/boss/attack] Error fetching boss fight:', bossFightError);
       return NextResponse.json(
-        {
-          success: false,
-          error: error.message || 'Failed to process boss attack',
-        },
-        { status: 400 }
+        { success: false, error: 'Failed to fetch boss fight' },
+        { status: 500 }
       );
     }
-
-    if (!data || !data.success) {
+    
+    if (!bossFight) {
       return NextResponse.json(
-        {
-          success: false,
-          error: data?.error || 'Unknown error from RPC',
-        },
-        { status: 400 }
+        { success: false, error: 'Boss fight initialization failed' },
+        { status: 500 }
       );
     }
-
+    
+    // Get or create guild-specific boss state
+    let { data: guildState, error: guildStateError } = await supabase
+      .from('boss_guild_state')
+      .select('id, current_hp, total_damage')
+      .eq('boss_fight_id', bossFight.id)
+      .eq('guild_id', guildId)
+      .single();
+    
+    // If guild hasn't attacked this boss yet, create entry with full HP
+    if (!guildState && guildStateError?.code === 'PGRST116') {
+      const { data: newState, error: createStateError } = await supabase
+        .from('boss_guild_state')
+        .insert({
+          boss_fight_id: bossFight.id,
+          guild_id: guildId,
+          current_hp: bossFight.boss_max_hp,
+          total_damage: 0,
+          is_defeated: false,
+        })
+        .select('id, current_hp, total_damage')
+        .single();
+      
+      if (createStateError) {
+        console.error('[api/boss/attack] Failed to create guild state:', createStateError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to initialize guild state' },
+          { status: 500 }
+        );
+      }
+      
+      guildState = newState;
+    } else if (guildStateError) {
+      console.error('[api/boss/attack] Error fetching guild state:', guildStateError);
+      return NextResponse.json(
+        { success: false, error: 'Failed to fetch guild state' },
+        { status: 500 }
+      );
+    }
+    
+    // Calculate damage for this attack
+    const damageDealt = calculateDamage(evaluation.score, userRole as any);
+    const newTotalDamage = (guildState?.total_damage || 0) + damageDealt;
+    const newCurrentHp = Math.max(0, (guildState?.current_hp || bossFight.boss_max_hp) - damageDealt);
+    const isDefeated = newCurrentHp <= 0;
+    
+    // Update guild state with new damage
+    const { error: updateError } = await supabase
+      .from('boss_guild_state')
+      .update({
+        current_hp: newCurrentHp,
+        total_damage: newTotalDamage,
+        is_defeated: isDefeated,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('boss_fight_id', bossFight.id)
+      .eq('guild_id', guildId);
+    
+    if (updateError) {
+      console.error('[api/boss/attack] Failed to update guild state:', updateError);
+      return NextResponse.json(
+        { success: false, error: 'Failed to update boss state' },
+        { status: 500 }
+      );
+    }
+    
+    // Record attempt
+    const { error: attemptError } = await supabase
+      .from('boss_attempts')
+      .insert({
+        user_id: user.id,
+        guild_id: guildId,
+        boss_fight_id: bossFight.id,
+        mission_score: evaluation.score,
+        damage_dealt: damageDealt,
+        user_role: userRole,
+      });
+    
+    if (attemptError) {
+      console.error('[api/boss/attack] Failed to record attempt:', attemptError);
+      // Don't fail the whole request, attempt recording is secondary
+    }
+    
     // =====================================================
     // 6. RETURN SUCCESS
     // =====================================================
@@ -159,16 +269,26 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         attack: {
-          ...data.attack,
           score: evaluation.score,
+          damage_dealt: damageDealt,
+          user_role: userRole,
         },
         evaluation: {
           score: evaluation.score,
           feedback: evaluation.feedback,
           suggestions: evaluation.suggestions,
         },
-        boss_state: data.boss_state,
-        rewards: data.rewards,
+        boss_state: {
+          boss_key: bossFight.boss_key,
+          boss_rarity: bossFight.boss_rarity,
+          max_hp: bossFight.boss_max_hp,
+          current_hp: newCurrentHp,
+          total_damage: newTotalDamage,
+          is_defeated: isDefeated,
+        },
+        rewards: {
+          message: isDefeated ? 'Boss defeated!' : 'Attack successful!',
+        },
       },
       { status: 200 }
     );

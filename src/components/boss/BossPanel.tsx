@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '@/i18n';
 import { isBossWeekend } from '@/lib/boss';
 import { supabase } from '@/lib/supabase';
-import { BossQuestModal } from './BossQuestModal';
 import { BossSummonPopup } from './BossSummonPopup';
 import bossMissionsData from '@/data/boss_missions.json';
 
@@ -42,13 +41,14 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isBossWeekendFlag, setIsBossWeekendFlag] = useState(false);
-  const [showQuestModal, setShowQuestModal] = useState(false);
   const [selectedQuest, setSelectedQuest] = useState<BossMission | null>(null);
+  const [showInlineQuest, setShowInlineQuest] = useState(false);
+  const [questAnswer, setQuestAnswer] = useState('');
   const [attackResult, setAttackResult] = useState<any>(null);
+  const [showAttackResult, setShowAttackResult] = useState(false);
   const [showSummonPopup, setShowSummonPopup] = useState(false);
   const [summonedBoss, setSummonedBoss] = useState<BossState | null>(null);
   const [hasUserAttacked, setHasUserAttacked] = useState(false);
-  const [showAttackResult, setShowAttackResult] = useState(false);
   const [userLastScore, setUserLastScore] = useState(0);
   const [userFeedback, setUserFeedback] = useState<string>('');
   const [userSuggestions, setUserSuggestions] = useState<string[]>([]);
@@ -186,34 +186,30 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     return () => clearInterval(pollInterval);
   }, [boss, fetchBossState]);
 
-  // Handle attack button click - open quest modal
+  // Handle attack button click - show inline quest
   const handleAttackClick = () => {
-    if (hasUserAttacked) return; // Don't proceed if already attacked
+    if (hasUserAttacked) return;
     
-    if (!boss && !selectedQuest) {
-      // First attack - select random quest from goblin (default)
-      const bossKey = 'goblin';
-      const difficulty = 1;
-      const mission = getRandomMissionForBoss(bossKey, difficulty);
-      if (mission) {
-        setSelectedQuest(mission);
-        setShowQuestModal(true);
-      }
-    } else if (selectedQuest) {
-      setShowQuestModal(true);
-    } else if (boss) {
-      // Select random quest for existing boss
-      const mission = getRandomMissionForBoss(boss.boss_key, boss.boss_rarity);
-      if (mission) {
-        setSelectedQuest(mission);
-        setShowQuestModal(true);
-      }
+    // Get random quest
+    const bossKey = boss?.boss_key || 'goblin';
+    const difficulty = boss?.boss_rarity || 1;
+    const mission = getRandomMissionForBoss(bossKey, difficulty);
+    
+    if (mission) {
+      setSelectedQuest(mission);
+      setShowInlineQuest(true);
+      setQuestAnswer(''); // Clear previous answer
     }
   };
 
   // Handle quest answer submission
-  const handleQuestAnswerSubmit = useCallback(
-    async (answer: string, _score: number) => {
+  const handleSubmitAnswer = useCallback(
+    async (answer: string) => {
+      if (!answer.trim() || answer.trim().length < 10) {
+        setError('Answer must be at least 10 characters');
+        return;
+      }
+
       setIsSubmitting(true);
       setError(null);
 
@@ -223,8 +219,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           throw new Error('Not authenticated');
         }
 
-        // Call attack endpoint with the user's answer
-        // Score will be determined by Ollama validation on backend
+        // Call attack endpoint
         const response = await fetch('/api/boss/attack', {
           method: 'POST',
           headers: {
@@ -245,24 +240,20 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           throw new Error(data.error || 'Attack failed');
         }
 
-        // Update boss state
+        // Update state with results
         setAttackResult(data);
-        
-        // Mark user as having attacked
         setHasUserAttacked(true);
         setUserLastScore(data.attack.score);
         setDamageDealt(data.attack.damage_dealt);
         setUserFeedback(data.evaluation?.feedback || '');
         setUserSuggestions(data.evaluation?.suggestions || []);
         
-        // Close quest modal and show attack result
-        setSelectedQuest(null);
-        setShowQuestModal(false);
+        // Hide quest, show result
+        setShowInlineQuest(false);
+        setQuestAnswer('');
         setShowAttackResult(true);
         
-        // Don't show summon popup anymore - show result instead
-        setShowSummonPopup(false);
-        
+        // Update boss state
         setBoss((prev) => {
           if (!prev && data.boss_state) {
             return data.boss_state;
@@ -273,16 +264,15 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             current_hp: data.boss_state.current_hp,
             total_damage: data.boss_state.total_damage,
             is_defeated: data.boss_state.is_defeated,
-            attempted_count: (prev.attempted_count || 0) + 1,
           };
         });
 
-        // Trigger victory callback if defeated
+        // Trigger victory if defeated
         if (data.boss_state.is_defeated) {
           onVictory?.();
         }
 
-        // Fetch updated boss state after attack
+        // Refresh state
         await fetchBossState();
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Attack failed';
@@ -364,7 +354,32 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               />
             </div>
 
-            {/* Show Report on Card (not popup) */}
+            {/* INLINE QUEST - Like Daily Quest Card */}
+            {showInlineQuest && selectedQuest && !showAttackResult ? (
+              <div className="mb-4 space-y-3 rounded-lg bg-gray-800 p-4">
+                <h3 className="text-lg font-bold text-amber-800">{selectedQuest.title}</h3>
+                <p className="whitespace-pre-wrap text-sm text-amber-700 leading-relaxed">
+                  {selectedQuest.text}
+                </p>
+                <textarea
+                  value={questAnswer}
+                  onChange={(e) => setQuestAnswer(e.target.value)}
+                  disabled={isSubmitting}
+                  placeholder="Scrivi la tua risposta..."
+                  rows={3}
+                  className="w-full rounded-lg border border-amber-700 bg-gray-900 px-3 py-2 text-amber-100 placeholder-gray-600 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:opacity-50 text-sm"
+                />
+                <button
+                  onClick={() => handleSubmitAnswer(questAnswer)}
+                  disabled={isSubmitting || !questAnswer.trim()}
+                  className="w-full rounded-lg border-2 border-amber-600 bg-amber-700 px-3 py-2 font-bold text-amber-50 transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600 text-sm"
+                >
+                  {isSubmitting ? 'Sending...' : 'Submit & Attack'}
+                </button>
+              </div>
+            ) : null}
+
+            {/* RECAP - After Submit */}
             {showAttackResult && attackResult && (
               <div className="mb-4 rounded-lg border border-amber-700 bg-gray-800 p-4">
                 <div className="space-y-2 text-sm">
@@ -386,8 +401,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               </div>
             )}
 
-            {/* Attack Button */}
-            {boss && !boss.is_defeated && !showAttackResult && (
+            {/* Attack Button - Only visible if NOT showing quest or result */}
+            {boss && !boss.is_defeated && !showInlineQuest && !showAttackResult && (
               <button
                 onClick={handleAttackClick}
                 disabled={isSubmitting || hasUserAttacked}
@@ -438,16 +453,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         )}
       </div>
 
-      {/* Quest Modal */}
-      {showQuestModal && selectedQuest && !showAttackResult && (
-        <BossQuestModal
-          quest={selectedQuest}
-          bossName={boss?.boss_key ?? 'Mystery Boss'}
-          onSubmit={handleQuestAnswerSubmit}
-          onClose={() => setShowQuestModal(false)}
-          isSubmitting={isSubmitting}
-        />
-      )}
+      {/* Quest Modal - REMOVED (now inline on card) */}
 
       {/* Boss Summon Popup */}
       {showSummonPopup && summonedBoss && (

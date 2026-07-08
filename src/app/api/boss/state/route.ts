@@ -73,11 +73,11 @@ export async function GET(request: NextRequest) {
     const weekStartStr = weekStart.toISOString().split('T')[0];
 
     // =====================================================
-    // FETCH GLOBAL BOSS FIGHT STATE (no guild_id filter)
+    // FETCH GLOBAL BOSS FIGHT STATE (same for all guilds)
     // =====================================================
     const { data: bossData, error: bossError } = await supabase
       .from('boss_fights')
-      .select('id, boss_key, boss_rarity, boss_max_hp, damage_dealt, status')
+      .select('id, boss_key, boss_rarity, boss_max_hp, status')
       .eq('week_start', weekStartStr)
       .single();
 
@@ -103,18 +103,19 @@ export async function GET(request: NextRequest) {
     }
 
     // =====================================================
-    // COUNT ALL ATTEMPTS (from all guilds)
+    // FETCH GUILD-SPECIFIC HP STATE
     // =====================================================
-    const { count: totalAttempts } = await supabase
-      .from('boss_attempts')
-      .select('id', { count: 'exact' })
-      .eq('boss_fight_id', bossData.id);
+    const { data: guildState } = await supabase
+      .from('boss_guild_state')
+      .select('current_hp, total_damage, is_defeated')
+      .eq('boss_fight_id', bossData.id)
+      .eq('guild_id', guildId)
+      .single();
 
-    // =====================================================
-    // BUILD RESPONSE
-    // =====================================================
-    const currentHp = Math.max(0, bossData.boss_max_hp - bossData.damage_dealt);
-    const isDefeated = bossData.status === 'defeated';
+    // If guild hasn't attacked yet, start with full HP
+    const currentHp = guildState?.current_hp ?? bossData.boss_max_hp;
+    const totalDamage = guildState?.total_damage ?? 0;
+    const isDefeated = guildState?.is_defeated ?? false;
 
     return NextResponse.json(
       {
@@ -124,9 +125,8 @@ export async function GET(request: NextRequest) {
           boss_rarity: bossData.boss_rarity,
           max_hp: bossData.boss_max_hp,
           current_hp: currentHp,
-          total_damage: bossData.damage_dealt,
+          total_damage: totalDamage,
           is_defeated: isDefeated,
-          total_attempts: totalAttempts || 0,
         },
       },
       { status: 200 }
