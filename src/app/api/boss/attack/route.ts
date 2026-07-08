@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
-import { evaluateBossAnswer, calculateDamage } from '@/lib/boss-evaluate';
+import { evaluateBossAnswer } from '@/lib/boss-evaluate';
 import type { BossEvaluation } from '@/lib/boss-evaluate';
 import { getWeekStart, pickBoss, calculateDamage } from '@/lib/boss';
 import bossMissionsData from '@/data/boss_missions.json';
