@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface BossVictoryPopupProps {
   isOpen: boolean;
@@ -7,137 +7,79 @@ interface BossVictoryPopupProps {
   bossRarity: number;
   guildXP: number;
   userXP: number;
-  totalDamage: number;
-  userDamage: number;
-  onClose: () => void;
-  onClaimRewards?: () => void;
+  top3: { nickname: string; damage: number }[];
 }
 
-/**
- * BossVictoryPopup
- *
- * Displays celebratory popup when boss is defeated:
- * - Boss name + rarity
- * - Total guild XP earned
- * - User's personal XP earned
- * - Damage contribution stats
- * - "Claim Rewards" button
- * - Confetti animation (optional)
- */
+const MEDALS = ['🥇', '🥈', '🥉'];
+
 export const BossVictoryPopup: React.FC<BossVictoryPopupProps> = ({
   isOpen,
   bossName,
   bossRarity,
   guildXP,
   userXP,
-  totalDamage,
-  userDamage,
-  onClose,
-  onClaimRewards,
+  top3,
 }) => {
-  const [isClosing, setIsClosing] = useState(false);
-  const userDamagePercent = totalDamage > 0 ? Math.round((userDamage / totalDamage) * 100) : 0;
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-      setIsClosing(false);
-    }, 300);
-  };
-
-  const handleClaimRewards = () => {
-    onClaimRewards?.();
-    handleClose();
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div
-      className={`fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity duration-300 ${
-        isClosing ? 'opacity-0' : 'opacity-100'
-      }`}
-    >
-      <div
-        className={`bg-gradient-to-br from-yellow-900 to-orange-900 border-4 border-yellow-400 rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all duration-300 ${
-          isClosing ? 'scale-90' : 'scale-100'
-        }`}
-      >
-        {/* Header: Victory Title */}
-        <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-yellow-300 mb-2">🎉 VICTORY! 🎉</h1>
-          <p className="text-yellow-100 text-lg">{bossName}</p>
-          <p className="text-yellow-400 font-bold">{'⭐'.repeat(bossRarity)}</p>
-        </div>
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
+      <AnimatePresence>
+        <motion.div
+          key="boss-victory"
+          className="relative w-full max-w-sm bg-[#faf7f0] border-2 border-amber-800/30 rounded-sm shadow-[2px_4px_16px_rgba(101,67,33,0.25)] p-8 text-center"
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.85, opacity: 0 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+        >
+          <span className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-amber-800/40" />
+          <span className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-amber-800/40" />
+          <span className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-amber-800/40" />
+          <span className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-800/40" />
 
-        {/* Divider */}
-        <div className="border-t-2 border-yellow-400 my-4" />
+          <div className="text-5xl mb-3 select-none">⚔️</div>
 
-        {/* XP Rewards */}
-        <div className="space-y-4 mb-6">
-          {/* Guild XP */}
-          <div className="bg-black bg-opacity-30 rounded-lg p-4 border border-yellow-600">
-            <p className="text-yellow-300 text-sm font-bold">GUILD REWARD</p>
-            <p className="text-yellow-100 text-2xl font-bold">{guildXP} XP</p>
-          </div>
+          <p className="text-xs uppercase tracking-widest text-amber-700/70 mb-1 font-semibold">Victory</p>
+          <h2 className="font-serif text-xl font-bold text-amber-900 mb-1">{bossName} Defeated!</h2>
+          <p className="text-sm text-amber-600 mb-5">{'⭐'.repeat(bossRarity)}</p>
 
-          {/* User XP */}
-          <div className="bg-black bg-opacity-30 rounded-lg p-4 border border-orange-600">
-            <p className="text-orange-300 text-sm font-bold">YOUR REWARD</p>
-            <p className="text-orange-100 text-2xl font-bold">{userXP} XP</p>
-          </div>
-
-          {/* Damage Stats */}
-          <div className="bg-black bg-opacity-30 rounded-lg p-4 border border-red-600">
-            <p className="text-red-300 text-sm font-bold">YOUR CONTRIBUTION</p>
-            <div className="flex justify-between items-center mt-2">
-              <span className="text-red-100">
-                {userDamage} / {totalDamage} damage
-              </span>
-              <span className="text-yellow-300 font-bold text-lg">{userDamagePercent}%</span>
+          <div className="flex gap-3 justify-center mb-4">
+            <div className="flex-1 rounded-sm border border-amber-200 bg-amber-50/80 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-wide text-stone-500 font-semibold">Guild XP</p>
+              <p className="text-xl font-bold text-amber-800">+{guildXP}</p>
             </div>
-            {/* Damage bar */}
-            <div className="w-full bg-gray-700 rounded-full h-2 mt-2 overflow-hidden">
-              <div
-                className="h-full bg-red-500"
-                style={{ width: `${userDamagePercent}%` }}
-              />
+            <div className="flex-1 rounded-sm border border-amber-200 bg-amber-50/80 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-wide text-stone-500 font-semibold">Your XP</p>
+              <p className="text-xl font-bold text-amber-800">+{userXP}</p>
             </div>
           </div>
-        </div>
 
-        {/* Divider */}
-        <div className="border-t-2 border-yellow-400 my-4" />
+          {top3.length > 0 && (
+            <div className="mb-5 rounded-sm border border-amber-200/60 bg-amber-50/60 p-3 text-left">
+              <p className="text-[10px] uppercase tracking-wide text-stone-500 font-semibold mb-2">Top Attackers</p>
+              <ol className="space-y-1.5">
+                {top3.map((entry, i) => (
+                  <li key={i} className="flex items-center justify-between text-xs text-stone-700">
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-base leading-none">{MEDALS[i]}</span>
+                      <span className="font-medium">{entry.nickname}</span>
+                    </span>
+                    <span className="font-semibold text-amber-800">{entry.damage} dmg</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
 
-        {/* Achievement Text */}
-        <p className="text-center text-yellow-100 text-sm mb-6 leading-relaxed">
-          Your guild banded together and defeated {bossName}!
-          <br />
-          Well done, heroes! 🏆
-        </p>
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button
-            onClick={handleClaimRewards}
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-3 px-4 rounded transition"
-          >
-            Claim Rewards
-          </Button>
           <button
-            onClick={handleClose}
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition"
+            onClick={() => window.location.reload()}
+            className="w-3/4 mx-auto block min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150"
           >
-            Continue
+            Conferma
           </button>
-        </div>
-
-        {/* Flavor Text */}
-        <p className="text-center text-yellow-400 text-xs mt-4 italic">
-          Check back next weekend for another boss battle!
-        </p>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

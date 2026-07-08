@@ -332,8 +332,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setQuestAnswer('');
         setShowAttackResult(true);
         
-        // Load leaderboard after attack
-        if (data.boss_state?.id) fetchGuildLeaderboard(data.boss_state.id);
+        // Load leaderboard after attack (await when defeated so top3 is ready for popup)
+        if (data.boss_state?.id) {
+          await fetchGuildLeaderboard(data.boss_state.id);
+        }
         setBoss((prev) => {
           if (!prev && data.boss_state) {
             return data.boss_state;
@@ -568,10 +570,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         bossRarity={bossRarity}
         guildXP={victoryGuildXP}
         userXP={victoryUserXP}
-        totalDamage={boss?.total_damage ?? 0}
-        userDamage={damageDealt}
-        onClose={() => setShowVictoryPopup(false)}
-        onClaimRewards={() => setShowVictoryPopup(false)}
+        top3={guildLeaderboard.slice(0, 3)}
       />
     </>
   );
