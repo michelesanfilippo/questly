@@ -44,6 +44,7 @@ export default function HomePage() {
   const [badgePopupQueue, setBadgePopupQueue] = useState<number[]>([]);
   const [currentBadgePopup, setCurrentBadgePopup] = useState<number | null>(null);
   const [guildId, setGuildId] = useState<string | null>(null);
+  const [guildRole, setGuildRole] = useState<string>('member');
 
   // Mission fetch
   useEffect(() => {
@@ -195,24 +196,27 @@ export default function HomePage() {
     });
   }
 
-  // Load guild ID when profile changes
+  // Load guild ID and role when profile changes
   useEffect(() => {
     if (!profile?.id) {
       setGuildId(null);
+      setGuildRole('member');
       return;
     }
-    const loadGuildId = async () => {
+    const loadGuildData = async () => {
       try {
         const response = await fetch('/api/guilds?scope=members', { credentials: 'include' });
         if (response.ok) {
-          const data = await response.json() as { guild?: { id?: string } };
+          const data = await response.json() as { guild?: { id?: string }; role?: string };
           setGuildId(data.guild?.id ?? null);
+          setGuildRole(data.role ?? 'member');
         }
       } catch {
         setGuildId(null);
+        setGuildRole('member');
       }
     };
-    void loadGuildId();
+    void loadGuildData();
   }, [profile?.id]);
 
   function handleAccept(m: Mission) {
@@ -252,7 +256,7 @@ export default function HomePage() {
         <div className="rounded-sm border-2 border-amber-800/20 bg-amber-50/40 p-4">
           <BossPanel
             guildId={guildId}
-            userRole={(profile.current_guild_role as any) ?? 'member'}
+            userRole={(guildRole as any) ?? 'member'}
             onError={(error) => console.error('Boss panel error:', error)}
           />
         </div>
