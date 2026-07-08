@@ -1,23 +1,37 @@
 /**
  * Evaluate a boss quest answer using Ollama/Cloudflare AI
- * Returns a score (0-100) based on answer quality
+ * Returns score, feedback, and suggestions
  */
+export interface BossEvaluation {
+  score: number;
+  feedback: string;
+  suggestions: string[];
+}
+
 export async function evaluateBossAnswer(
   bossName: string,
   questText: string,
   userAnswer: string
-): Promise<number> {
+): Promise<BossEvaluation> {
   const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
   const CF_AI_TOKEN = process.env.CLOUDFLARE_AI_TOKEN;
   const CF_MODEL = '@cf/meta/llama-3.1-8b-instruct';
 
   if (!CF_ACCOUNT_ID || !CF_AI_TOKEN) {
-    console.warn('[evaluateBossAnswer] Missing Cloudflare credentials, using default score 75');
-    return 75;
+    console.warn('[evaluateBossAnswer] Missing Cloudflare credentials, using default');
+    return {
+      score: 75,
+      feedback: 'Your answer shows solid understanding of the challenge.',
+      suggestions: [],
+    };
   }
 
   if (!questText || !userAnswer) {
-    return 0;
+    return {
+      score: 0,
+      feedback: 'Please provide a complete answer.',
+      suggestions: [],
+    };
   }
 
   const systemPrompt = `You are an expert evaluator for fantasy quest answers. Evaluate the quality of the user's answer to the quest.
@@ -25,7 +39,8 @@ export async function evaluateBossAnswer(
 You must respond ONLY with a valid JSON object in this exact format, no other text:
 {
   "score": <number 0-100>,
-  "reasoning": "<brief explanation>"
+  "feedback": "<2-3 sentence feedback in fantasy/medieval tone, encouraging or constructive>",
+  "suggestions": ["<suggestion 1>", "<suggestion 2>", "<suggestion 3>"]
 }
 
 Scoring criteria:
@@ -34,7 +49,10 @@ Scoring criteria:
   - 21-40: Partially correct but missing key elements
   - 41-60: Correct but lacks depth or detail
   - 61-80: Good answer with most elements covered
-  - 81-100: Excellent answer, comprehensive and well-reasoned`;
+  - 81-100: Excellent answer, comprehensive and well-reasoned
+
+Feedback should be brief, in a fantasy tone, and either encouraging or constructively critical.
+Suggestions should be 1-3 actionable tips for improvement.`;
 
   const userMessage = `BOSS: ${bossName}
 QUEST: ${questText}
@@ -58,7 +76,7 @@ Evaluate this answer and respond with JSON only.`;
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userMessage },
           ],
-          max_tokens: 256,
+          max_tokens: 512,
           temperature: 0.3,
         }),
         signal: AbortSignal.timeout(10000),
@@ -66,8 +84,12 @@ Evaluate this answer and respond with JSON only.`;
     );
 
     if (!response.ok) {
-      console.warn('[evaluateBossAnswer] API error, using default score 75');
-      return 75;
+      console.warn('[evaluateBossAnswer] API error, using default');
+      return {
+        score: 75,
+        feedback: 'Your answer shows solid understanding of the challenge.',
+        suggestions: [],
+      };
     }
 
     const data = (await response.json()) as any;
@@ -77,23 +99,47 @@ Evaluate this answer and respond with JSON only.`;
     )?.trim();
 
     if (!raw) {
-      console.warn('[evaluateBossAnswer] No response from AI, using default score 75');
-      return 75;
+      console.warn('[evaluateBossAnswer] No response from AI, using default');
+      return {
+        score: 75,
+        feedback: 'Your answer shows solid understanding of the challenge.',
+        suggestions: [],
+      };
     }
 
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.warn('[evaluateBossAnswer] No JSON in response, using default score 75');
-      return 75;
+      console.warn('[evaluateBossAnswer] No JSON in response, using default');
+      return {
+        score: 75,
+        feedback: 'Your answer shows solid understanding of the challenge.',
+        suggestions: [],
+      };
     }
 
-    const parsed = JSON.parse(jsonMatch[0]) as { score: number; reasoning: string };
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      score: number;
+      feedback: string;
+      suggestions: string[];
+    };
     const score = Math.max(0, Math.min(100, Math.round(parsed.score)));
-    
-    console.log(`[evaluateBossAnswer] Score: ${score} for answer: ${userAnswer.substring(0, 50)}...`);
-    return score;
+
+    console.log(
+      `[evaluateBossAnswer] Score: ${score} for answer: ${userAnswer.substring(0, 50)}...`
+    );
+    return {
+      score,
+      feedback: parsed.feedback || 'Your answer was evaluated.',
+      suggestions: Array.isArray(parsed.suggestions)
+        ? parsed.suggestions.slice(0, 3)
+        : [],
+    };
   } catch (err) {
     console.error('[evaluateBossAnswer] Error:', err);
-    return 75; // Default score on error
+    return {
+      score: 75,
+      feedback: 'Your answer shows solid understanding of the challenge.',
+      suggestions: [],
+    }; // Default on error
   }
 }

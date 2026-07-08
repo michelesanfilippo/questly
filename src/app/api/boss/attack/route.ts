@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { evaluateBossAnswer } from '@/lib/boss-evaluate';
+import type { BossEvaluation } from '@/lib/boss-evaluate';
 import bossMissionsData from '@/data/boss_missions.json';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -113,20 +114,20 @@ export async function POST(request: NextRequest) {
       ? bossMissions[0].text
       : `Defeat the ${bossKey}`;
 
-    const evaluatedScore = await evaluateBossAnswer(
+    const evaluation = await evaluateBossAnswer(
       bossKey,
       questContext,
       userAnswer
     );
 
-    console.log(`[api/boss/attack] Evaluated score: ${evaluatedScore} for user answer`);
+    console.log(`[api/boss/attack] Evaluated score: ${evaluation.score} for user answer`);
 
     // =====================================================
     // 5. CALL RPC FUNCTION WITH EVALUATED SCORE
     // =====================================================
     const { data, error } = await supabase.rpc('attack_boss', {
       p_guild_id: guildId,
-      p_mission_score: evaluatedScore,
+      p_mission_score: evaluation.score,
       p_user_role: userRole,
     });
 
@@ -159,7 +160,12 @@ export async function POST(request: NextRequest) {
         success: true,
         attack: {
           ...data.attack,
-          score: evaluatedScore, // Include the evaluated score
+          score: evaluation.score,
+        },
+        evaluation: {
+          score: evaluation.score,
+          feedback: evaluation.feedback,
+          suggestions: evaluation.suggestions,
         },
         boss_state: data.boss_state,
         rewards: data.rewards,

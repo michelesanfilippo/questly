@@ -51,6 +51,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [hasUserAttacked, setHasUserAttacked] = useState(false);
   const [showAttackResult, setShowAttackResult] = useState(false);
   const [userLastScore, setUserLastScore] = useState(0);
+  const [userFeedback, setUserFeedback] = useState<string>('');
+  const [userSuggestions, setUserSuggestions] = useState<string[]>([]);
+  const [damageDealt, setDamageDealt] = useState(0);
 
   // Get Supabase auth token
   const getAuthToken = async (): Promise<string | null> => {
@@ -73,7 +76,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     return null;
   };
 
-  // Fetch boss state (with debounce to prevent constant requests)
+  // Fetch boss state AND check if user already attacked
   const fetchBossState = useCallback(async () => {
     try {
       setError(null);
@@ -101,15 +104,17 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
       // Get auth token
       const token = await getAuthToken();
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
 
       // Fetch boss state from API endpoint
       const response = await fetch(`/api/boss/state?guildId=${guildId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && {
-            Authorization: `Bearer ${token}`,
-          }),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -118,6 +123,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       if (!data.success) {
         setError(data.error || 'Failed to load boss state');
         onError?.(data.error);
+        setIsLoading(false);
         return;
       }
 
@@ -126,6 +132,34 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       } else {
         // No boss exists yet, will be created on first attack
         setBoss(null);
+      }
+
+      // Check if user already attacked (query boss_attempts table)
+      try {
+        const { data: supabaseAuth } = await supabase.auth.getUser();
+        if (supabaseAuth.user) {
+          // Calculate week start
+          const now = new Date();
+          const utcNow = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+          const dayOfWeek = utcNow.getUTCDay();
+          const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+          const weekStart = new Date(utcNow);
+          weekStart.setUTCDate(weekStart.getUTCDate() - daysToMonday);
+          weekStart.setUTCHours(0, 0, 0, 0);
+          const weekStartStr = weekStart.toISOString().split('T')[0];
+          
+          const { data: attempts } = await supabase
+            .from('boss_attempts')
+            .select('id')
+            .eq('user_id', supabaseAuth.user.id)
+            .eq('guild_id', guildId)
+            .gte('created_at', weekStartStr)
+            .limit(1);
+          
+          setHasUserAttacked(attempts && attempts.length > 0);
+        }
+      } catch (err) {
+        console.warn('[fetchBossState] Failed to check attack history:', err);
       }
 
       setIsLoading(false);
@@ -217,7 +251,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         
         // Mark user as having attacked
         setHasUserAttacked(true);
-        setUserLastScore(data.attack.score); // Use actual score from validation
+        setUserLastScore(data.attack.score);
+        setDamageDealt(data.attack.damage_dealt);
+        setUserFeedback(data.evaluation?.feedback || '');
+        setUserSuggestions(data.evaluation?.suggestions || []);
         
         // Close quest modal and show attack result
         setSelectedQuest(null);
@@ -299,34 +336,34 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         )}
 
         {/* Boss Card - Simplified */}
-        {boss ? (
-          <div className="rounded-lg border-2 border-amber-700/50 p-6">
+        {boss && isBossWeekendFlag ? (
+          <div className="rounded-lg border-2 border-amber-700/50 bg-gradient-to-br from-amber-950 to-amber-900 p-6">
             {/* Boss Name + Rarity */}
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-amber-100">
-                  🐉 {boss.boss_key.toUpperCase()}
+                <h3 className="text-xl font-bold text-amber-50">
+                  🐉 {boss?.boss_key?.toUpperCase() || 'MYSTERIOUS BEAST'}
                 </h3>
-                <p className="text-amber-400 text-sm">
-                  {rarityEmoji[boss.boss_rarity] || '⭐'}
+                <p className="text-amber-300 text-sm">
+                  {rarityEmoji[boss?.boss_rarity || 0] || '⭐'}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-semibold text-amber-100">
-                  {boss.current_hp} / {boss.max_hp} HP
+                <p className="text-lg font-semibold text-amber-50">
+                  {boss?.current_hp || 0} / {boss?.max_hp || 0} HP
                 </p>
-                <p className="text-xs text-amber-400">
-                  Damage: {boss.total_damage}
+                <p className="text-xs text-amber-300">
+                  Damage: {boss?.total_damage || 0}
                 </p>
               </div>
             </div>
 
             {/* Health Bar */}
-            <div className="mb-4 h-6 overflow-hidden rounded-full border border-amber-700 bg-amber-950">
+            <div className="mb-4 h-6 overflow-hidden rounded-full border-2 border-amber-900 bg-gray-900">
               <div
-                className="h-full bg-gradient-to-r from-red-600 to-amber-500 transition-all duration-500"
+                className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all duration-500"
                 style={{
-                  width: `${Math.max(0, (boss.current_hp / boss.max_hp) * 100)}%`,
+                  width: `${Math.max(0, ((boss?.current_hp || 0) / (boss?.max_hp || 1)) * 100)}%`,
                 }}
               />
             </div>
@@ -339,19 +376,19 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             )}
 
             {/* Attack Button */}
-            {!boss.is_defeated && (
+            {boss && !boss.is_defeated && !showAttackResult && (
               <button
                 onClick={handleAttackClick}
                 disabled={isSubmitting || hasUserAttacked}
-                className="w-full rounded-lg border border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-lg border-2 border-amber-700 bg-amber-700 px-4 py-2 font-bold text-amber-50 transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600"
               >
-                {hasUserAttacked ? 'Already Attacked' : isSubmitting ? 'Attacking...' : 'Submit & Attack'}
+                {hasUserAttacked ? '✓ Already Attacked' : isSubmitting ? 'Attacking...' : '⚔️ Attack Boss'}
               </button>
             )}
 
             {/* Defeated Badge */}
-            {boss.is_defeated && (
-              <div className="rounded-lg bg-yellow-900/30 p-4 text-center">
+            {boss?.is_defeated && (
+              <div className="rounded-lg border-2 border-yellow-700 bg-yellow-900/30 p-4 text-center">
                 <p className="text-2xl font-bold text-yellow-300">✨ DEFEATED ✨</p>
                 {attackResult?.rewards && (
                   <div className="mt-2 text-sm text-yellow-200">
@@ -362,20 +399,30 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               </div>
             )}
           </div>
-        ) : (
-          /* No Boss Yet */
-          <div className="rounded-lg border-2 border-amber-700/50 p-6 text-center">
-            <p className="mb-3 text-lg font-bold text-amber-900">🐉 No Active Boss</p>
-            <p className="mb-4 text-sm text-amber-800">
-              Be the first to attack and summon a boss!
+        ) : isBossWeekendFlag ? (
+          /* No Boss Yet - Weekend Active */
+          <div className="rounded-lg border-2 border-amber-700/50 bg-gradient-to-br from-amber-950 to-amber-900 p-6 text-center">
+            <p className="mb-3 text-lg font-bold text-amber-50">🐉 Nessun Boss Attivo</p>
+            <p className="mb-4 text-sm text-amber-200">
+              Sii il primo ad attaccare e invoca il boss!
             </p>
-            <button
-              onClick={handleAttackClick}
-              disabled={isSubmitting || hasUserAttacked}
-              className="rounded-lg border border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {hasUserAttacked ? 'Already Attacked' : isSubmitting ? 'Summoning...' : 'Submit & Attack'}
-            </button>
+            {!showAttackResult && (
+              <button
+                onClick={handleAttackClick}
+                disabled={isSubmitting || hasUserAttacked}
+                className="rounded-lg border-2 border-amber-700 bg-amber-700 px-4 py-2 font-bold text-amber-50 transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600"
+              >
+                {hasUserAttacked ? '✓ Already Attacked' : isSubmitting ? 'Summoning...' : '⚔️ Summon Boss'}
+              </button>
+            )}
+          </div>
+        ) : (
+          /* Not Weekend */
+          <div className="rounded-lg border-2 border-amber-700/50 bg-gradient-to-br from-amber-950 to-amber-900 p-6 text-center">
+            <p className="mb-3 text-lg font-bold text-amber-50">📅 Boss Weekend Closed</p>
+            <p className="text-sm text-amber-200">
+              Boss battles available only on weekends (Saturday & Sunday UTC)
+            </p>
           </div>
         )}
       </div>
@@ -401,15 +448,17 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       )}
 
       {/* Attack Result Modal */}
-      {showAttackResult && attackResult && boss && (
+      {showAttackResult && attackResult && attackResult.boss_state && (
         <BossAttackResult
-          bossName={boss.boss_key}
-          bossRarity={boss.boss_rarity}
-          maxHp={boss.max_hp}
-          currentHp={boss.current_hp}
-          damageDealt={attackResult.attack.damage_dealt}
-          totalDamage={boss.total_damage}
+          bossName={attackResult.boss_state?.boss_key || 'MYSTERIOUS BEAST'}
+          bossRarity={attackResult.boss_state?.boss_rarity || 0}
+          maxHp={attackResult.boss_state?.max_hp || 100}
+          currentHp={attackResult.boss_state?.current_hp || 0}
+          damageDealt={damageDealt}
+          totalDamage={attackResult.boss_state?.total_damage || 0}
           userScore={userLastScore}
+          feedback={userFeedback}
+          suggestions={userSuggestions}
           onClose={() => setShowAttackResult(false)}
         />
       )}
