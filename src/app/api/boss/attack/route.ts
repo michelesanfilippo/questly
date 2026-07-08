@@ -223,9 +223,8 @@ export async function POST(request: NextRequest) {
         user_id: userId,
         guild_id: guildId,
         boss_fight_id: bossFight.id,
-        mission_score: evaluation.score,
-        damage_dealt: damageDealt,
-        user_role: userRole,
+        damage: damageDealt,
+        role_snapshot: userRole,
       });
     
     if (attemptError) {
