@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
     // Get or create guild-specific boss state
     let { data: guildState, error: guildStateError } = await supabase
       .from('boss_guild_state')
-      .select('id, current_hp, total_damage')
+      .select('id, current_hp, total_damage, is_defeated')
       .eq('boss_fight_id', bossFight.id)
       .eq('guild_id', guildId)
       .maybeSingle();
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
           total_damage: 0,
           is_defeated: false,
         })
-        .select('id, current_hp, total_damage')
+        .select('id, current_hp, total_damage, is_defeated')
         .single();
       
       if (createStateError) {
@@ -184,12 +184,21 @@ export async function POST(request: NextRequest) {
       
       guildState = newState;
     }
+
+    // Guard: prevent attacking an already-defeated boss
+    if (guildState?.is_defeated) {
+      return NextResponse.json(
+        { success: false, error: 'The boss has already been defeated by your guild this week' },
+        { status: 400 }
+      );
+    }
     
     // Calculate damage for this attack
     const damageDealt = calculateDamage(evaluation.score, userRole as any);
     const newTotalDamage = (guildState?.total_damage || 0) + damageDealt;
     const newCurrentHp = Math.max(0, (guildState?.current_hp || bossFight.boss_max_hp) - damageDealt);
     const isDefeated = newCurrentHp <= 0;
+    const justDefeated = isDefeated && !(guildState?.is_defeated);
     
     // Update guild state with new damage
     const { error: updateError } = await supabase
@@ -226,9 +235,74 @@ export async function POST(request: NextRequest) {
       console.error('[api/boss/attack] Failed to record attempt:', attemptError);
       // Don't fail the whole request, attempt recording is secondary
     }
-    
+
     // =====================================================
-    // 6. RETURN SUCCESS
+    // 6. AWARD XP ON BOSS DEFEAT
+    //    - Guild: rarity * 75  (guild can level up)
+    //    - Each member: rarity * 20  (personal XP with level-up)
+    // =====================================================
+    const guildXpReward = bossFight.boss_rarity * 75;
+    const userXpReward = bossFight.boss_rarity * 20;
+
+    if (justDefeated) {
+      try {
+        // --- Guild XP ---
+        const { data: guildRow } = await supabase
+          .from('guilds')
+          .select('xp, level')
+          .eq('id', guildId)
+          .single();
+
+        if (guildRow) {
+          let gXp = (guildRow.xp ?? 0) + guildXpReward;
+          let gLevel = guildRow.level ?? 1;
+          while (gXp >= gLevel * 100) {
+            gXp -= gLevel * 100;
+            gLevel++;
+          }
+          await supabase
+            .from('guilds')
+            .update({ xp: gXp, level: gLevel })
+            .eq('id', guildId);
+        }
+
+        // --- Member XP ---
+        const { data: memberList } = await supabase
+          .from('guild_members')
+          .select('user_id')
+          .eq('guild_id', guildId);
+
+        const memberIds = (memberList ?? []).map((m: { user_id: string }) => m.user_id);
+
+        if (memberIds.length > 0) {
+          const { data: memberProfiles } = await supabase
+            .from('profiles')
+            .select('id, xp, level')
+            .in('id', memberIds);
+
+          if (memberProfiles) {
+            for (const prof of memberProfiles) {
+              let xp = (prof.xp ?? 0) + userXpReward;
+              let level = prof.level ?? 1;
+              while (xp >= level * 100) {
+                xp -= level * 100;
+                level++;
+              }
+              await supabase
+                .from('profiles')
+                .update({ xp, level })
+                .eq('id', prof.id);
+            }
+          }
+        }
+      } catch (xpErr) {
+        console.error('[api/boss/attack] Failed to award XP on boss defeat:', xpErr);
+        // Non-fatal: don't fail the attack response
+      }
+    }
+
+    // =====================================================
+    // 7. RETURN SUCCESS
     // =====================================================
     return NextResponse.json(
       {
@@ -252,6 +326,8 @@ export async function POST(request: NextRequest) {
           is_defeated: isDefeated,
         },
         rewards: {
+          guild_xp: justDefeated ? guildXpReward : 0,
+          user_xp: justDefeated ? userXpReward : 0,
           message: isDefeated ? 'Boss defeated!' : 'Attack successful!',
         },
       },

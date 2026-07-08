@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   const auth = await requireUser(req);
   if (auth.error) return auth.error;
 
-  let body: { action?: 'create' | 'join' | 'leave' | 'apply' | 'kick' | 'assign_role' | 'respond_request'; name?: string; description?: string; guildId?: string; targetUserId?: string; role?: string; demoteUserId?: string; requestId?: string; accept?: boolean };
+  let body: { action?: 'create' | 'join' | 'leave' | 'apply' | 'kick' | 'assign_role' | 'respond_request' | 'set_icon'; name?: string; description?: string; guildId?: string; targetUserId?: string; role?: string; demoteUserId?: string; requestId?: string; accept?: boolean; iconKey?: string };
   try {
     body = await req.json();
   } catch (err) {
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'set_icon') {
-      const iconKey = (body as any).iconKey?.trim();
+      const iconKey = body.iconKey?.trim();
       if (!iconKey) return NextResponse.json({ error: 'iconKey is required' }, { status: 400 });
       const result = await updateGuildIconRecord(auth.user.id, iconKey);
       return NextResponse.json(result);

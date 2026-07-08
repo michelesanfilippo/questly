@@ -26,10 +26,12 @@ interface SupabaseProfile {
   missions_completed: number;
   created_at: string;
   profile_badge_index?: number | null;
+  guild_id?: string | null;
 }
 
 interface ProfileWithBadgeCount extends SupabaseProfile {
   badge_count: number;
+  guild_name?: string | null;
 }
 
 type Tab = 'Level' | 'Badges' | 'Missions' | 'Guild';
@@ -64,8 +66,19 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
 
           if (error || !data || cancelled) return;
 
+          const guildIds = [...new Set((data as SupabaseProfile[]).map(p => p.guild_id).filter(Boolean))] as string[];
+          let guildNameMap: Record<string, string> = {};
+          if (guildIds.length > 0) {
+            const { data: gd } = await supabase.from('guilds').select('id, name').in('id', guildIds);
+            if (gd) guildNameMap = Object.fromEntries((gd as { id: string; name: string }[]).map(g => [g.id, g.name]));
+          }
+
           setEntries(
-            data.map((p: SupabaseProfile) => ({ ...p, badge_count: 0 }))
+            (data as SupabaseProfile[]).map(p => ({
+              ...p,
+              badge_count: 0,
+              guild_name: p.guild_id ? (guildNameMap[p.guild_id] ?? null) : null,
+            }))
           );
         } else if (activeTab === 'Badges') {
           const { data, error } = await supabase
@@ -83,7 +96,14 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
             .sort((a, b) => b.badge_count - a.badge_count)
             .slice(0, 20);
 
-          setEntries(mapped);
+          const guildIds = [...new Set(mapped.map(p => p.guild_id).filter(Boolean))] as string[];
+          let guildNameMap: Record<string, string> = {};
+          if (guildIds.length > 0) {
+            const { data: gd } = await supabase.from('guilds').select('id, name').in('id', guildIds);
+            if (gd) guildNameMap = Object.fromEntries((gd as { id: string; name: string }[]).map(g => [g.id, g.name]));
+          }
+
+          setEntries(mapped.map(p => ({ ...p, guild_name: p.guild_id ? (guildNameMap[p.guild_id] ?? null) : null })));
         } else if (activeTab === 'Guild') {
           const { data, error } = await supabase
             .from('guilds')
@@ -103,8 +123,20 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
 
           if (error || !data || cancelled) return;
 
+          const missionsData = data as SupabaseProfile[];
+          const guildIds = [...new Set(missionsData.map(p => p.guild_id).filter(Boolean))] as string[];
+          let guildNameMap: Record<string, string> = {};
+          if (guildIds.length > 0) {
+            const { data: gd } = await supabase.from('guilds').select('id, name').in('id', guildIds);
+            if (gd) guildNameMap = Object.fromEntries((gd as { id: string; name: string }[]).map(g => [g.id, g.name]));
+          }
+
           setEntries(
-            data.map((p: SupabaseProfile) => ({ ...p, badge_count: 0 }))
+            missionsData.map(p => ({
+              ...p,
+              badge_count: 0,
+              guild_name: p.guild_id ? (guildNameMap[p.guild_id] ?? null) : null,
+            }))
           );
         }
       } catch {
@@ -297,7 +329,10 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
                         onClick={() => setPreviewUserId(entry.id)}
                         className="flex-1 truncate text-left text-sm font-medium text-amber-900 transition-all cursor-pointer hover:text-amber-700 hover:underline hover:decoration-amber-600/70 hover:decoration-2 hover:underline-offset-2"
                       >
-                        {entry.nickname}
+                        <span>{entry.nickname}</span>
+                        {entry.guild_name && (
+                          <span className="ml-1 text-[10px] text-stone-400 font-normal">({entry.guild_name})</span>
+                        )}
                         {isMe && (
                           <span className="ml-1 text-xs text-amber-600">
                             {t('leaderboard.you')}

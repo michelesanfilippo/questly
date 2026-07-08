@@ -7,6 +7,7 @@ import { isBossWeekend, BOSS_TYPES } from '@/lib/boss';
 import { supabase } from '@/lib/supabase';
 import { StarRating } from '@/components/ui/StarRating';
 import { BossSummonPopup } from './BossSummonPopup';
+import { BossVictoryPopup } from './BossVictoryPopup';
 import { useQuestTranslation } from '@/hooks/useQuestTranslation';
 import type { Mission } from '@/types';
 import bossMissionsData from '@/data/boss_missions.json';
@@ -61,6 +62,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [userSuggestions, setUserSuggestions] = useState<string[]>([]);
   const [damageDealt, setDamageDealt] = useState(0);
   const [guildLeaderboard, setGuildLeaderboard] = useState<{ nickname: string; damage: number }[]>([]);
+  const [showVictoryPopup, setShowVictoryPopup] = useState(false);
+  const [victoryGuildXP, setVictoryGuildXP] = useState(0);
+  const [victoryUserXP, setVictoryUserXP] = useState(0);
   // Prevent SSR/client hydration mismatch with framer-motion
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -337,6 +341,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
         // Trigger victory if defeated
         if (data.boss_state.is_defeated) {
+          setVictoryGuildXP(data.rewards?.guild_xp ?? 0);
+          setVictoryUserXP(data.rewards?.user_xp ?? 0);
+          setShowVictoryPopup(true);
           onVictory?.();
         }
         // No fetchBossState() here — boss state already updated directly above.
@@ -545,6 +552,19 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           onClose={() => setShowSummonPopup(false)}
         />
       )}
+
+      {/* Victory Popup */}
+      <BossVictoryPopup
+        isOpen={showVictoryPopup}
+        bossName={bossName}
+        bossRarity={bossRarity}
+        guildXP={victoryGuildXP}
+        userXP={victoryUserXP}
+        totalDamage={boss?.total_damage ?? 0}
+        userDamage={damageDealt}
+        onClose={() => setShowVictoryPopup(false)}
+        onClaimRewards={() => setShowVictoryPopup(false)}
+      />
     </>
   );
 };
