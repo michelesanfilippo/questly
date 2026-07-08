@@ -156,7 +156,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             .gte('created_at', weekStartStr)
             .limit(1);
           
-          setHasUserAttacked(attempts && attempts.length > 0);
+          setHasUserAttacked(attempts !== null && attempts.length > 0);
         }
       } catch (err) {
         console.warn('[fetchBossState] Failed to check attack history:', err);
