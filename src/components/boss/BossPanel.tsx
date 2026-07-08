@@ -110,12 +110,12 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       const isCalendarWeekend = isBossWeekend();
       let forceWeekend = false;
       try {
-        const { data: configRow } = await supabase
+        const { data: configRows } = await supabase
           .from('boss_config')
           .select('force_weekend_testing')
           .eq('id', 1)
-          .single();
-        forceWeekend = configRow?.force_weekend_testing === true;
+          .limit(1);
+        forceWeekend = configRows?.[0]?.force_weekend_testing === true;
       } catch {
         // Table may not exist or row missing — ignore
       }
