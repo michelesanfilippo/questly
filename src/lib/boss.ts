@@ -188,12 +188,13 @@ export function getCriticalBonus(): number {
 
 /**
  * Ottiene il boss per una gilda nella settimana corrente
+ * (Boss è globale, lo stesso per tutte le gilde)
  *
- * @param guildId ID della gilda
+ * @param guildId ID della gilda (mantenuto per compatibilità)
  * @param date Data di riferimento (default: oggi)
- * @returns Boss della settimana
+ * @returns Boss della settimana (globale)
  */
 export function getWeekBoss(guildId: string, date: Date = new Date()): (typeof BOSS_TYPES)[0] {
   const weekStart = getWeekStart(date);
-  return pickBoss(guildId, weekStart);
+  return pickBoss(weekStart);
 }
