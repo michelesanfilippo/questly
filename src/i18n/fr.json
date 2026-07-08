@@ -65,6 +65,7 @@
     "level": "Niveau",
     "badges": "Badges",
     "missions": "Missions",
+    "guild": "Guilde",
     "no_data": "Aucune donnée",
     "you": "(vous)",
     "leaderboard_lock": "Deviens le héros du royaume"
@@ -155,7 +156,9 @@
     "apply": "Postuler",
     "applied": "Demande envoyée",
     "applying": "Envoi…",
-    "apply_error": "Impossible d'envoyer la demande."
+    "apply_error": "Impossible d'envoyer la demande.",
+    "request_sent": "Candidature envoyée !",
+    "no_guild": "N'appartient à aucune guilde."
   },
   "badge": {
     "unlocked": "Badge Débloqué",

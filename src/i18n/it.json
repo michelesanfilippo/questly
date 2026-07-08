@@ -65,6 +65,7 @@
     "level": "Livello",
     "badges": "Badge",
     "missions": "Missioni",
+    "guild": "Gilda",
     "no_data": "Nessun dato",
     "you": "(tu)",
     "leaderboard_lock": "Diventa l'eroe del regno"
@@ -156,7 +157,9 @@
     "apply": "Richiedi",
     "applied": "Richiesta inviata",
     "applying": "Invio…",
-    "apply_error": "Impossibile inviare la richiesta."
+    "apply_error": "Impossibile inviare la richiesta.",
+    "request_sent": "Candidatura inviata!",
+    "no_guild": "Non è in una gilda."
   },
   "badge": {
     "unlocked": "Badge Sbloccato",

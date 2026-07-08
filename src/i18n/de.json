@@ -65,6 +65,7 @@
     "level": "Level",
     "badges": "Abzeichen",
     "missions": "Missionen",
+    "guild": "Gilde",
     "no_data": "Noch keine Daten",
     "you": "(du)",
     "leaderboard_lock": "Werde der Held des Reiches"
@@ -155,7 +156,9 @@
     "apply": "Bewerben",
     "applied": "Bewerbung gesendet",
     "applying": "Wird gesendet…",
-    "apply_error": "Bewerbung konnte nicht gesendet werden."
+    "apply_error": "Bewerbung konnte nicht gesendet werden.",
+    "request_sent": "Bewerbung gesendet!",
+    "no_guild": "Kein Mitglied einer Gilde."
   },
   "badge": {
     "unlocked": "Abzeichen freigeschaltet",

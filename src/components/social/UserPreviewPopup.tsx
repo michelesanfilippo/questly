@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath } from '@/lib/badges';
 import { friendshipStatus, sendRequest, type FriendshipStatus } from '@/lib/friends';
 
+const GUILD_BADGE_IMG = '/images/badges/badge_guild.png';
+
 interface UserPreviewPopupProps {
   userId: string;
   currentUserId?: string;
@@ -19,40 +21,64 @@ interface ProfilePreview {
   nickname: string;
   level: number;
   profile_badge_index: number | null;
+  guild_id: string | null;
 }
+
+interface GuildInfo {
+  id: string;
+  name: string;
+  icon_key: string | null;
+}
+
+type ApplyStatus = 'idle' | 'loading' | 'applied' | 'error';
 
 export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreviewPopupProps) {
   const { t } = useI18n();
   const [profile, setProfile] = useState<ProfilePreview | null>(null);
+  const [guild, setGuild] = useState<GuildInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [friendship, setFriendship] = useState<FriendshipStatus>('none');
+  const [applyStatus, setApplyStatus] = useState<ApplyStatus>('idle');
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadProfile() {
       setLoading(true);
+      setGuild(null);
+      setApplyStatus('idle');
+      setApplyError(null);
+
       const { data, error } = await supabase
         .from('profiles')
-        .select('id,nickname,level,profile_badge_index')
+        .select('id,nickname,level,profile_badge_index,guild_id')
         .eq('id', userId)
         .single();
 
       if (!cancelled && !error && data) {
-        setProfile(data as ProfilePreview);
+        const p = data as ProfilePreview;
+        setProfile(p);
+
+        // Fetch guild info if user belongs to one
+        if (p.guild_id) {
+          const { data: gd } = await supabase
+            .from('guilds')
+            .select('id,name,icon_key')
+            .eq('id', p.guild_id)
+            .single();
+          if (!cancelled && gd) setGuild(gd as GuildInfo);
+        }
+
         const status = await friendshipStatus(userId, data.id, currentUserId);
         if (!cancelled) setFriendship(status);
       }
 
-      if (!cancelled) {
-        setLoading(false);
-      }
+      if (!cancelled) setLoading(false);
     }
 
     void loadProfile();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [userId, currentUserId]);
 
   const isMe = Boolean(currentUserId && currentUserId === userId);
@@ -63,6 +89,30 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
     setFriendship(nextStatus);
   }
 
+  async function handleApply() {
+    if (!currentUserId || !guild) return;
+    setApplyStatus('loading');
+    setApplyError(null);
+    try {
+      const res = await fetch('/api/guilds', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'apply', guildId: guild.id }),
+      });
+      const payload = await res.json() as { error?: string };
+      if (!res.ok) {
+        setApplyStatus('error');
+        setApplyError(payload.error ?? t('guild.apply_error'));
+      } else {
+        setApplyStatus('applied');
+      }
+    } catch {
+      setApplyStatus('error');
+      setApplyError(t('guild.apply_error'));
+    }
+  }
+
   function getFriendButtonLabel() {
     if (isMe) return t('social.you');
     if (friendship === 'friends') return t('friends.accepted');
@@ -70,6 +120,19 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
     if (friendship === 'pending_incoming') return t('friends.pending_incoming');
     return t('social.friend_cta');
   }
+
+  function renderGuildIcon(g: GuildInfo, size: number) {
+    if (g.icon_key === 'badge_guild') {
+      return <Image src={GUILD_BADGE_IMG} alt="" width={size} height={size} className="h-full w-full object-cover" />;
+    }
+    if (g.icon_key) {
+      return <span style={{ fontSize: size * 0.6 }} className="leading-none">{g.icon_key}</span>;
+    }
+    return <span className="text-xs font-bold text-amber-800">{g.name.slice(0, 2).toUpperCase()}</span>;
+  }
+
+  const canApply = Boolean(currentUserId && !isMe && guild);
+  const applyDisabled = applyStatus === 'loading' || applyStatus === 'applied';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
@@ -124,14 +187,56 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
             <p className="text-sm text-stone-500">{t('social.loading')}</p>
           ) : profile ? (
             <>
-              <div className="rounded-sm border border-amber-800/10 bg-amber-50/60 p-3 text-sm text-stone-600">
-                <p>{t('social.preview_hint')}</p>
-              </div>
+              {/* Guild section */}
+              {guild ? (
+                <div className="mb-3 rounded-sm border border-amber-800/10 bg-amber-50/60 p-3">
+                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-stone-500">{t('guild.title')}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-amber-800/20 bg-amber-100 flex items-center justify-center">
+                        {renderGuildIcon(guild, 28)}
+                      </div>
+                      <span className="truncate text-sm font-semibold text-amber-900">{guild.name}</span>
+                    </div>
+                    {canApply && (
+                      <button
+                        type="button"
+                        onClick={handleApply}
+                        disabled={applyDisabled}
+                        className={`shrink-0 rounded-sm border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                          applyStatus === 'applied'
+                            ? 'cursor-not-allowed border-emerald-400 bg-emerald-100 text-emerald-700'
+                            : applyDisabled
+                            ? 'cursor-not-allowed border-stone-300 bg-stone-100 text-stone-400'
+                            : 'border-amber-600 bg-amber-700 text-amber-50 hover:bg-amber-800'
+                        }`}
+                      >
+                        {applyStatus === 'loading'
+                          ? t('guild.applying')
+                          : applyStatus === 'applied'
+                          ? '✓ ' + t('guild.apply')
+                          : t('guild.apply')}
+                      </button>
+                    )}
+                  </div>
+                  {applyStatus === 'error' && applyError && (
+                    <p className="mt-1.5 text-[11px] text-red-600">{applyError}</p>
+                  )}
+                  {applyStatus === 'applied' && (
+                    <p className="mt-1.5 text-[11px] text-emerald-700">{t('guild.request_sent')}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-3 rounded-sm border border-amber-800/10 bg-amber-50/60 p-3 text-sm text-stone-500 italic">
+                  {t('guild.no_guild')}
+                </div>
+              )}
+
               <button
                 type="button"
                 disabled={isMe || friendship === 'friends' || friendship === 'pending_outgoing' || friendship === 'pending_incoming'}
                 onClick={handleFriendAction}
-                className={`mt-4 w-full rounded-sm border px-3 py-2 text-sm font-semibold transition-colors ${
+                className={`w-full rounded-sm border px-3 py-2 text-sm font-semibold transition-colors ${
                   isMe || friendship === 'friends' || friendship === 'pending_outgoing' || friendship === 'pending_incoming'
                     ? 'cursor-not-allowed border-stone-300 bg-stone-200 text-stone-500'
                     : 'border-amber-700 bg-amber-700 text-amber-50 hover:bg-amber-800'

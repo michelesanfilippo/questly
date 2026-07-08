@@ -65,6 +65,7 @@
     "level": "Level",
     "badges": "Badges",
     "missions": "Missions",
+    "guild": "Guild",
     "no_data": "No data yet",
     "you": "(you)",
     "leaderboard_lock": "Become the hero of the realm"
@@ -156,7 +157,9 @@
     "apply": "Apply",
     "applied": "Applied",
     "applying": "Applying…",
-    "apply_error": "Could not send request."
+    "apply_error": "Could not send request.",
+    "request_sent": "Application sent!",
+    "no_guild": "Not in a guild."
   },
   "badge": {
     "unlocked": "Badge Unlocked",

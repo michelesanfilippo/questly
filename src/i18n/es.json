@@ -65,6 +65,7 @@
     "level": "Nivel",
     "badges": "Insignias",
     "missions": "Misiones",
+    "guild": "Gremio",
     "no_data": "Sin datos aún",
     "you": "(tú)",
     "leaderboard_lock": "Conviértete en el héroe del reino"
@@ -155,7 +156,9 @@
     "apply": "Solicitar",
     "applied": "Solicitud enviada",
     "applying": "Enviando…",
-    "apply_error": "No se pudo enviar la solicitud."
+    "apply_error": "No se pudo enviar la solicitud.",
+    "request_sent": "¡Solicitud enviada!",
+    "no_guild": "No pertenece a ningún gremio."
   },
   "badge": {
     "unlocked": "Insignia Desbloqueada",
