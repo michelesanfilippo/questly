@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { BossCard } from './BossCard';
 import { BossMissionInput } from './BossMissionInput';
 import { useI18n } from '@/i18n';
 import { getWeekBoss, isBossWeekend } from '@/lib/boss';
+import { supabase } from '@/lib/supabase';
 
 interface BossMission {
   id: string;
@@ -48,7 +48,6 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   onVictory,
   onError,
 }) => {
-  const { data: session } = useSession();
   const { t } = useI18n();
 
   const [boss, setBoss] = useState<BossState | null>(null);
@@ -57,6 +56,14 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [attackResult, setAttackResult] = useState<any>(null);
   const [isBossWeekendFlag, setIsBossWeekendFlag] = useState(false);
+
+  // Get Supabase auth token
+  const getAuthToken = async (): Promise<string | null> => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  };
 
   // Check if weekend + fetch initial boss state
   useEffect(() => {
@@ -75,13 +82,16 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           return;
         }
 
+        // Get auth token
+        const token = await getAuthToken();
+
         // Fetch boss state from API endpoint
         const response = await fetch(`/api/boss/state?guildId=${guildId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            ...(session?.supabaseAccessToken && {
-              Authorization: `Bearer ${session.supabaseAccessToken}`,
+            ...(token && {
+              Authorization: `Bearer ${token}`,
             }),
           },
         });
@@ -114,24 +124,20 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     // Poll boss state every 3 seconds (faster than before for real-time feel)
     const interval = setInterval(checkWeekendAndFetchBoss, 3000);
     return () => clearInterval(interval);
-  }, [guildId, session, onError]);
+  }, [guildId, onError]);
 
   // Handle mission selection + attack submission
   const handleMissionSelect = useCallback(
     async (mission: BossMission, score: number) => {
-      if (!session?.user) {
-        throw new Error('Not authenticated');
-      }
-
       setIsSubmitting(true);
       setError(null);
       setAttackResult(null);
 
       try {
         // Get auth token
-        const token = (session as any).supabaseAccessToken;
+        const token = await getAuthToken();
         if (!token) {
-          throw new Error('No auth token available');
+          throw new Error('Not authenticated');
         }
 
         // Call attack endpoint
@@ -179,7 +185,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setIsSubmitting(false);
       }
     },
-    [session, guildId, userRole, onVictory]
+    [guildId, userRole, onVictory]
   );
 
   // If not weekend, show message
