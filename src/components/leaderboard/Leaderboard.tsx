@@ -48,6 +48,8 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
   const [guildEntries, setGuildEntries] = useState<GuildEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
+  const [currentUserGuildId, setCurrentUserGuildId] = useState<string | null>(null);
+  const [guildApplyStates, setGuildApplyStates] = useState<Record<string, 'idle' | 'loading' | 'applied' | 'error'>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -112,7 +114,13 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
             .limit(10);
           if (error || !data || cancelled) return;
           setGuildEntries(data as GuildEntry[]);
+          setGuildApplyStates({});
           setEntries([]);
+          // Fetch current user's guild_id to know if apply should be disabled
+          if (currentUserId) {
+            const { data: cu } = await supabase.from('profiles').select('guild_id').eq('id', currentUserId).single();
+            if (!cancelled) setCurrentUserGuildId((cu as { guild_id: string | null } | null)?.guild_id ?? null);
+          }
         } else {
           // Missions
           const { data, error } = await supabase
@@ -163,6 +171,25 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
     if (rank === 2) return 'text-slate-400';
     if (rank === 3) return 'text-amber-700';
     return 'text-stone-400';
+  }
+
+  async function handleGuildApply(guildId: string) {
+    setGuildApplyStates(prev => ({ ...prev, [guildId]: 'loading' }));
+    try {
+      const res = await fetch('/api/guilds', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'apply', guildId }),
+      });
+      if (res.ok) {
+        setGuildApplyStates(prev => ({ ...prev, [guildId]: 'applied' }));
+      } else {
+        setGuildApplyStates(prev => ({ ...prev, [guildId]: 'error' }));
+      }
+    } catch {
+      setGuildApplyStates(prev => ({ ...prev, [guildId]: 'error' }));
+    }
   }
 
   return (
@@ -247,6 +274,28 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
                       </div>
                       <span className="flex-1 truncate text-sm font-medium text-amber-900">{guild.name}</span>
                       <span className="text-xs text-stone-500 shrink-0">Lv.{guild.level}</span>
+                      {isLoggedIn && currentUserId && (() => {
+                        const st = guildApplyStates[guild.id] ?? 'idle';
+                        const alreadyInGuild = Boolean(currentUserGuildId);
+                        const disabled = alreadyInGuild || st === 'loading' || st === 'applied';
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => !disabled && handleGuildApply(guild.id)}
+                            disabled={disabled}
+                            title={alreadyInGuild ? t('guild.already_in_guild') : undefined}
+                            className={`shrink-0 rounded-sm border px-2 py-0.5 text-[10px] font-semibold transition-colors ${
+                              st === 'applied'
+                                ? 'cursor-not-allowed border-emerald-400 bg-emerald-100 text-emerald-700'
+                                : disabled
+                                ? 'cursor-not-allowed border-stone-200 bg-stone-100 text-stone-400'
+                                : 'border-amber-600 bg-amber-700 text-amber-50 hover:bg-amber-800'
+                            }`}
+                          >
+                            {st === 'loading' ? t('guild.applying') : st === 'applied' ? '✓' : t('guild.apply')}
+                          </button>
+                        );
+                      })()}
                     </motion.div>
                   );
                 })
