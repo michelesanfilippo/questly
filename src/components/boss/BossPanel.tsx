@@ -144,12 +144,13 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       const mission = getRandomMissionForBoss(bossKey, difficulty);
       if (mission) {
         setSelectedQuest(mission);
+        setShowQuestModal(true);
       }
     } else if (selectedQuest) {
       setShowQuestModal(true);
-    } else {
+    } else if (boss) {
       // Select random quest for existing boss
-      const mission = getRandomMissionForBoss(boss!.boss_key, boss!.boss_rarity);
+      const mission = getRandomMissionForBoss(boss.boss_key, boss.boss_rarity);
       if (mission) {
         setSelectedQuest(mission);
         setShowQuestModal(true);
@@ -268,7 +269,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
         {/* Boss Card - Simplified */}
         {boss ? (
-          <div className="rounded-lg border-2 border-amber-700/50 bg-gradient-to-br from-amber-950 to-amber-900/50 p-6">
+          <div className="rounded-lg border-2 border-amber-700/50 p-6">
             {/* Boss Name + Rarity */}
             <div className="mb-4 flex items-center justify-between">
               <div>
@@ -332,7 +333,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           </div>
         ) : (
           /* No Boss Yet */
-          <div className="rounded-lg border-2 border-amber-700/50 bg-gradient-to-br from-amber-950 to-amber-900/50 p-6 text-center">
+          <div className="rounded-lg border-2 border-amber-700/50 p-6 text-center">
             <p className="mb-3 text-lg font-bold text-amber-100">🐉 No Active Boss</p>
             <p className="mb-4 text-sm text-amber-300">
               Be the first to attack and summon a boss!
