@@ -157,6 +157,7 @@
     "applied": "Demande envoyée",
     "applying": "Envoi…",
     "apply_error": "Impossible d'envoyer la demande.",
+    "already_in_guild": "Tu fais déjà partie d'une guilde.",
     "request_sent": "Candidature envoyée !",
     "no_guild": "N'appartient à aucune guilde."
   },

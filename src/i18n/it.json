@@ -158,6 +158,7 @@
     "applied": "Richiesta inviata",
     "applying": "Invio…",
     "apply_error": "Impossibile inviare la richiesta.",
+    "already_in_guild": "Sei già in una gilda.",
     "request_sent": "Candidatura inviata!",
     "no_guild": "Non è in una gilda."
   },

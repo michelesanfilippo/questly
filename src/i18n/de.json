@@ -157,6 +157,7 @@
     "applied": "Bewerbung gesendet",
     "applying": "Wird gesendet…",
     "apply_error": "Bewerbung konnte nicht gesendet werden.",
+    "already_in_guild": "Du bist bereits Mitglied einer Gilde.",
     "request_sent": "Bewerbung gesendet!",
     "no_guild": "Kein Mitglied einer Gilde."
   },

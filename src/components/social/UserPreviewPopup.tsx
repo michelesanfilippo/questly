@@ -40,6 +40,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   const [friendship, setFriendship] = useState<FriendshipStatus>('none');
   const [applyStatus, setApplyStatus] = useState<ApplyStatus>('idle');
   const [applyError, setApplyError] = useState<string | null>(null);
+  const [currentUserInGuild, setCurrentUserInGuild] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +69,16 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
             .eq('id', p.guild_id)
             .single();
           if (!cancelled && gd) setGuild(gd as GuildInfo);
+        }
+
+        // Check if current user is already in a guild
+        if (currentUserId && currentUserId !== userId) {
+          const { data: cu } = await supabase
+            .from('profiles')
+            .select('guild_id')
+            .eq('id', currentUserId)
+            .single();
+          if (!cancelled) setCurrentUserInGuild(Boolean((cu as { guild_id: string | null } | null)?.guild_id));
         }
 
         const status = await friendshipStatus(userId, data.id, currentUserId);
@@ -132,7 +143,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   }
 
   const canApply = Boolean(currentUserId && !isMe && guild);
-  const applyDisabled = applyStatus === 'loading' || applyStatus === 'applied';
+  const applyDisabled = applyStatus === 'loading' || applyStatus === 'applied' || currentUserInGuild;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
@@ -203,6 +214,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
                         type="button"
                         onClick={handleApply}
                         disabled={applyDisabled}
+                        title={currentUserInGuild ? t('guild.already_in_guild') : undefined}
                         className={`shrink-0 rounded-sm border px-2.5 py-1 text-xs font-semibold transition-colors ${
                           applyStatus === 'applied'
                             ? 'cursor-not-allowed border-emerald-400 bg-emerald-100 text-emerald-700'

@@ -157,6 +157,7 @@
     "applied": "Solicitud enviada",
     "applying": "Enviando…",
     "apply_error": "No se pudo enviar la solicitud.",
+    "already_in_guild": "Ya perteneces a un gremio.",
     "request_sent": "¡Solicitud enviada!",
     "no_guild": "No pertenece a ningún gremio."
   },

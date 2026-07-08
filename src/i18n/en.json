@@ -158,6 +158,7 @@
     "applied": "Applied",
     "applying": "Applying…",
     "apply_error": "Could not send request.",
+    "already_in_guild": "You are already in a guild.",
     "request_sent": "Application sent!",
     "no_guild": "Not in a guild."
   },
