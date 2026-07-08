@@ -204,8 +204,16 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
                   <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-stone-500">{t('guild.title')}</p>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-amber-800/20 bg-amber-100 flex items-center justify-center">
-                        {renderGuildIcon(guild, 28)}
+                      <div className="relative group shrink-0">
+                        <div className="h-7 w-7 overflow-hidden rounded-full border border-amber-800/20 bg-amber-100 flex items-center justify-center">
+                          {renderGuildIcon(guild, 28)}
+                        </div>
+                        {/* Hover zoom — icon only */}
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 hidden group-hover:flex pointer-events-none">
+                          <div className="h-14 w-14 overflow-hidden rounded-full border-2 border-amber-300/60 bg-amber-100 flex items-center justify-center shadow-[0_0_16px_rgba(217,119,6,0.45)]">
+                            {renderGuildIcon(guild, 56)}
+                          </div>
+                        </div>
                       </div>
                       <span className="truncate text-sm font-semibold text-amber-900">{guild.name}</span>
                     </div>
