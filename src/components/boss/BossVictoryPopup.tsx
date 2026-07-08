@@ -10,8 +10,6 @@ interface BossVictoryPopupProps {
   top3: { nickname: string; damage: number }[];
 }
 
-const MEDALS = ['🥇', '🥈', '🥉'];
-
 export const BossVictoryPopup: React.FC<BossVictoryPopupProps> = ({
   isOpen,
   bossName,
@@ -54,23 +52,6 @@ export const BossVictoryPopup: React.FC<BossVictoryPopupProps> = ({
               <p className="text-xl font-bold text-amber-800">+{userXP}</p>
             </div>
           </div>
-
-          {top3.length > 0 && (
-            <div className="mb-5 rounded-sm border border-amber-200/60 bg-amber-50/60 p-3 text-left">
-              <p className="text-[10px] uppercase tracking-wide text-stone-500 font-semibold mb-2">Top Attackers</p>
-              <ol className="space-y-1.5">
-                {top3.map((entry, i) => (
-                  <li key={i} className="flex items-center justify-between text-xs text-stone-700">
-                    <span className="flex items-center gap-1.5">
-                      <span className="text-base leading-none">{MEDALS[i]}</span>
-                      <span className="font-medium">{entry.nickname}</span>
-                    </span>
-                    <span className="font-semibold text-amber-800">{entry.damage} dmg</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
 
           <button
             onClick={() => window.location.reload()}
