@@ -31,14 +31,31 @@ interface RequestEntry {
 
 type HolderEntry = { id: string; nickname: string | null; profile_badge_index: number | null };
 
+const GUILD_BADGE_KEY = 'badge_guild';
+const GUILD_BADGE_IMG = '/images/badges/badge_guild.png';
+
+const GUILD_ICONS = [
+  '🐉','🦁','🦅','🐺','🦊','🐻','🦌','🦋',
+  '⚔️','🛡️','🏹','🔮','📜','🏰','🗡️','🪄',
+  '⚡','🔥','❄️','🌙','☀️','👑','💎','🌟',
+];
+
 export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
   const { t } = useI18n();
   const accessState = useMemo(() => getGuildAccessState(profile), [profile]);
 
   const [guildName, setGuildName] = useState<string | null>(null);
   const [guildRole, setGuildRole] = useState<string | null>(null);
+  const [guildId, setGuildId] = useState<string | null>(null);
+  const [guildLevel, setGuildLevel] = useState<number>(1);
+  const [guildIcon, setGuildIcon] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [requestCount, setRequestCount] = useState(0);
+  // Icon picker
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [pendingIcon, setPendingIcon] = useState<string | null>(null);
+  const [isUpdatingIcon, setIsUpdatingIcon] = useState(false);
+  const [iconUpdateError, setIconUpdateError] = useState<string | null>(null);
   // Quit
   const [isQuitOpen, setIsQuitOpen] = useState(false);
   const [isQuitting, setIsQuitting] = useState(false);
@@ -65,13 +82,16 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
       const response = await fetch('/api/guilds?scope=members', { credentials: 'include' });
       if (!response.ok) return;
       const payload = await response.json() as {
-        guild?: { name?: string } | null;
+        guild?: { id?: string; name?: string; level?: number; icon_key?: string | null } | null;
         role?: string | null;
         members?: Member[];
         requestCount?: number;
       };
       setGuildName(payload.guild?.name ?? null);
       setGuildRole(payload.role ?? null);
+      setGuildId(payload.guild?.id ?? null);
+      setGuildLevel(payload.guild?.level ?? 1);
+      setGuildIcon(payload.guild?.icon_key ?? null);
       setMembers(payload.members ?? []);
       setRequestCount(payload.requestCount ?? 0);
     } catch {
@@ -212,8 +232,36 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
   function handleGuildChanged(nextGuild: { name: string } | null, nextProfile: SupabaseProfile | null) {
     setGuildName(nextGuild?.name ?? null);
     setGuildRole('leader');
+    setGuildIcon(null);
+    setGuildLevel(1);
     setMembers([]);
     onProfileUpdate?.(nextProfile);
+  }
+
+  async function handleSetIcon() {
+    if (!pendingIcon) return;
+    setIsUpdatingIcon(true);
+    setIconUpdateError(null);
+    try {
+      const response = await fetch('/api/guilds', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_icon', iconKey: pendingIcon }),
+      });
+      if (response.ok) {
+        setGuildIcon(pendingIcon);
+        setShowIconPicker(false);
+        setPendingIcon(null);
+      } else {
+        const d = await response.json().catch(() => ({})) as { error?: string };
+        setIconUpdateError(d.error ?? 'Failed to update icon');
+      }
+    } catch {
+      setIconUpdateError('Failed to update icon');
+    } finally {
+      setIsUpdatingIcon(false);
+    }
   }
 
   const isLeader = guildRole === 'leader';
@@ -266,14 +314,39 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
         <div className="space-y-3 text-sm text-stone-600">
           <p className="text-xs">{t('guild.member_message')}</p>
 
-          {/* Guild name + role + requests button */}
+          {/* Guild icon + name + level + role + requests */}
           <div className="rounded-sm border border-amber-800/10 bg-amber-50/70 px-3 py-2">
             <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-amber-900">{guildName ?? t('guild.member_placeholder')}</p>
-                <p className="text-xs text-stone-500">
-                  {guildRole ? t('guild.role_label', { role: getRoleLabel(guildRole) }) : t('guild.member_hint')}
-                </p>
+              <div className="flex items-center gap-2 min-w-0">
+                {/* Guild Icon */}
+                <button
+                  type="button"
+                  onClick={() => isLeader ? (setShowIconPicker(true), setPendingIcon(guildIcon)) : undefined}
+                  className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-amber-800/20 bg-amber-100 text-lg select-none ${isLeader ? 'cursor-pointer hover:border-amber-600 transition-colors' : 'cursor-default'}`}
+                  title={isLeader ? 'Change guild icon' : undefined}
+                >
+                {guildIcon === GUILD_BADGE_KEY ? (
+                    <Image src={GUILD_BADGE_IMG} alt="Guild Badge" width={32} height={32} className="h-full w-full object-cover rounded-full" />
+                  ) : guildIcon ? (
+                    <span>{guildIcon}</span>
+                  ) : (
+                    <span className="text-sm font-bold text-amber-800">
+                      {(guildName ?? '?').slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
+                  {isLeader && (
+                    <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-700 text-[9px] text-white">✎</span>
+                  )}
+                </button>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold text-amber-900 truncate">{guildName ?? t('guild.member_placeholder')}</p>
+                    <span className="shrink-0 rounded-full bg-amber-200/80 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">Lv.{guildLevel}</span>
+                  </div>
+                  <p className="text-xs text-stone-500">
+                    {guildRole ? t('guild.role_label', { role: getRoleLabel(guildRole) }) : t('guild.member_hint')}
+                  </p>
+                </div>
               </div>
               {isManagement ? (
                 <button
@@ -507,6 +580,65 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Icon picker popup (leader only) */}
+      {showIconPicker ? (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/45 p-4">
+          <div className="w-full max-w-sm rounded-sm border border-amber-800/20 bg-[#fffdf8] p-4 shadow-xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h4 className="font-serif text-base font-bold text-amber-900">Choose Guild Icon</h4>
+              <button type="button" onClick={() => { setShowIconPicker(false); setIconUpdateError(null); }} className="text-stone-400 hover:text-stone-700">✕</button>
+            </div>
+            <div className="mb-4 grid grid-cols-6 gap-2">
+              {/* Guild badge as first special option */}
+              <button
+                type="button"
+                onClick={() => setPendingIcon(GUILD_BADGE_KEY)}
+                className={`flex h-10 w-10 items-center justify-center rounded-sm border-2 overflow-hidden transition-colors ${
+                  pendingIcon === GUILD_BADGE_KEY
+                    ? 'border-amber-700 bg-amber-100'
+                    : 'border-transparent bg-amber-50/60 hover:border-amber-400'
+                }`}
+                title="Guild Badge"
+              >
+                <Image src={GUILD_BADGE_IMG} alt="Guild Badge" width={32} height={32} className="h-full w-full object-cover" />
+              </button>
+              {GUILD_ICONS.map((icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  onClick={() => setPendingIcon(icon)}
+                  className={`flex h-10 w-10 items-center justify-center rounded-sm border-2 text-xl transition-colors ${
+                    pendingIcon === icon
+                      ? 'border-amber-700 bg-amber-100'
+                      : 'border-transparent bg-amber-50/60 hover:border-amber-400'
+                  }`}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+            {iconUpdateError ? <p className="mb-2 text-xs text-red-600">{iconUpdateError}</p> : null}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { setShowIconPicker(false); setIconUpdateError(null); }}
+                className="rounded-sm border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => { void handleSetIcon(); }}
+                disabled={!pendingIcon || isUpdatingIcon}
+                className="rounded-sm bg-amber-700 px-3 py-1.5 text-xs font-semibold text-amber-50 disabled:bg-stone-300"
+              >
+                {isUpdatingIcon ? '…' : 'Set Icon'}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

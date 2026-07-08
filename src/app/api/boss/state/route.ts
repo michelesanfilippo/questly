@@ -95,6 +95,7 @@ export async function GET(request: NextRequest) {
       {
         success: true,
         boss: {
+          id: bossData.id,
           boss_key: bossData.boss_key,
           boss_rarity: bossData.boss_rarity,
           max_hp: bossData.boss_max_hp,

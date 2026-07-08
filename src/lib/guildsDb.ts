@@ -17,7 +17,7 @@ export async function getCurrentGuild(userId: string) {
 
   const { data: guild, error: guildError } = await supabase
     .from('guilds')
-    .select('id,name,level,xp,founder_id,created_at')
+    .select('id,name,level,xp,founder_id,icon_key,created_at')
     .eq('id', membershipRows.guild_id)
     .single();
 
@@ -75,6 +75,26 @@ export async function getCurrentGuild(userId: string) {
     } catch { /* table may not exist yet */ }
   }
   return { guild, role: membershipRows.role, members, requestCount };
+}
+
+export async function updateGuildIconRecord(userId: string, iconKey: string) {
+  const supabase = await createSupabaseAdminClient();
+  // Verify user is leader
+  const { data: membership, error: memberError } = await supabase
+    .from('guild_members')
+    .select('guild_id, role')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (memberError) throw memberError;
+  if (!membership?.guild_id) throw new Error('Not in a guild');
+  if (membership.role !== 'leader') throw new Error('Only the guild leader can change the icon');
+
+  const { error } = await supabase
+    .from('guilds')
+    .update({ icon_key: iconKey })
+    .eq('id', membership.guild_id);
+  if (error) throw error;
+  return { success: true };
 }
 
 export async function leaveGuildRecord(userId: string) {
@@ -158,7 +178,7 @@ export async function createGuildRecord(userId: string, name: string, descriptio
 
   const { data: guild, error: guildError } = await supabase
     .from('guilds')
-    .insert({ name: trimmedName, description: description?.trim() || null, founder_id: userId, level: 1, xp: 0 })
+    .insert({ name: trimmedName, description: description?.trim() || null, founder_id: userId, level: 1, xp: 0, icon_key: 'badge_guild' })
     .select('id,name,description,level,xp,founder_id,created_at')
     .single();
 

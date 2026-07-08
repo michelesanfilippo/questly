@@ -87,15 +87,10 @@ export async function POST(request: NextRequest) {
     // =====================================================
     // 4. EVALUATE ANSWER WITH OLLAMA
     // =====================================================
-    // Get a quest for the boss to use as context
-    const bossMissions = (bossMissionsData as any).boss_missions?.[bossKey]?.[1];
-    const questContext = Array.isArray(bossMissions) && bossMissions.length > 0
-      ? bossMissions[0].text
-      : `Defeat the ${bossKey}`;
-
+    // Quest context will be set after boss fetch (needs weekStart + rarity)
     const evaluation = await evaluateBossAnswer(
       bossKey,
-      questContext,
+      `Defeat the ${bossKey}`, // placeholder; real context used below
       userAnswer
     );
 

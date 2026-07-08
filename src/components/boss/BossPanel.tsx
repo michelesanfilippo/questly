@@ -12,6 +12,7 @@ import type { Mission } from '@/types';
 import bossMissionsData from '@/data/boss_missions.json';
 
 interface BossState {
+  id?: string;
   boss_key: string;
   boss_rarity: number;
   max_hp: number;
@@ -59,6 +60,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [userFeedback, setUserFeedback] = useState<string>('');
   const [userSuggestions, setUserSuggestions] = useState<string[]>([]);
   const [damageDealt, setDamageDealt] = useState(0);
+  const [guildLeaderboard, setGuildLeaderboard] = useState<{ nickname: string; damage: number }[]>([]);
   // Prevent SSR/client hydration mismatch with framer-motion
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -88,18 +90,55 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     return session?.access_token || null;
   };
 
-  // Get random mission for this boss
+  // Get random mission for this boss (deterministic: same quest for all users this week)
   const getRandomMissionForBoss = (bossKey: string, difficulty: number): BossMission | null => {
     try {
-      const missions = (bossMissionsData.boss_missions as any)[bossKey]?.[difficulty];
+      const missions = (bossMissionsData.boss_missions as any)[bossKey]?.[difficulty]
+        ?? (bossMissionsData.boss_missions as any)[bossKey]?.[1];
       if (Array.isArray(missions) && missions.length > 0) {
-        return missions[Math.floor(Math.random() * missions.length)];
+        // Use weekStart hash to pick deterministic index
+        const now = new Date();
+        const dayOfWeek = now.getUTCDay();
+        const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const weekStart = new Date(now);
+        weekStart.setUTCDate(weekStart.getUTCDate() - daysToMonday);
+        weekStart.setUTCHours(0, 0, 0, 0);
+        const weekStartStr = weekStart.toISOString().split('T')[0];
+        let hash = 0;
+        for (let i = 0; i < weekStartStr.length; i++) {
+          hash = (hash * 31 + weekStartStr.charCodeAt(i)) >>> 0;
+        }
+        return missions[hash % missions.length];
       }
     } catch {
       console.error('Failed to get mission for boss:', bossKey);
     }
     return null;
   };
+
+  // Fetch top-5 damage leaderboard for the guild
+  const fetchGuildLeaderboard = useCallback(async (bossFightId: string) => {
+    try {
+      const { data } = await supabase
+        .from('boss_attempts')
+        .select('damage, profiles!user_id(nickname)')
+        .eq('boss_fight_id', bossFightId)
+        .eq('guild_id', guildId)
+        .order('damage', { ascending: false })
+        .limit(5);
+
+      if (data && data.length > 0) {
+        setGuildLeaderboard(
+          data.map((row: any) => ({
+            nickname: row.profiles?.nickname ?? 'Unknown',
+            damage: row.damage ?? 0,
+          }))
+        );
+      }
+    } catch (err) {
+      console.warn('[BossPanel] Failed to fetch leaderboard:', err);
+    }
+  }, [guildId]);
 
   // Fetch boss state AND check if user already attacked
   const fetchBossState = useCallback(async (isInitialLoad = false) => {
@@ -187,6 +226,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               const dmg = (attempts[0] as any).damage;
               if (typeof dmg === 'number') setDamageDealt(dmg);
               setShowAttackResult(true);
+              // Load leaderboard using boss id
+              if (data.boss?.id) fetchGuildLeaderboard(data.boss.id);
             }
           }
         } catch (err) {
@@ -279,7 +320,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setQuestAnswer('');
         setShowAttackResult(true);
         
-        // Update boss state
+        // Load leaderboard after attack
+        if (data.boss_state?.id) fetchGuildLeaderboard(data.boss_state.id);
         setBoss((prev) => {
           if (!prev && data.boss_state) {
             return data.boss_state;
@@ -381,14 +423,16 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             <p className="text-lg font-bold text-amber-900 font-serif">Boss Defeated!</p>
             <p className="text-xs text-stone-600">Your guild triumphed this week.</p>
           </div>
-        ) : showAttackResult && attackResult ? (
-          /* RECAP after submission */
+        ) : showAttackResult ? (
+          /* RECAP after submission OR on reload if already attacked */
           <div className="space-y-3">
             <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-stone-700 font-semibold">Damage Dealt</span>
-                <span className="font-bold text-amber-800">+{damageDealt}</span>
-              </div>
+              {damageDealt > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-stone-700 font-semibold">Damage Dealt</span>
+                  <span className="font-bold text-amber-800">+{damageDealt}</span>
+                </div>
+              )}
               {userSuggestions.length > 0 && (
                 <div className="border-t border-amber-200/60 pt-2 space-y-1">
                   <p className="text-xs font-semibold text-stone-700">Suggestions:</p>
@@ -400,6 +444,25 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                 </div>
               )}
             </div>
+            {/* Guild Top-5 Leaderboard */}
+            {guildLeaderboard.length > 0 && (
+              <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 space-y-2">
+                <p className="text-xs font-semibold text-stone-700 uppercase tracking-wide">Guild Top Attackers</p>
+                <ol className="space-y-1">
+                  {guildLeaderboard.map((entry, i) => (
+                    <li key={i} className="flex items-center justify-between text-xs text-stone-700">
+                      <span className="flex items-center gap-1.5">
+                        <span className={`font-bold ${i === 0 ? 'text-amber-700' : i === 1 ? 'text-stone-500' : i === 2 ? 'text-amber-600' : 'text-stone-400'}`}>
+                          #{i + 1}
+                        </span>
+                        <span>{entry.nickname}</span>
+                      </span>
+                      <span className="font-semibold text-amber-800">{entry.damage}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
             <p className="text-center text-xs text-amber-800/60 italic">You already attacked the boss this week.</p>
           </div>
         ) : showInlineQuest && selectedQuest ? (

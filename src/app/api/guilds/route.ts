@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabaseServer';
-import { assignRoleRecord, createGuildRecord, getCurrentGuild, joinGuildRecord, kickMemberRecord, leaveGuildRecord, listGuilds, listJoinRequestsRecord, applyToGuildRecord, respondJoinRequestRecord } from '@/lib/guildsDb';
+import { assignRoleRecord, createGuildRecord, getCurrentGuild, joinGuildRecord, kickMemberRecord, leaveGuildRecord, listGuilds, listJoinRequestsRecord, applyToGuildRecord, respondJoinRequestRecord, updateGuildIconRecord } from '@/lib/guildsDb';
 
 export async function GET(req: NextRequest) {
   const auth = await requireUser(req);
@@ -77,6 +77,13 @@ export async function POST(req: NextRequest) {
       const requestId = body.requestId?.trim();
       if (!requestId || body.accept === undefined) return NextResponse.json({ error: 'Request id and accept flag are required' }, { status: 400 });
       const result = await respondJoinRequestRecord(auth.user.id, requestId, body.accept);
+      return NextResponse.json(result);
+    }
+
+    if (action === 'set_icon') {
+      const iconKey = (body as any).iconKey?.trim();
+      if (!iconKey) return NextResponse.json({ error: 'iconKey is required' }, { status: 400 });
+      const result = await updateGuildIconRecord(auth.user.id, iconKey);
       return NextResponse.json(result);
     }
 

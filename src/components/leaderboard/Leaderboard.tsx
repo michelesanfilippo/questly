@@ -8,6 +8,15 @@ import { getBadgeImagePath, BADGE_DEFINITIONS } from '@/lib/badges';
 import { useI18n } from '@/i18n';
 import { UserPreviewPopup } from '@/components/social/UserPreviewPopup';
 
+const GUILD_BADGE_IMG = '/images/badges/badge_guild.png';
+
+interface GuildEntry {
+  id: string;
+  name: string;
+  level: number;
+  icon_key: string | null;
+}
+
 interface SupabaseProfile {
   id: string;
   nickname: string;
@@ -23,7 +32,7 @@ interface ProfileWithBadgeCount extends SupabaseProfile {
   badge_count: number;
 }
 
-type Tab = 'Level' | 'Badges' | 'Missions';
+type Tab = 'Level' | 'Badges' | 'Missions' | 'Guild';
 
 interface LeaderboardProps {
   currentUserId?: string;
@@ -34,6 +43,7 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<Tab>('Level');
   const [entries, setEntries] = useState<ProfileWithBadgeCount[]>([]);
+  const [guildEntries, setGuildEntries] = useState<GuildEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
 
@@ -74,6 +84,15 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
             .slice(0, 20);
 
           setEntries(mapped);
+        } else if (activeTab === 'Guild') {
+          const { data, error } = await supabase
+            .from('guilds')
+            .select('id, name, level, icon_key')
+            .order('level', { ascending: false })
+            .limit(10);
+          if (error || !data || cancelled) return;
+          setGuildEntries(data as GuildEntry[]);
+          setEntries([]);
         } else {
           // Missions
           const { data, error } = await supabase
@@ -99,7 +118,7 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
     return () => { cancelled = true; };
   }, [activeTab]);
 
-  const tabs: Tab[] = ['Level', 'Badges', 'Missions'];
+  const tabs: Tab[] = ['Level', 'Badges', 'Missions', 'Guild'];
 
   function getMetric(entry: ProfileWithBadgeCount): string {
     if (activeTab === 'Level') return `Lv.${entry.level}`;
@@ -144,15 +163,64 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
       {/* Content */}
       <div className="pb-2">
         {loading ? (
-          // Skeleton
           <div className="flex flex-col gap-2 px-4 py-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-8 bg-amber-100/50 animate-pulse rounded"
-              />
+              <div key={i} className="h-8 bg-amber-100/50 animate-pulse rounded" />
             ))}
           </div>
+        ) : activeTab === 'Guild' ? (
+          /* Guild leaderboard */
+          <AnimatePresence mode="wait">
+            <motion.div key="guild" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              {guildEntries.length === 0 ? (
+                <p className="text-center text-xs text-stone-400 py-6">{t('leaderboard.no_data')}</p>
+              ) : (
+                guildEntries.map((guild, index) => {
+                  const rank = index + 1;
+                  return (
+                    <motion.div
+                      key={guild.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center gap-3 px-4 py-2.5"
+                    >
+                      <span className={`text-sm font-bold w-5 shrink-0 ${rankColor(rank)}`}>{rank}</span>
+                      {/* Guild icon with hover zoom */}
+                      <div className="relative group shrink-0" style={{ width: 28, height: 28 }}>
+                        <div className="rounded-full overflow-hidden border border-amber-800/20 bg-amber-100 flex items-center justify-center" style={{ width: 28, height: 28 }}>
+                          {guild.icon_key === 'badge_guild' ? (
+                            <Image src={GUILD_BADGE_IMG} alt="" width={28} height={28} className="h-full w-full object-cover" />
+                          ) : guild.icon_key ? (
+                            <span className="text-base leading-none">{guild.icon_key}</span>
+                          ) : (
+                            <span className="text-xs font-bold text-amber-800">{guild.name.slice(0, 2).toUpperCase()}</span>
+                          )}
+                        </div>
+                        {/* Hover zoom */}
+                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-30 hidden group-hover:flex flex-col items-center pointer-events-none">
+                          <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-amber-300/60 bg-amber-100 flex items-center justify-center shadow-[0_0_16px_rgba(217,119,6,0.5)]">
+                            {guild.icon_key === 'badge_guild' ? (
+                              <Image src={GUILD_BADGE_IMG} alt="" width={64} height={64} className="h-full w-full object-cover" />
+                            ) : guild.icon_key ? (
+                              <span className="text-4xl leading-none">{guild.icon_key}</span>
+                            ) : (
+                              <span className="text-xl font-bold text-amber-800">{guild.name.slice(0, 2).toUpperCase()}</span>
+                            )}
+                          </div>
+                          <div className="mt-1 px-2 py-0.5 bg-[#faf7f0] border border-amber-300/40 rounded text-xs text-amber-900 font-medium whitespace-nowrap shadow">
+                            {guild.name}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="flex-1 truncate text-sm font-medium text-amber-900">{guild.name}</span>
+                      <span className="text-xs text-stone-500 shrink-0">Lv.{guild.level}</span>
+                    </motion.div>
+                  );
+                })
+              )}
+            </motion.div>
+          </AnimatePresence>
         ) : (
           <AnimatePresence mode="wait">
             <motion.div

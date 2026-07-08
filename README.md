@@ -16,6 +16,10 @@
   </a>
 </p>
 
+
+[![Status](https://img.shields.io/badge/status-alpha-orange.svg)]()
+
+
 ---
 
 ## What is Questly?
