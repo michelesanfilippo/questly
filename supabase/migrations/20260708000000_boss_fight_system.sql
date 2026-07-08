@@ -85,7 +85,7 @@ CREATE POLICY rls_boss_fights_select ON boss_fights
   USING (
     guild_id IN (
       SELECT id FROM public.guilds
-      WHERE owner_id = auth.uid()
+      WHERE founder_id = auth.uid()
       UNION
       SELECT guild_id FROM public.guild_members
       WHERE user_id = auth.uid()
@@ -99,7 +99,7 @@ CREATE POLICY rls_boss_fights_insert ON boss_fights
     -- Only guild owner/members can create fights (via RPC validation)
     guild_id IN (
       SELECT id FROM public.guilds
-      WHERE owner_id = auth.uid()
+      WHERE founder_id = auth.uid()
       UNION
       SELECT guild_id FROM public.guild_members
       WHERE user_id = auth.uid()
@@ -112,7 +112,7 @@ CREATE POLICY rls_boss_fights_update ON boss_fights
   USING (
     guild_id IN (
       SELECT id FROM public.guilds
-      WHERE owner_id = auth.uid()
+      WHERE founder_id = auth.uid()
       UNION
       SELECT guild_id FROM public.guild_members
       WHERE user_id = auth.uid()
@@ -121,7 +121,7 @@ CREATE POLICY rls_boss_fights_update ON boss_fights
   WITH CHECK (
     guild_id IN (
       SELECT id FROM public.guilds
-      WHERE owner_id = auth.uid()
+      WHERE founder_id = auth.uid()
       UNION
       SELECT guild_id FROM public.guild_members
       WHERE user_id = auth.uid()
@@ -143,7 +143,7 @@ CREATE POLICY rls_boss_attempts_select ON boss_attempts
       SELECT id FROM boss_fights
       WHERE guild_id IN (
         SELECT id FROM public.guilds
-        WHERE owner_id = auth.uid()
+        WHERE founder_id = auth.uid()
         UNION
         SELECT guild_id FROM public.guild_members
         WHERE user_id = auth.uid()
@@ -160,7 +160,7 @@ CREATE POLICY rls_boss_attempts_insert ON boss_attempts
       SELECT id FROM boss_fights
       WHERE guild_id IN (
         SELECT id FROM public.guilds
-        WHERE owner_id = auth.uid()
+        WHERE founder_id = auth.uid()
         UNION
         SELECT guild_id FROM public.guild_members
         WHERE user_id = auth.uid()
@@ -211,6 +211,6 @@ After running this migration:
 
 4. Dependencies:
    - Expects tables: public.guilds, public.profiles, public.guild_members
-   - Expects column: guilds.owner_id, guild_members.user_id
+   - Expects column: guilds.founder_id, guild_members.user_id
    - Uses Supabase auth.uid() for current user context
 */
