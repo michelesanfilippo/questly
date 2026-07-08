@@ -226,13 +226,12 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
             if (attempts && attempts.length > 0) {
               setHasUserAttacked(true);
-              // Show damage if available
               const dmg = (attempts[0] as any).damage;
               if (typeof dmg === 'number') setDamageDealt(dmg);
               setShowAttackResult(true);
-              // Load leaderboard using boss id
-              if (data.boss?.id) fetchGuildLeaderboard(data.boss.id);
             }
+            // Always load leaderboard on initial load if boss exists (defeated or not)
+            if (data.boss?.id) fetchGuildLeaderboard(data.boss.id);
           }
         } catch (err) {
           console.warn('[fetchBossState] Failed to check attack history:', err);
@@ -436,9 +435,27 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
         {/* DEFEATED */}
         {boss?.is_defeated ? (
-          <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 text-center space-y-1">
-            <p className="text-lg font-bold text-amber-900 font-serif">Boss Defeated!</p>
-            <p className="text-xs text-stone-600">Your guild triumphed this week.</p>
+          <div className="space-y-3">
+            <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 text-center space-y-1">
+              <p className="text-lg font-bold text-amber-900 font-serif">Boss Defeated!</p>
+              <p className="text-xs text-stone-600">Your guild triumphed this week.</p>
+            </div>
+            {guildLeaderboard.length > 0 && (
+              <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 space-y-2">
+                <p className="text-xs font-semibold text-stone-700 uppercase tracking-wide">Guild Top Attackers</p>
+                <ol className="space-y-1">
+                  {guildLeaderboard.map((entry, i) => (
+                    <li key={i} className="flex items-center justify-between text-xs text-stone-700">
+                      <span className="flex items-center gap-1.5">
+                        <span className={`font-bold ${i === 0 ? 'text-amber-700' : i === 1 ? 'text-stone-500' : i === 2 ? 'text-amber-600' : 'text-stone-400'}`}>#{i + 1}</span>
+                        <span>{entry.nickname}</span>
+                      </span>
+                      <span className="font-semibold text-amber-800">{entry.damage}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
           </div>
         ) : showAttackResult ? (
           /* RECAP after submission OR on reload if already attacked */
