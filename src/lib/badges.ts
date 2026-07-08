@@ -108,3 +108,168 @@ export function addXPToProfile(
   }
   return { newXP: xp, newLevel: level };
 }
+
+/**
+ * Boss Weekend Badge Definitions
+ * Index 16-21 reserved for boss badges
+ */
+export const BOSS_BADGE_MAP: Record<string, { index: number; name: string; description: string }> = {
+  goblin: {
+    index: 16,
+    name: 'Goblin Slayer',
+    description: 'Defeated the Goblin boss',
+  },
+  fata: {
+    index: 17,
+    name: 'Fairy Vanquisher',
+    description: 'Defeated the Fairy boss',
+  },
+  lupo_mannaro: {
+    index: 18,
+    name: 'Werewolf Hunter',
+    description: 'Defeated the Werewolf boss',
+  },
+  minotauro: {
+    index: 19,
+    name: 'Minotaur Slayer',
+    description: 'Defeated the Minotaur boss',
+  },
+  gnomo: {
+    index: 20,
+    name: 'Gnome Crusher',
+    description: 'Defeated the Gnome boss',
+  },
+  gigante: {
+    index: 21,
+    name: 'Giant Killer',
+    description: 'Defeated the Giant boss',
+  },
+  grifone: {
+    index: 22,
+    name: 'Griffin Tamer',
+    description: 'Defeated the Griffin boss',
+  },
+  ippogrifo: {
+    index: 23,
+    name: 'Hippogriff Breaker',
+    description: 'Defeated the Hippogriff boss',
+  },
+  idra: {
+    index: 24,
+    name: 'Hydra Head Collector',
+    description: 'Defeated the Hydra boss',
+  },
+  fenice: {
+    index: 25,
+    name: 'Phoenix Extinguisher',
+    description: 'Defeated the Phoenix boss',
+  },
+  basilisco: {
+    index: 26,
+    name: 'Basilisk Petrifier',
+    description: 'Defeated the Basilisk boss',
+  },
+  kraken: {
+    index: 27,
+    name: 'Kraken Deeps',
+    description: 'Defeated the Kraken boss',
+  },
+  leviatano: {
+    index: 28,
+    name: 'Leviathan Tamer',
+    description: 'Defeated the Leviathan boss',
+  },
+  drago_comune: {
+    index: 29,
+    name: 'Common Dragon Slayer',
+    description: 'Defeated the Common Dragon boss',
+  },
+  drago_verde: {
+    index: 30,
+    name: 'Green Dragon Slayer',
+    description: 'Defeated the Green Dragon boss',
+  },
+  drago_rosso: {
+    index: 31,
+    name: 'Red Dragon Slayer',
+    description: 'Defeated the Red Dragon boss',
+  },
+  drago_nero: {
+    index: 32,
+    name: 'Black Dragon Slayer',
+    description: 'Defeated the Black Dragon boss',
+  },
+  drago_bianco: {
+    index: 33,
+    name: 'White Dragon Slayer',
+    description: 'Defeated the White Dragon boss',
+  },
+};
+
+/**
+ * Returns the badge index for a defeated boss
+ * Returns -1 if boss not found
+ */
+export function getBossBadgeIndex(bossKey: string): number {
+  return BOSS_BADGE_MAP[bossKey]?.index ?? -1;
+}
+
+/**
+ * Assigns boss badge to guild members who participated in the fight
+ * To be called via POST /api/boss/assign-badge after boss defeat
+ *
+ * @param bossKey - The boss key ('goblin', 'drago_bianco', etc)
+ * @param userIds - Array of user IDs who participated
+ * @returns Promise with supabase update result
+ *
+ * Usage:
+ *   const badgeIndex = getBossBadgeIndex('goblin');
+ *   if (badgeIndex !== -1) {
+ *     await supabase
+ *       .from('profiles')
+ *       .update({ badges: ... }) // Add badgeIndex to array
+ *       .in('id', userIds);
+ *   }
+ */
+export async function assignBossBadges(
+  supabase: any,
+  bossKey: string,
+  userIds: string[]
+): Promise<void> {
+  const badgeIndex = getBossBadgeIndex(bossKey);
+
+  if (badgeIndex === -1) {
+    console.warn(`No badge defined for boss: ${bossKey}`);
+    return;
+  }
+
+  // For each user, add badge to their badges array (if not already present)
+  for (const userId of userIds) {
+    const { data: profile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('badges')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError) {
+      console.error(`Failed to fetch profile for ${userId}:`, fetchError);
+      continue;
+    }
+
+    const badges = profile?.badges ?? [];
+
+    // Only add if not already present
+    if (!badges.includes(badgeIndex)) {
+      badges.push(badgeIndex);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ badges })
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error(`Failed to update badge for ${userId}:`, updateError);
+      }
+    }
+  }
+}

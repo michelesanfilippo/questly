@@ -1,0 +1,264 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { BossCard } from './BossCard';
+import { BossMissionInput } from './BossMissionInput';
+import { useQuestTranslation } from '@/hooks/useQuestTranslation';
+import { getWeekBoss, isBossWeekend } from '@/lib/boss';
+
+interface BossMission {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: number;
+}
+
+interface BossState {
+  boss_key: string;
+  boss_rarity: number;
+  max_hp: number;
+  current_hp: number;
+  total_damage: number;
+  is_defeated: boolean;
+}
+
+interface BossPanelProps {
+  guildId: string;
+  userRole?: 'leader' | 'royal_knight' | 'wizard' | 'member';
+  onVictory?: () => void;
+  onError?: (error: string) => void;
+}
+
+/**
+ * BossPanel
+ *
+ * Main container for boss weekend system:
+ * 1. Fetches current boss state from database
+ * 2. Displays BossCard with HP bar + stats
+ * 3. Displays BossMissionInput for mission selection
+ * 4. Handles attack submission via POST /api/boss/attack
+ * 5. Shows attack result + updates boss state
+ * 6. Triggers victory popup if boss defeated
+ *
+ * Only visible on weekends (Sat/Sun UTC)
+ */
+export const BossPanel: React.FC<BossPanelProps> = ({
+  guildId,
+  userRole = 'member',
+  onVictory,
+  onError,
+}) => {
+  const { data: session } = useSession();
+  const { t } = useQuestTranslation();
+
+  const [boss, setBoss] = useState<BossState | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [attackResult, setAttackResult] = useState<any>(null);
+  const [isBossWeekendFlag, setIsBossWeekendFlag] = useState(false);
+
+  // Check if weekend + fetch initial boss state
+  useEffect(() => {
+    const checkWeekendAndFetchBoss = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Check if boss weekend
+        const isWeekend = isBossWeekend();
+        setIsBossWeekendFlag(isWeekend);
+
+        if (!isWeekend) {
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch boss state from database
+        // TODO: Create GET /api/boss/state endpoint
+        // For now, we'll use local calculation
+        const localBoss = getWeekBoss(guildId);
+        setBoss({
+          boss_key: localBoss.key,
+          boss_rarity: localBoss.rarity,
+          max_hp: localBoss.hp,
+          current_hp: localBoss.hp, // TODO: Fetch actual damage from DB
+          total_damage: 0,
+          is_defeated: false,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to load boss';
+        setError(message);
+        onError?.(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkWeekendAndFetchBoss();
+
+    // Poll boss state every 5 seconds to detect changes
+    const interval = setInterval(checkWeekendAndFetchBoss, 5000);
+    return () => clearInterval(interval);
+  }, [guildId, onError]);
+
+  // Handle mission selection + attack submission
+  const handleMissionSelect = useCallback(
+    async (mission: BossMission, score: number) => {
+      if (!session?.user) {
+        throw new Error('Not authenticated');
+      }
+
+      setIsSubmitting(true);
+      setError(null);
+      setAttackResult(null);
+
+      try {
+        // Get auth token
+        const token = (session as any).supabaseAccessToken;
+        if (!token) {
+          throw new Error('No auth token available');
+        }
+
+        // Call attack endpoint
+        const response = await fetch('/api/boss/attack', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            guildId,
+            missionScore: score,
+            userRole,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Attack failed');
+        }
+
+        // Update boss state
+        setAttackResult(data);
+        setBoss((prev) => ({
+          ...prev!,
+          current_hp: data.boss_state.current_hp,
+          total_damage: data.boss_state.total_damage,
+          is_defeated: data.boss_state.is_defeated,
+        }));
+
+        // Trigger victory callback if defeated
+        if (data.boss_state.is_defeated) {
+          onVictory?.();
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Attack failed';
+        setError(message);
+        throw err;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [session, guildId, userRole, onVictory]
+  );
+
+  // If not weekend, show message
+  if (!isBossWeekendFlag) {
+    return (
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
+        <p className="text-gray-400 mb-2">🌙 Boss Weekends are Saturday-Sunday UTC</p>
+        <p className="text-gray-500 text-sm">Check back this weekend!</p>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
+        <p className="text-gray-400">Loading boss data...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && !boss) {
+    return (
+      <div className="bg-red-900 border border-red-700 rounded-lg p-6">
+        <p className="text-red-200">Error: {error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Error Alert (non-fatal) */}
+      {error && (
+        <div className="bg-red-900 bg-opacity-30 border border-red-700 rounded-lg p-4">
+          <p className="text-red-200">{error}</p>
+        </div>
+      )}
+
+      {/* Boss Card */}
+      <BossCard
+        guildId={guildId}
+        boss={boss || undefined}
+        isLoading={isSubmitting}
+        isBossWeekend={isBossWeekendFlag}
+        currentUserRole={userRole}
+        onAttackClick={() => {
+          // This is just a placeholder; actual attack happens in BossMissionInput
+        }}
+      />
+
+      {/* Attack Result Display */}
+      {attackResult && !attackResult.boss_state.is_defeated && (
+        <div className="bg-green-900 bg-opacity-30 border border-green-700 rounded-lg p-4">
+          <p className="text-green-200 font-bold">
+            ⚔️ Hit for {attackResult.attack.damage_dealt} damage!
+          </p>
+          <p className="text-green-300 text-sm">
+            Boss HP: {attackResult.boss_state.current_hp} / {attackResult.boss_state.max_hp}
+          </p>
+        </div>
+      )}
+
+      {/* Victory Display */}
+      {boss?.is_defeated && (
+        <div className="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-lg p-6 border-2 border-yellow-400">
+          <p className="text-white font-bold text-2xl mb-2">🎉 Victory!</p>
+          <p className="text-yellow-100 mb-3">
+            Your guild defeated {boss.boss_key.toUpperCase()}!
+          </p>
+          {attackResult?.rewards && (
+            <div className="bg-black bg-opacity-30 rounded p-3 text-yellow-200 text-sm">
+              <p>Guild XP: +{attackResult.rewards.guild_xp}</p>
+              <p>Your XP: +{attackResult.rewards.user_xp}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Mission Input (only if not defeated) */}
+      {boss && !boss.is_defeated && (
+        <BossMissionInput
+          bossKey={boss.boss_key}
+          guildId={guildId}
+          onMissionSelect={handleMissionSelect}
+          isLoading={isSubmitting}
+          currentUserRole={userRole}
+        />
+      )}
+
+      {/* Call to Action */}
+      {boss && !boss.is_defeated && (
+        <p className="text-center text-gray-400 text-sm">
+          Select a mission and complete it to attack the boss!
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default BossPanel;

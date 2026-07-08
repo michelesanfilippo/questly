@@ -1,0 +1,676 @@
+{
+  "boss_missions": {
+    "goblin": {
+      "1": [
+        {
+          "id": "boss_goblin_1_1",
+          "title": "Hidden Treasures",
+          "text": "Sneak into the goblin's hideout and discover what treasures he's hoarding! Think like a clever merchant—how would you deceive a greedy creature using wit alone? Remember: it's not theft, it's clever business. Unlock the secret vault and escape with your wits intact!"
+        },
+        {
+          "id": "boss_goblin_1_2",
+          "title": "Honest Theft",
+          "text": "The goblin merchant owes a debt to the guild. Convince him to pay—without violence! Use charm, bluff, or comedic arguments to make him see reason. What's your best pitch to turn an enemy into a reluctant ally? Settle this through words and cunning deals!"
+        },
+        {
+          "id": "boss_goblin_1_3",
+          "title": "Chaotic Bazaar",
+          "text": "The goblin's marketplace is absolute madness—coins, trinkets, and chaos everywhere! Navigate the confusion, find the master of ceremonies, and negotiate a truce. Can you haggle better than any goblin? Turn the chaos into order through sheer charm and persuasion!"
+        },
+        {
+          "id": "boss_goblin_1_4",
+          "title": "Winning Card",
+          "text": "Challenge the goblin to a game of wit and bluff! Beat him at his own game using logic and psychology. What's your strategy to outsmart a creature who's played thousands of games? Stack the odds in your favor through clever play and sharp thinking!"
+        },
+        {
+          "id": "boss_goblin_1_5",
+          "title": "Secret Deal",
+          "text": "The goblin has something the guild wants, but he's stubborn. Offer him a deal he can't refuse! What would tempt a greedy creature most? Negotiate a trade that benefits you both and seals an unexpected friendship. Business first, violence never!"
+        }
+      ]
+    },
+    "fata": {
+      "1": [
+        {
+          "id": "boss_fata_1_1",
+          "title": "Enchantment of Light",
+          "text": "A fairy queen guards a forest shrine with pure light magic. Approach with respect and kindness—prove you're worthy of her blessing! Speak gently to her heart, show understanding of nature's balance. Win her favor through compassion, not conflict. Become friends with magic itself!"
+        },
+        {
+          "id": "boss_fata_1_2",
+          "title": "Magical Flowers",
+          "text": "Enchanted flowers bloom in the fairy's garden, and she'll only allow the pure-hearted to pass. Don't pluck them—appreciate their beauty! Ask permission, show respect for natural magic. What words would convince an ancient fairy guardian? Speak your truth with an open heart!"
+        },
+        {
+          "id": "boss_fata_1_3",
+          "title": "Natural Protection",
+          "text": "The fairy weaves protective shields of vines and thorns around her sanctuary. You can't break through force—you must be invited! Convince her you mean no harm. Perform a kind deed, show genuine care for her forest. Become the guardian she's been searching for!"
+        },
+        {
+          "id": "boss_fata_1_4",
+          "title": "Dance of the Stars",
+          "text": "Under moonlight, join the fairy's celestial dance! Follow her movements, match her grace, and understand the ancient rhythms of magic. Can you move with the stars themselves? Dance your way into her trust and become one with enchanted skies. Magic flows through motion!"
+        },
+        {
+          "id": "boss_fata_1_5",
+          "title": "Magical Blessing",
+          "text": "The fairy grants blessings only to those who prove their worth through pure intentions. Demonstrate genuine compassion for the natural world! Help a lost creature, protect a seedling, show reverence for life. The fairy smiles and bestows her ancient blessing upon you!"
+        }
+      ]
+    },
+    "lupo_mannaro": {
+      "2": [
+        {
+          "id": "boss_lupo_mannaro_2_1",
+          "title": "Midnight Transformation",
+          "text": "The werewolf transforms at moonrise with uncontrollable ferocity! You must stay awake, alert, and navigate the chaos of his savage nature. Can you survive the night without drawing his wrath? Use stealth, cunning, and knowledge of his cycle to endure until dawn breaks and sanity returns!"
+        },
+        {
+          "id": "boss_lupo_mannaro_2_2",
+          "title": "Howl of the Forest",
+          "text": "The werewolf's howl echoes through the woods, calling his pack to hunt. Decode the ancient message hidden in that primal cry! Understand what the beasts communicate—fear, hunger, loyalty? Listen closely, interpret the language of instinct. Unlock the meaning within the howl!"
+        },
+        {
+          "id": "boss_lupo_mannaro_2_3",
+          "title": "Nocturnal Hunt",
+          "text": "A strategic hunt unfolds under moonlight—the werewolf tracks you with superior senses. Plan your escape route carefully! Use the terrain, exploit his overconfidence, lay clever traps. Think like a hunter turned prey. Survive through strategy, not just speed!"
+        },
+        {
+          "id": "boss_lupo_mannaro_2_4",
+          "title": "Taming the Beast",
+          "text": "The werewolf struggles between human mind and animal instinct—help him regain control! Show him that willpower can overcome the curse's rage. Find the humanity within the monster and appeal to it. Use words that bridge two natures. Unlock his inner strength!"
+        },
+        {
+          "id": "boss_lupo_mannaro_2_5",
+          "title": "Curse's Mark",
+          "text": "The werewolf bears a dark curse mark—uncover its origin and break its power! Research ancient magic, find the source of his curse, discover the counterspell. Follow clues through legends, tomes, and whispered tales. Lift the darkness that binds him!"
+        },
+        {
+          "id": "boss_lupo_mannaro_2_6",
+          "title": "Primal Instinct",
+          "text": "Harness the raw power of primal instinct—not to become a beast, but to understand it deeply! Connect with your inner wild nature temporarily. Speak the language of survival, raw emotion, and ancient drives. Show the werewolf you comprehend his eternal struggle!"
+        },
+        {
+          "id": "boss_lupo_mannaro_2_7",
+          "title": "Pack's Bond",
+          "text": "The werewolf values his pack above all else—they're his true family and strength. Convince him his pack doesn't need mindless violence to survive! Offer the guild's support for his family's protection. Propose an alliance. Build trust between your cause and his loyalty!"
+        }
+      ]
+    },
+    "minotauro": {
+      "2": [
+        {
+          "id": "boss_minotauro_2_1",
+          "title": "Into the Labyrinth",
+          "text": "The labyrinth twists endlessly—walls shift, corridors loop, and the Minotaur hunts! Map the ancient passages before the beast finds you. Listen for his footsteps, feel the walls' vibrations, use your wits. Trust your mind more than your feet. Navigate chaos into victory!"
+        },
+        {
+          "id": "boss_minotauro_2_2",
+          "title": "Honor's Challenge",
+          "text": "The Minotaur respects warriors of honor—meet him with integrity! Challenge him to a test of strength, courage, and noble character. Prove you're worthy through deeds, not insults. Show him the guild fights with principles, not just weapons. Gain an honorable foe's respect!"
+        },
+        {
+          "id": "boss_minotauro_2_3",
+          "title": "Hidden Corridors",
+          "text": "Ancient passages hide secrets the Minotaur forgot long ago. Discover them before he does! Explore whispered tales of the labyrinth's construction. Find shortcuts, secret exits, hidden sanctuaries. Use forgotten knowledge to outsmart an enemy trapped by his own maze!"
+        },
+        {
+          "id": "boss_minotauro_2_4",
+          "title": "Courage and Strength",
+          "text": "The Minotaur judges strength by courage shown under pressure—face him with bravery! Don't flee or hide; stand tall and face adversity directly. Show conviction in your cause. The Minotaur respects raw determination. Prove your resolve through courageous action!"
+        },
+        {
+          "id": "boss_minotauro_2_5",
+          "title": "Redemption",
+          "text": "The Minotaur is trapped by an ancient curse—help him break free! Lift the curse that binds him to endless labyrinth wandering. Find the curse's source, understand its conditions. Offer genuine redemption instead of endless imprisonment. Free him from his prison!"
+        },
+        {
+          "id": "boss_minotauro_2_6",
+          "title": "Unexpected Alliance",
+          "text": "The Minotaur doesn't need to be an enemy—propose genuine alliance! Show him the guild shares his love of honor and justice. Together you're stronger against true darkness. Build mutual respect. Transform an ancient foe into an unexpected, powerful companion!"
+        },
+        {
+          "id": "boss_minotauro_2_7",
+          "title": "Hidden Paths",
+          "text": "Guide the Minotaur through his own labyrinth—he's lost within it! Offer him freedom and clarity. Show him ways to escape the endless maze that haunts him. Become his guide to redemption. Together escape the labyrinth's psychological grip!"
+        }
+      ]
+    },
+    "gnomo": {
+      "2": [
+        {
+          "id": "boss_gnomo_2_1",
+          "title": "Ancient Cavern",
+          "text": "Deep within stone lies an ancient cavern filled with gnomish secrets and artifacts! Explore carefully—the gnome protects these treasures fiercely. Respect the history and craftsmanship evident in every detail. Convince the gnome that you'll preserve, not plunder, his legacy. Become his trusted confidant!"
+        },
+        {
+          "id": "boss_gnomo_2_2",
+          "title": "Minor Magic",
+          "text": "The gnome masters small magics that pack surprising punch! His minor enchantments protect his workshop and treasures. Understand the elegant simplicity of his craft. Learn how small, focused magic outperforms grand spells. Study his techniques and earn his respect through genuine appreciation!"
+        },
+        {
+          "id": "boss_gnomo_2_3",
+          "title": "Stone Treasure",
+          "text": "Rare crystals and precious gems hide within the mountain—the gnome's greatest pride! He's discovered unique crystalline formations that took millennia to form. Acknowledge the beauty and rarity of his find. Show genuine wonder at geological miracles. Appeal to his pride in discovery!"
+        },
+        {
+          "id": "boss_gnomo_2_4",
+          "title": "Ingenious Trap",
+          "text": "Mechanical traps protect the gnome's sanctuary—decipher their elegant mechanics! These aren't crude devices but masterworks of engineering. Study the patterns, understand the logic. Disarm them using knowledge, not brute force. Solve the puzzle and reach the gnome without triggering alarms!"
+        },
+        {
+          "id": "boss_gnomo_2_5",
+          "title": "Lost Knowledge",
+          "text": "The gnome guards ancient wisdom sealed in forgotten tomes! Unlock the secrets of old craftsmanship and lost technologies. Prove you'll use this knowledge wisely. Show respect for the weight of historical truth. The gnome opens his library to those worthy of such power!"
+        },
+        {
+          "id": "boss_gnomo_2_6",
+          "title": "Secret Mechanism",
+          "text": "A hidden mechanism controls the cavern's defenses—the gnome's ultimate creation! Discover its workings, understand its design philosophy. Impress the gnome with your grasp of engineering and purpose. Together, you might unlock secrets neither could alone. Collaborate with a master inventor!"
+        }
+      ]
+    },
+    "gigante": {
+      "3": [
+        {
+          "id": "boss_gigante_3_1",
+          "title": "Footsteps of Giants",
+          "text": "Colossal footprints mark the giant's passage—each step reshapes the landscape! Follow the trail to understand his journey and intent. These aren't random movements; the giant follows an ancient pattern. Decipher where he's headed and why. Understand the grand design beneath apparent chaos!"
+        },
+        {
+          "id": "boss_gigante_3_2",
+          "title": "Trembling Earth",
+          "text": "The earth itself trembles at the giant's proximity—mountains shift like sand beneath his weight! You must stabilize yourself mentally and physically. Feel the ground's rhythm, anticipate its movements, move with the planet's pulse. Turn geological chaos into harmony. Master the dance of titanic forces!"
+        },
+        {
+          "id": "boss_gigante_3_3",
+          "title": "Fortress of Stone",
+          "text": "The giant built a mountainous fortress—each stone placed with deliberate purpose centuries ago! Study the architecture; it tells stories of ancient ambitions and defensive strategies. Understand why it was built and what it protected. Unlock the meaning carved into living stone!"
+        },
+        {
+          "id": "boss_gigante_3_4",
+          "title": "Thundering Voice",
+          "text": "His voice booms like thunder, carrying words that reshape reality itself! Listen to the depth of meaning beneath the volume. The giant speaks in metaphors of age and power. Understand his language—not just words, but the weight of millennia in each syllable. Communicate across the divide!"
+        },
+        {
+          "id": "boss_gigante_3_5",
+          "title": "Moving Boulders",
+          "text": "Massive stones move across the landscape at the giant's command—your environment becomes a weapon and puzzle! Navigate treacherous terrain where mountains roll like pebbles. Use the moving stones as both obstacle and opportunity. Master this epic choreography of colossal power!"
+        },
+        {
+          "id": "boss_gigante_3_6",
+          "title": "Hidden Weakness",
+          "text": "Every giant bears a hidden weakness—a secret place where ancient power concentrates! Legend speaks of a scar, a junction of power, a vulnerable moment. Discover this legendary weakness through research and careful observation. Use knowledge, not strength, to overcome titanic power!"
+        },
+        {
+          "id": "boss_gigante_3_7",
+          "title": "Lost Kingdom",
+          "text": "Ruins of an ancient kingdom lie beneath the giant's domain—a civilization long forgotten! These remnants hold keys to understanding the giant's origins and purpose. Explore the lost architecture, decipher ancient scripts, reconstruct forgotten history. Unearth truths buried millennia deep!"
+        },
+        {
+          "id": "boss_gigante_3_8",
+          "title": "Reconciliation",
+          "text": "The giant didn't always walk alone—he was betrayed, isolated, forced into solitude! Help him find peace with his past and people again. Prove that friendship transcends size and age. Offer genuine reconciliation and understanding. Turn ancient enemies into companions!"
+        },
+        {
+          "id": "boss_gigante_3_9",
+          "title": "Stone Bridge",
+          "text": "An ancient bridge of living stone connects disparate lands—the giant's gift from ages past! Cross this masterwork of engineering and art. Feel the intention behind its construction. Understand the giant's desire for connection despite his isolation. Walk the bridge of his dreams!"
+        },
+        {
+          "id": "boss_gigante_3_10",
+          "title": "Living Mountain",
+          "text": "The mountain itself seems alive—is the giant merged with stone, or is stone an extension of him? Explore the boundary between creature and geology. Feel the pulse of ancient power dwelling within stone and flesh. Commune with a being transcending mortal categories!"
+        },
+        {
+          "id": "boss_gigante_3_11",
+          "title": "Ancient Echoes",
+          "text": "Echoes of the giant's voice resonate through valleys—each echo carries a memory or message! Collect these fragments of sound and reconstruct them. Understand the giant's history through his own words reflected across time. Piece together his epic narrative from echoing fragments!"
+        },
+        {
+          "id": "boss_gigante_3_12",
+          "title": "Foundations of the World",
+          "text": "Legend says the giant upholds the world's very foundations—he's literally keeping reality stable! Show respect for this cosmic responsibility. Offer support for his eternal burden. Prove the guild can help shoulder this weight. Become allies in maintaining cosmic balance!"
+        },
+        {
+          "id": "boss_gigante_3_13",
+          "title": "Peak Reached",
+          "text": "Climb to where the giant stands—a summit that seems to touch the clouds themselves! Each step is a trial of endurance and will. The view from above reveals truths invisible from below. Reach the giant's level—physically, mentally, spiritually. Touch the pinnacle!"
+        },
+        {
+          "id": "boss_gigante_3_14",
+          "title": "Telluric Power",
+          "text": "The giant channels raw telluric forces—energy flowing from the planet's core through his being! Sense this power, feel its rhythm, learn to work with rather than against it. The earth itself flows through him. Tap into this ancient planetary force!"
+        },
+        {
+          "id": "boss_gigante_3_15",
+          "title": "Sleeping God",
+          "text": "Is the giant merely sleeping, or has he become the very landscape? Wake him gently, or let him rest? This choice carries cosmic consequences! Understand the weight of potential actions affecting reality itself. Make a decision that echoes through ages. Commune with godlike power!"
+        },
+        {
+          "id": "boss_gigante_3_16",
+          "title": "Breath of the Earth",
+          "text": "Witness the giant's breath—warm wind carrying dust and warmth from deep within the planet! Feel the slow rhythm of his respiration, matched to continental shifts. Synchronize with this cosmic rhythm. Feel alive in the presence of genuine cosmic power. Breathe with the earth!"
+        },
+        {
+          "id": "boss_gigante_3_17",
+          "title": "Immortal Footprint",
+          "text": "The giant's footprints never fade—they're permanent marks upon the world's face! Walk where he walked, feel the permanence of his passage. His very existence reshapes reality long after he passes. Honor the legacy written in landscape. Leave your own immortal mark!"
+        },
+        {
+          "id": "boss_gigante_3_18",
+          "title": "Awakened Titan",
+          "text": "The giant awakens from slumber—an event that happens once every thousand years! Witness titanic power returning to active consciousness. The world trembles as awareness returns. Prepare yourself for an encounter with renewed, focused might. Face awakening divinity!"
+        },
+        {
+          "id": "boss_gigante_3_19",
+          "title": "Colossus Road",
+          "text": "Follow the Colossus Road—an ancient path where giants once walked together! These roads are worn by countless ages of enormous footfalls. Imagine the journey of titans across the world. Walk a path designed for beings of cosmic scale. Experience geography from a giant's perspective!"
+        },
+        {
+          "id": "boss_gigante_3_20",
+          "title": "Stone Companion",
+          "text": "The giant considers you a companion, not an enemy—a unique bond across size and species! Prove yourself worthy of this unprecedented friendship. Share experiences, grow together, face challenges as partners. Transform size difference into strength through genuine connection!"
+        }
+      ]
+    },
+    "grifone": {
+      "3": [
+        {
+          "id": "boss_grifone_3_1",
+          "title": "Flight Among Clouds",
+          "text": "Soar with the griffin through clouds—an experience reserved for the most worthy! Feel the wind beneath you, taste freedom at impossible heights. Challenge your fear of flight. Let go of earthbound perspectives. Transform into something more than human. The sky calls to your spirit!"
+        },
+        {
+          "id": "boss_grifone_3_2",
+          "title": "Noble Guard",
+          "text": "The griffin guards something precious with unwavering dedication—honor demands respect! Approach with sincerity, not deception. The griffin recognizes genuine nobility when it sees it. Prove you share these values. Earn the protection of a being dedicated to righteous ideals!"
+        },
+        {
+          "id": "boss_grifone_3_3",
+          "title": "Winged Treasure",
+          "text": "The griffin protects treasure not for greed, but for safekeeping of something meaningful! Discover what makes this treasure worth guarding. Appeal to the griffin's sense of duty and purpose. Help protect what matters most. Become the griffin's ally in this sacred trust!"
+        },
+        {
+          "id": "boss_grifone_3_4",
+          "title": "Protected Sky",
+          "text": "The griffin commands the skies—winds obey, clouds part, storms bow to his authority! You must navigate this aerial dominion with respect and cunning. Feel the air's current, understand wind patterns, sense the griffin's mood in atmospheric shifts. Master the language of sky!"
+        },
+        {
+          "id": "boss_grifone_3_5",
+          "title": "Intelligent Eagle",
+          "text": "The griffin possesses eagle's intellect combined with lion's wisdom—ancient understanding dwells within! Engage with genuine questions and respect for centuries of accumulated knowledge. The griffin appreciates philosophical discourse. Challenge your thinking through elevated dialogue!"
+        },
+        {
+          "id": "boss_grifone_3_6",
+          "title": "Wind and Fire",
+          "text": "The griffin embodies dual elements—wind carries it, fire burns within! Understand these complementary forces: speed and passion, freedom and intensity. The griffin operates on contrasts. Learn to work with opposing forces in harmony. Master the dance of elements!"
+        },
+        {
+          "id": "boss_grifone_3_7",
+          "title": "Honor and Pride",
+          "text": "The griffin carries pride justly earned through countless victories and virtuous deeds! Respect this dignity. Don't approach with insult or disrespect. The griffin values honor above all else. Prove you understand the weight of noble character. Appeal to shared values!"
+        },
+        {
+          "id": "boss_grifone_3_8",
+          "title": "Celestial Alliance",
+          "text": "An alliance with the griffin is a cosmic pact—sworn between earth and sky! Make this sacred agreement seriously. The griffin expects unwavering loyalty in return for protection. Build a bond transcending species and circumstance. Create a legend together!"
+        },
+        {
+          "id": "boss_grifone_3_9",
+          "title": "Inviolable Nest",
+          "text": "The griffin's nest sits in an untouchable peak—sacred space where laws don't apply equally! You cannot force entry; only respect grants access. Approach the nest with reverence for what it represents. The griffin will judge if you're worthy. Earn an invitation to sacred ground!"
+        },
+        {
+          "id": "boss_grifone_3_10",
+          "title": "Wings Unfurled",
+          "text": "Watch the griffin spread magnificent wings—a display of power and majesty combined! These are not weapons, but symbols of freedom and strength. Feel the air shift as wings move. Witness raw beauty married with lethal capability. Stand humbled before such magnificence!"
+        },
+        {
+          "id": "boss_grifone_3_11",
+          "title": "Glorious Ascent",
+          "text": "The griffin rises in a glorious upward spiral—moving closer to sky and stars with each arc! Follow this path of increasing elevation and enlightenment. Each turn brings you closer to understanding. Ascend alongside the griffin to new perspectives. Rise above previous limitations!"
+        },
+        {
+          "id": "boss_grifone_3_12",
+          "title": "Winged Storm",
+          "text": "The griffin commands storms—calling wind and thunder at will! Feel the power of weather given consciousness and direction. The griffin doesn't destroy randomly; he commands nature with purpose. Survive the tempest while understanding its meaning. Dance with primal forces!"
+        },
+        {
+          "id": "boss_grifone_3_13",
+          "title": "Eagle's Gaze",
+          "text": "The griffin's gaze pierces clouds and sees truth below surfaces! His vision reaches distances mortals cannot comprehend. Be seen truly by ancient eyes that've witnessed centuries. The griffin sees into your heart and judges what he finds there. Let yourself be truly known!"
+        },
+        {
+          "id": "boss_grifone_3_14",
+          "title": "Sentinel of Skies",
+          "text": "The griffin is the ultimate sky guardian—watching over all that flies and falls! Offer yourself as worthy ground-bound partner to this celestial protector. Together, you control more than any individual could. Establish mutual defense pacts. Become complete through partnership!"
+        },
+        {
+          "id": "boss_grifone_3_15",
+          "title": "Eternal Loyalty",
+          "text": "The griffin's loyalty, once sworn, lasts eternally—he honors bonds across centuries! Build a relationship that transcends time itself. The griffin remembers every friend, every ally. Become part of its immortal memory. Create a legacy lasting beyond your own lifetime!"
+        },
+        {
+          "id": "boss_grifone_3_16",
+          "title": "Heavenly Arc",
+          "text": "The griffin's flight pattern traces an arc across the heavens—an ancient, purposeful journey! Follow this path to understand the griffin's destination and intent. The journey itself holds meaning. Share in this epic quest across skies. Trace destiny's pattern with a mythical companion!"
+        },
+        {
+          "id": "boss_grifone_3_17",
+          "title": "Golden Feathers",
+          "text": "The griffin's feathers gleam like gold—catching light with luminous beauty! Each feather tells stories of adventures and triumphs. Respect the beauty of strength. The griffin's appearance reflects his magnificent character. Beauty and power merge perfectly in this noble creature!"
+        },
+        {
+          "id": "boss_grifone_3_18",
+          "title": "Firmament's Keeper",
+          "text": "The griffin is literally keeper of the sky—maintaining cosmic order through vigilance! Support this responsibility. The sky remains intact because the griffin watches. Prove yourself worthy of helping uphold the heavens. Become guardian of celestial balance!"
+        },
+        {
+          "id": "boss_grifone_3_19",
+          "title": "Air Kingdom",
+          "text": "The griffin rules an invisible kingdom in the air—unseen by those who don't look upward! Join this aerial realm as honored guest or citizen. Learn the customs and values of sky-dwellers. Rise above earthbound thinking. Become part of something larger than yourself!"
+        },
+        {
+          "id": "boss_grifone_3_20",
+          "title": "Feathered Sovereign",
+          "text": "The griffin is sovereign of his domain—an absolute ruler who earned his position through valor! Respect his authority without servility. Show dignity even before majesty. The griffin appreciates beings who stand tall rather than bow. Become peer rather than subject!"
+        }
+      ]
+    },
+    "ippogrifo": {
+      "3": [
+        {
+          "id": "boss_ippogrifo_3_1",
+          "title": "Magical Bond",
+          "text": "The hippogriff offers a magical connection—a mental link transcending speech! Synchronize your thoughts and feelings with this mystical being. Become more than allies; achieve true understanding. The hippogriff communicates in feelings and visions. Open your mind completely!"
+        },
+        {
+          "id": "boss_ippogrifo_3_2",
+          "title": "Enchanted Race",
+          "text": "Race alongside the hippogriff—feel the wind of pure magical motion! This is no ordinary gallop; magic flows through each movement. The speed transcends physics; the grace exceeds normal anatomy. Ride alongside enchantment incarnate. Experience movement unbound by normal rules!"
+        },
+        {
+          "id": "boss_ippogrifo_3_3",
+          "title": "Grace and Elegance",
+          "text": "The hippogriff embodies perfect elegance—every movement flows with inherent grace! Watch the creature move like dance itself. Beauty and power merge seamlessly. The hippogriff demonstrates what perfection of form truly looks like. Let this vision transform your understanding of beauty!"
+        },
+        {
+          "id": "boss_ippogrifo_3_4",
+          "title": "Equine Magic",
+          "text": "The hippogriff channels equine magic—the mystical connection between horse and spell! This ancient magic runs deep. Horses have served as magical conduits since time immemorial. Learn the secrets whispered by countless generations. Tap into equestrian enchantment!"
+        },
+        {
+          "id": "boss_ippogrifo_3_5",
+          "title": "Enchanted Lands",
+          "text": "The hippogriff leads you to enchanted lands—realms where magic pools like water! These are places where rules bend and miracles happen regularly. The hippogriff knows every hidden magical sanctuary. Follow to discover wonders. Explore worlds where magic is atmosphere!"
+        },
+        {
+          "id": "boss_ippogrifo_3_6",
+          "title": "Winged Protection",
+          "text": "The hippogriff offers protection with wings—a shield combining aerial and magical defense! Trust in this multi-layered protection. The hippogriff guards fiercely those it accepts. Feel safe beneath magical wings. Become part of a protected circle of trust!"
+        },
+        {
+          "id": "boss_ippogrifo_3_7",
+          "title": "Pure Heart",
+          "text": "The hippogriff only bonds with pure-hearted individuals—its magic cannot abide deception! Examine your intentions honestly. The hippogriff sees through facades to truth within. Embrace authenticity. The creature respects those who own their nature completely. Be genuinely yourself!"
+        },
+        {
+          "id": "boss_ippogrifo_3_8",
+          "title": "Eternity Together",
+          "text": "Bond with the hippogriff and secure eternity as companions—a connection beyond death itself! This is no temporary alliance but a forever partnership. The hippogriff commits for eternities. Make a choice that echoes through ages. Create a legend of perfect partnership!"
+        },
+        {
+          "id": "boss_ippogrifo_3_9",
+          "title": "Celestial Steed",
+          "text": "The hippogriff is a celestial steed—born from starlight and divine intention! Ride a creature descended from the heavens themselves. The hippogriff carries within it stellar magic and cosmic purpose. Mount this being and transcend earthbound limitations. Touch the stars!"
+        },
+        {
+          "id": "boss_ippogrifo_3_10",
+          "title": "Synchronized Flight",
+          "text": "Achieve perfect flight synchronization with the hippogriff—you move as one being! What was separate becomes unified. Boundaries dissolve. You experience what it's like to truly fly. Merge consciousness and motion with your companion. Achieve impossible harmony!"
+        },
+        {
+          "id": "boss_ippogrifo_3_11",
+          "title": "Equine Enchantment",
+          "text": "The hippogriff weaves equine enchantments—spells drawing from horses' ancient wisdom! These are old magics, deep magics, magics that predate human civilization. Learn spells that move with grace and perfect intention. Master the art of magical horsemanship!"
+        },
+        {
+          "id": "boss_ippogrifo_3_12",
+          "title": "Gentle Power",
+          "text": "The hippogriff demonstrates that power doesn't require harshness—gentleness and strength coexist! The creature is strong enough to never need cruelty. Strength tempered with kindness is ultimate power. Learn this wisdom. Become strong without losing compassion!"
+        },
+        {
+          "id": "boss_ippogrifo_3_13",
+          "title": "Flying Garden",
+          "text": "The hippogriff creates a flying garden—a sanctuary where nature blooms mid-air! Flowers grow on wing-beats, seeds float on magical currents. This is nature transcendent, reality reimagined. Witness and help cultivate this aerial paradise. Nurture impossible beauty!"
+        },
+        {
+          "id": "boss_ippogrifo_3_14",
+          "title": "Golden Path",
+          "text": "The hippogriff reveals the golden path—destiny's road written in starlight! This path exists only for those worthy of seeing it. Follow this magical route to your true potential. The hippogriff knows where you need to go. Trust the guidance. Walk toward glory!"
+        },
+        {
+          "id": "boss_ippogrifo_3_15",
+          "title": "Winged Blessing",
+          "text": "Receive the hippogriff's blessing—a magical gift improving your capabilities forever! The hippogriff grants power consciously and carefully. This enhancement comes with purpose. You're marked as special, chosen. Carry this gift with understanding of responsibility!"
+        },
+        {
+          "id": "boss_ippogrifo_3_16",
+          "title": "Perfect Union",
+          "text": "Achieve perfect union with the hippogriff—rider and creature as integrated consciousness! This is the ultimate partnership—no separate interests, complete alignment. Boundaries between self and companion dissolve. Experience unity transcending description. Become whole!"
+        },
+        {
+          "id": "boss_ippogrifo_3_17",
+          "title": "Free Spirit",
+          "text": "The hippogriff represents the free spirit itself—untamed freedom with graceful control! Freedom isn't chaos; it's power guided by will. The hippogriff embodies this paradox perfectly. Join its quest for authentic freedom. Become truly free without losing purpose!"
+        },
+        {
+          "id": "boss_ippogrifo_3_18",
+          "title": "Enchanted Sovereign",
+          "text": "The hippogriff is sovereign of enchanted realms—ruling through wisdom and magic! Pay respects to this magical ruler. The hippogriff welcomes allies, not subjects. Serve willingly beside a being of true power. Become partner to magical royalty!"
+        },
+        {
+          "id": "boss_ippogrifo_3_19",
+          "title": "Aerial Kingdom",
+          "text": "Join the aerial kingdom—a realm of flying magic above earthbound concerns! This is a place of wonder, impossible beauty, pure magic. The hippogriff invites you to citizenship. Rise above mundane existence. Enter realms where dreams take physical form!"
+        },
+        {
+          "id": "boss_ippogrifo_3_20",
+          "title": "Eternal Companion",
+          "text": "The hippogriff becomes your eternal companion—a relationship transcending all barriers! Time cannot diminish this bond. The hippogriff stands beside you through eternities. Never face challenges alone. Carry eternal friendship into every adventure. The hippogriff is forever!"
+        }
+      ]
+    },
+    "idra": {
+      "4": [
+        {
+          "id": "boss_idra_4_1",
+          "title": "Regenerating Head",
+          "text": "The Hydra's heads regenerate with terrifying speed—one cut spawns two new threats! Conventional weapons fail against this endless multiplication. Hercules himself struggled with this curse. You must find the true weakness—the immortal head hidden among regenerating many. Fire seals the wounds. Burn away regeneration!"
+        },
+        {
+          "id": "boss_idra_4_2",
+          "title": "Impossible Battle",
+          "text": "This battle seems unwinnable—facing endless heads with limited resources and time! Classical heroes barely survived. The Hydra grows stronger as you weaken it. Despair claws at your mind. But legends aren't made from easy victories. Impossible odds demand impossible courage. Transcend limitations!"
+        },
+        {
+          "id": "boss_idra_4_3",
+          "title": "Ancient Venom",
+          "text": "The Hydra's venom is ancient—potent enough to corrode armor and dissolve flesh! This toxin predates modern times, evolved through countless battles. The poison burns with supernatural intensity. Standard antidotes fail. You must find the venom's source and work backward. Understand toxic secrets!"
+        },
+        {
+          "id": "boss_idra_4_4",
+          "title": "Mythological Strategies",
+          "text": "Mythological strategies from ancient heroes guide your path—wisdom earned through legendary struggles! Study the tactics of Hercules and other heroes. Understand how they overcame impossible odds. Their methods succeeded once; adapted cleverly, they might succeed again. Learn from legends!"
+        },
+        {
+          "id": "boss_idra_4_5",
+          "title": "Twin Heads",
+          "text": "Two heads move in perfect coordination—their connection creates deadly efficiency! Attack one head and the other prepares devastating counter-strikes. They communicate through hisses and vibrations. Break their coordination or they'll overwhelm you. Find the communication weakness!"
+        },
+        {
+          "id": "boss_idra_4_6",
+          "title": "Lethal Swamp",
+          "text": "The swamp itself is lethal—toxic water, predatory creatures, cursed terrain! The Hydra dominates this environment; you're alien here. Every step risks poisoning, drowning, or worse. The swamp protects the Hydra better than any fortress. Master this hostile environment first!"
+        }
+      ]
+    },
+    "fenice": {
+      "4": [
+        {
+          "id": "boss_fenice_4_1",
+          "title": "Flames of Rebirth",
+          "text": "The Phoenix bursts into flames—its body consumed by regenerative fire itself! From ashes, new life emerges, stronger, more vibrant. Death and birth become the same moment. This isn't destruction but transformation! You must understand that endings contain beginnings. Embrace the fire!"
+        },
+        {
+          "id": "boss_fenice_4_2",
+          "title": "Ashes and Rebirth",
+          "text": "From burning ashes the Phoenix rises—eternal cycle of death without true death! Watch dust transform into feathers, cinders become eyes. The Phoenix defies mortality itself. Standard weapons prove useless; weapons of flame and renewal work better. Match element with element!"
+        },
+        {
+          "id": "boss_fenice_4_3",
+          "title": "Eternal Fire",
+          "text": "The Phoenix carries fire that never truly dies—eternal flames burning since creation! This fire consumes what it touches yet creates as it destroys. The flames contain both ending and beginning. Respect the dual nature of this primal force. Understand fire's paradox!"
+        },
+        {
+          "id": "boss_fenice_4_4",
+          "title": "Cycle of Life",
+          "text": "The Phoenix embodies life's eternal cycle—seasons, years, ages, eternities repeating! Nothing truly ends; everything transforms. Birth follows death. Hope follows despair. The Phoenix has seen this pattern countless times. Learn the rhythm of cosmic cycles. Find meaning in repetition!"
+        },
+        {
+          "id": "boss_fenice_4_5",
+          "title": "Death and New Life",
+          "text": "Death and new life merge in the Phoenix's existence—two aspects of single phenomenon! What you fear as ending, the Phoenix knows as transition. The creature transcends mortal categories. Understanding this changes everything. Transcend fear of endings. Embrace transformation!"
+        },
+        {
+          "id": "boss_fenice_4_6",
+          "title": "Divine Radiance",
+          "text": "The Phoenix radiates divine radiance—an aura of purified power and sacred fire! This light burns away corruption and falsehood. Stand in its presence and feel impurities burn away. The radiance comes from ages of purification. Feel holy flames purifying your spirit!"
+        }
+      ]
+    },
+    "basilisco": {
+      "4": [
+        {
+          "id": "boss_basilisco_4_1",
+          "title": "Gaze of Stone",
+          "text": "The Basilisk's stare turns living matter to stone—a glance brings instantaneous petrification! This ancient curse predates human civilization. The Basilisk need not move; victims are defeated by mere contact with its eyes. Avoid eye contact. Look away. Find mirrors or reflective surfaces!"
+        },
+        {
+          "id": "boss_basilisco_4_2",
+          "title": "Ancient Antidote",
+          "text": "Ancient antidotes exist for the Basilisk's venom—knowledge locked in forgotten texts and legends! The cure requires rare components and precise preparation. Few survivors have lived to document the antidote. You must research carefully, experiment cautiously. Find salvation in old wisdom!"
+        },
+        {
+          "id": "boss_basilisco_4_3",
+          "title": "Serpent's Assault",
+          "text": "Battle a serpent with supernatural strength and impossible speed—the Basilisk strikes faster than thought! Each coil crushes, each strike carries venom and magic combined. The creature fights with animalistic fury and intelligent strategy. Combat demands absolute focus. Survive the onslaught!"
+        },
+        {
+          "id": "boss_basilisco_4_4",
+          "title": "Hypnotic Control",
+          "text": "The Basilisk exerts hypnotic control—victims fall under its spell, paralyzed and docile! This mental assault is as dangerous as physical venom. The Basilisk's will imposes itself on weaker minds. Strengthen your mental defenses. Resist supernatural domination. Free your will!"
+        },
+        {
+          "id": "boss_basilisco_4_5",
+          "title": "Impenetrable Scales",
+          "text": "The Basilisk's scales are impenetrable—harder than any metal, tougher than any stone! Normal weapons shatter on contact. The scales are ancient armor, perfected through eons. You must find the gaps or use unconventional tactics. Exploit weaknesses in perfect defense!"
+        },
+        {
+          "id": "boss_basilisco_4_6",
+          "title": "Lethal Venom",
+          "text": "The Basilisk's venom is lethal—potent beyond measure, corrupting on contact! This toxin combines supernatural poison with magical corruption. Normal antidotes fail. The venom kills quickly and completely. A single drop can prove fatal. Exercise extreme caution against this toxin!"
+        }
+      ]
+    },
+    "drago_bianco": {
+      "5": [
+        {
+          "id": "boss_drago_bianco_5_1",
+          "title": "Breath of Ice",
+          "text": "The White Dragon exhales breath of primordial ice—coldness that freezes the soul itself! This is no ordinary frost but glacial magic from the world's creation. The breath freezes time momentarily, traps victims in crystalline prisons. Few escape its touch. Endure impossible cold. Resist eternal winter!"
+        },
+        {
+          "id": "boss_drago_bianco_5_2",
+          "title": "Glacial Purity",
+          "text": "The White Dragon represents glacial purity—perfection through icy silence and frozen stillness! All impurity burns away in its presence. The dragon judges and finds most creatures wanting. To face it is to face judgment itself. Prove yourself pure enough to survive. Achieve perfection or perish!"
+        }
+      ]
+    },
+    "drago_nero": {
+      "5": [
+        {
+          "id": "boss_drago_nero_5_1",
+          "title": "Primordial Darkness",
+          "text": "The Black Dragon emerges from primordial darkness—a force older than light itself! Shadows pool around the dragon, deepening into absolute darkness. The creature commands void, nothingness, the absence of all things. Confront the raw force of negation. Face the dragon of ending!"
+        },
+        {
+          "id": "boss_drago_nero_5_2",
+          "title": "Abyssal Power",
+          "text": "The Black Dragon wields abyssal power—the crushing force of depths unmeasurable! This power comes from reality's darkest reaches. The dragon channels forces that destroy stars. No mortal should withstand such power. Yet legends say some did. Become mythical yourself!"
+        }
+      ]
+    },
+    "drago_rosso": {
+      "5": [
+        {
+          "id": "boss_drago_rosso_5_1",
+          "title": "Divine Inferno",
+          "text": "The Red Dragon unleashes divine inferno—flames blessed by cosmic fire itself! This is not mere burning but transcendent destruction. The flames consume matter and energy equally. They transform everything touched into ash and possibility. Face divine wrath. Survive sacred fire!"
+        },
+        {
+          "id": "boss_drago_rosso_5_2",
+          "title": "Supreme Battle",
+          "text": "This is the supreme battle—a legendary encounter told in stories across ages! The Red Dragon is creation's fire incarnate, power beyond measure. Legends are made or broken here. Your name will be remembered through eternities. Stand against ultimate power. Achieve the impossible!"
+        }
+      ]
+    },
+    "drago_verde": {
+      "5": [
+        {
+          "id": "boss_drago_verde_5_1",
+          "title": "Draconic Cunning",
+          "text": "The Green Dragon exhibits draconic cunning—intelligence accumulated across centuries of manipulation! This dragon doesn't rely on brute force but on schemes and trickery. Every move serves a purpose hidden beneath layers of deception. Unravel the dragon's schemes. Outwit ancient guile!"
+        },
+        {
+          "id": "boss_drago_verde_5_2",
+          "title": "Primeval Forest",
+          "text": "The Green Dragon commands the primeval forest—a wilderness that predates civilization! Trees obey the dragon's will. Vines entangle intruders. The forest itself becomes the dragon's weapon. You must navigate a realm where nature fights beside your enemy. Survive natural fury!"
+        }
+      ]
+    },
+    "drago_comune": {
+      "5": [
+        {
+          "id": "boss_drago_comune_5_1",
+          "title": "Draconic Power",
+          "text": "The Dragon possesses draconic power—raw, undeniable, cosmic in scope! This is what dragons are at their core: pure magical force with intelligence and malice. The dragon is ancient beyond reckoning, powerful beyond imagination. You face a being from creation's dawn. Dare the confrontation!"
+        },
+        {
+          "id": "boss_drago_comune_5_2",
+          "title": "High Flight",
+          "text": "The Dragon takes flight at impossible heights—soaring beyond where mortals can follow! From its aerial vantage, it dominates all below. The dragon controls the sky itself. You must find a way to threaten something that flies beyond reach. Challenge the creature of the clouds!"
+        }
+      ]
+    },
+    "kraken": {
+      "5": [
+        {
+          "id": "boss_kraken_5_1",
+          "title": "Abyssal Depths",
+          "text": "The Kraken rises from abyssal depths—tentacles bringing darkness and chaos to shallow waters! This creature commands the ocean's depths with absolute authority. Pressure and darkness are its weapons. You enter its domain where it is omnipotent. Survive the crushing deep. Face ocean's terror!"
+        }
+      ]
+    },
+    "leviatano": {
+      "5": [
+        {
+          "id": "boss_leviatano_5_1",
+          "title": "Primordial Chaos",
+          "text": "The Leviathan embodies primordial chaos—the force that existed before creation's order! This creature is older than mountains, more powerful than gods. It represents raw chaos fighting against cosmic order itself. To face it is to face creation's opposite. Confront oblivion itself. Become the legend!"
+        }
+      ]
+    }
+  }
+}
