@@ -139,8 +139,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const handleAttackClick = () => {
     if (!boss && !selectedQuest) {
       // First attack - select random quest from goblin (default)
-      const bossKey = boss?.boss_key ?? 'goblin';
-      const difficulty = boss?.boss_rarity ?? 1;
+      const bossKey = 'goblin';
+      const difficulty = 1;
       const mission = getRandomMissionForBoss(bossKey, difficulty);
       if (mission) {
         setSelectedQuest(mission);
