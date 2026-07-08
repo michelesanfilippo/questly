@@ -354,11 +354,11 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               />
             </div>
 
-            {/* INLINE QUEST - Like Daily Quest Card */}
+            {/* INLINE QUEST - Like Daily Quest Card (Parchment Style) */}
             {showInlineQuest && selectedQuest && !showAttackResult ? (
-              <div className="mb-4 space-y-3 rounded-lg bg-gray-800 p-4">
-                <h3 className="text-lg font-bold text-amber-800">{selectedQuest.title}</h3>
-                <p className="whitespace-pre-wrap text-sm text-amber-700 leading-relaxed">
+              <div className="mb-4 space-y-3 rounded-sm bg-[#faf7f0] p-4">
+                <h3 className="text-lg font-bold text-stone-800">{selectedQuest.title}</h3>
+                <p className="whitespace-pre-wrap text-sm text-stone-700 leading-relaxed">
                   {selectedQuest.text}
                 </p>
                 <textarea
@@ -367,39 +367,39 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                   disabled={isSubmitting}
                   placeholder="Scrivi la tua risposta..."
                   rows={3}
-                  className="w-full rounded-lg border border-amber-700 bg-gray-900 px-3 py-2 text-amber-100 placeholder-gray-600 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:opacity-50 text-sm"
+                  className="w-full rounded-sm border-2 bg-[#faf7f0] text-stone-800 placeholder-stone-400 border-amber-300/60 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-500 transition-all duration-200 disabled:opacity-50"
                 />
                 <button
                   onClick={() => handleSubmitAnswer(questAnswer)}
                   disabled={isSubmitting || !questAnswer.trim()}
-                  className="w-full rounded-lg border-2 border-amber-600 bg-amber-700 px-3 py-2 font-bold text-amber-50 transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600 text-sm"
+                  className="w-full rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150 px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'Sending...' : 'Submit & Attack'}
                 </button>
               </div>
             ) : null}
 
-            {/* RECAP - After Submit */}
-            {showAttackResult && attackResult && (
-              <div className="mb-4 rounded-lg border border-amber-700 bg-gray-800 p-4">
+            {/* RECAP - After Submit (Parchment Style) */}
+            {showAttackResult && attackResult ? (
+              <div className="mb-4 rounded-sm bg-[#faf7f0] border-2 border-amber-300/60 p-4">
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-amber-800">Danno Inflitto:</span>
-                    <span className="font-bold text-amber-600">+{damageDealt}</span>
+                    <span className="text-stone-800 font-semibold">Danno Inflitto:</span>
+                    <span className="font-bold text-amber-700">+{damageDealt}</span>
                   </div>
                   {userSuggestions && userSuggestions.length > 0 && (
-                    <div className="border-t border-amber-700 pt-2">
-                      <p className="text-xs text-amber-800 font-semibold mb-1">Suggerimenti:</p>
-                      <ul className="space-y-1 text-xs text-amber-700">
+                    <div className="border-t border-amber-300/60 pt-2">
+                      <p className="text-xs text-stone-800 font-semibold mb-1">Suggerimenti:</p>
+                      <ul className="space-y-1 text-xs text-stone-700">
                         {userSuggestions.map((s, i) => (
-                          <li key={i}>- {s}</li>
+                          <li key={i}>• {s}</li>
                         ))}
                       </ul>
                     </div>
                   )}
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Attack Button - Only visible if NOT showing quest or result */}
             {boss && !boss.is_defeated && !showInlineQuest && !showAttackResult && (
