@@ -44,7 +44,6 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [selectedQuest, setSelectedQuest] = useState<BossMission | null>(null);
   const [attackResult, setAttackResult] = useState<any>(null);
-  const [lastFetchTime, setLastFetchTime] = useState(0);
 
   // Get Supabase auth token
   const getAuthToken = async (): Promise<string | null> => {
@@ -131,24 +130,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     }
   }, [guildId, onError]);
 
-  // Initial fetch on mount
+  // Initial fetch on mount only
   useEffect(() => {
     fetchBossState();
   }, [fetchBossState]);
-
-  // Poll for updates (every 3 seconds)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now();
-      // Only fetch if last fetch was more than 2 seconds ago
-      if (now - lastFetchTime > 2000) {
-        setLastFetchTime(now);
-        fetchBossState();
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [fetchBossState, lastFetchTime]);
 
   // Handle attack button click - open quest modal
   const handleAttackClick = () => {
@@ -228,6 +213,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         if (data.boss_state.is_defeated) {
           onVictory?.();
         }
+
+        // Fetch updated boss state after attack
+        await fetchBossState();
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Attack failed';
         setError(message);
@@ -235,7 +223,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setIsSubmitting(false);
       }
     },
-    [guildId, userRole, onVictory]
+    [guildId, userRole, onVictory, fetchBossState]
   );
 
   // If not weekend, show message
