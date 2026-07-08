@@ -102,27 +102,16 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   };
 
   // Fetch boss state AND check if user already attacked
-  const fetchBossState = useCallback(async () => {
+  const fetchBossState = useCallback(async (isInitialLoad = false) => {
     try {
       setError(null);
 
-      // Check if boss weekend (local calendar) OR force_weekend_testing flag
-      const isCalendarWeekend = isBossWeekend();
-      
-      let forceWeekend = false;
-      try {
-        const configResponse = await fetch('/api/boss/config');
-        const configData = await configResponse.json();
-        forceWeekend = configData.force_weekend_testing === true;
-      } catch {
-        // If config fetch fails, just use calendar check
-      }
-      
-      const isWeekend = isCalendarWeekend || forceWeekend;
+      // Weekend check (calendar only, no config endpoint)
+      const isWeekend = isBossWeekend();
       setIsBossWeekendFlag(isWeekend);
 
       if (!isWeekend) {
-        setBoss(null);
+        if (isInitialLoad) setBoss(null);
         setIsLoading(false);
         return;
       }
@@ -154,37 +143,41 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
       if (data.boss) {
         setBoss(data.boss);
-      } else {
-        // No boss exists yet, will be created on first attack
+      } else if (isInitialLoad) {
         setBoss(null);
       }
 
-      // Check if user already attacked (query boss_attempts table)
-      try {
-        const { data: supabaseAuth } = await supabase.auth.getUser();
-        if (supabaseAuth.user) {
-          // Calculate week start
-          const now = new Date();
-          const utcNow = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-          const dayOfWeek = utcNow.getUTCDay();
-          const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-          const weekStart = new Date(utcNow);
-          weekStart.setUTCDate(weekStart.getUTCDate() - daysToMonday);
-          weekStart.setUTCHours(0, 0, 0, 0);
-          const weekStartStr = weekStart.toISOString().split('T')[0];
-          
-          const { data: attempts } = await supabase
-            .from('boss_attempts')
-            .select('id')
-            .eq('user_id', supabaseAuth.user.id)
-            .eq('guild_id', guildId)
-            .gte('created_at', weekStartStr)
-            .limit(1);
-          
-          setHasUserAttacked(attempts !== null && attempts.length > 0);
+      // On initial load: check if user already attacked this week
+      if (isInitialLoad) {
+        try {
+          const { data: supabaseAuth } = await supabase.auth.getUser();
+          if (supabaseAuth.user) {
+            const now = new Date();
+            const dayOfWeek = now.getUTCDay();
+            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            const weekStart = new Date(now);
+            weekStart.setUTCDate(weekStart.getUTCDate() - daysToMonday);
+            weekStart.setUTCHours(0, 0, 0, 0);
+            const weekStartStr = weekStart.toISOString().split('T')[0];
+
+            const { data: attempts } = await supabase
+              .from('boss_attempts')
+              .select('damage_dealt')
+              .eq('user_id', supabaseAuth.user.id)
+              .eq('guild_id', guildId)
+              .gte('created_at', weekStartStr)
+              .order('created_at', { ascending: false })
+              .limit(1);
+
+            if (attempts && attempts.length > 0) {
+              setHasUserAttacked(true);
+              setDamageDealt(attempts[0].damage_dealt ?? 0);
+              setShowAttackResult(true); // Show recap immediately
+            }
+          }
+        } catch (err) {
+          console.warn('[fetchBossState] Failed to check attack history:', err);
         }
-      } catch (err) {
-        console.warn('[fetchBossState] Failed to check attack history:', err);
       }
 
       setIsLoading(false);
@@ -198,16 +191,16 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
   // Initial fetch on mount only
   useEffect(() => {
-    fetchBossState();
+    fetchBossState(true); // isInitialLoad=true
   }, [fetchBossState]);
 
-  // Polling: Fetch boss state every 4 seconds to keep global state updated
+  // Polling: Fetch boss state every 4 seconds (HP updates from other guild members)
   useEffect(() => {
-    if (!boss || boss.is_defeated) return; // Stop polling if no boss or defeated
+    if (!boss || boss.is_defeated) return;
 
     const pollInterval = setInterval(() => {
-      fetchBossState();
-    }, 4000); // Poll every 4 seconds
+      fetchBossState(false); // isInitialLoad=false → never resets boss/showAttackResult
+    }, 4000);
 
     return () => clearInterval(pollInterval);
   }, [boss, fetchBossState]);
@@ -290,9 +283,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         if (data.boss_state.is_defeated) {
           onVictory?.();
         }
-
-        // Refresh state
-        await fetchBossState();
+        // No fetchBossState() here — boss state already updated directly above.
+        // Polling will sync HP for other members.
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Attack failed';
         setError(message);
