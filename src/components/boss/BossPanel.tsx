@@ -72,8 +72,20 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setIsLoading(true);
         setError(null);
 
-        // Check if boss weekend
-        const isWeekend = isBossWeekend();
+        // Check if boss weekend (local calendar) OR force_weekend_testing flag
+        const isCalendarWeekend = isBossWeekend();
+        
+        // Fetch force_weekend_testing flag from config
+        let forceWeekend = false;
+        try {
+          const configResponse = await fetch('/api/boss/config');
+          const configData = await configResponse.json();
+          forceWeekend = configData.force_weekend_testing === true;
+        } catch {
+          // If config fetch fails, just use calendar check
+        }
+        
+        const isWeekend = isCalendarWeekend || forceWeekend;
         setIsBossWeekendFlag(isWeekend);
 
         if (!isWeekend) {
