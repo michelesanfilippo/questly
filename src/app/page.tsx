@@ -85,25 +85,24 @@ export default function HomePage() {
     // profile null (features locked) until a manual page reload frees the lock.
     async function loadUserData(session: Session) {
       if (!session.user) return;
-      const { data: prof } = await getProfile(session.user.id);
+      const [profResult, badgesResult, npcResult] = await Promise.all([
+        getProfile(session.user.id),
+        getUserBadges(session.user.id),
+        getNpcProgress(session.user.id),
+        updateLoginStreak(session.user.id),
+      ]);
+      const prof = profResult.data;
       if (prof) {
         setProfile(prof);
-        // Check if today's mission already completed
         setMission(prev => {
           if (prev) {
             const today = (() => { const _d = new Date(); return `${_d.getUTCFullYear()}-${String(_d.getUTCMonth()+1).padStart(2,'0')}-${String(_d.getUTCDate()).padStart(2,'0')}`; })();
-            if (prof.last_mission_id === prev.id && prof.last_mission_date === today) {
-              setMissionAlreadyDone(true);
-            }
+            if (prof.last_mission_id === prev.id && prof.last_mission_date === today) setMissionAlreadyDone(true);
           }
           return prev;
         });
-        const { data: badges } = await getUserBadges(session.user.id);
-        setEarnedBadges(badges?.map((b: { badge_index: number }) => b.badge_index) ?? []);
-        const { data: npc } = await getNpcProgress(session.user.id);
-        setNpcProgress((npc as NpcProgress[]) ?? []);
-        // Update login streak on every login/session restore
-        await updateLoginStreak(session.user.id);
+        setEarnedBadges(badgesResult.data?.map((b: { badge_index: number }) => b.badge_index) ?? []);
+        setNpcProgress((npcResult.data as NpcProgress[]) ?? []);
       } else {
         setShowNicknameSetup(true);
       }

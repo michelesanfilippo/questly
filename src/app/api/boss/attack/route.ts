@@ -85,113 +85,67 @@ export async function POST(request: NextRequest) {
     const supabase = await createSupabaseAdminClient();
 
     // =====================================================
-    // 4. EVALUATE ANSWER WITH OLLAMA
+    // 4. VALIDATE BOSS + GUILD STATE (before AI call)
     // =====================================================
-    // Quest context will be set after boss fetch (needs weekStart + rarity)
-    const evaluation = await evaluateBossAnswer(
-      bossKey,
-      `Defeat the ${bossKey}`, // placeholder; real context used below
-      userAnswer
-    );
-
-    console.log(`[api/boss/attack] Evaluated score: ${evaluation.score} for user answer`);
-
-    // =====================================================
-    // 5. PROCESS BOSS ATTACK (WITH PER-GUILD HP)
-    // =====================================================
-    
-    // Calculate week start for deterministic boss (same function as state route)
     const weekStartStr = getWeekStart();
-    
-    // Get or create global boss fight
+
     let { data: bossFight, error: bossFightError } = await supabase
       .from('boss_fights')
       .select('id, boss_key, boss_rarity, boss_max_hp')
       .eq('week_start', weekStartStr)
       .maybeSingle();
-    
-    // If boss doesn't exist yet, create it with deterministic selection
+
     if (!bossFight) {
       if (bossFightError) {
         console.error('[api/boss/attack] Error fetching boss fight:', bossFightError);
-        return NextResponse.json(
-          { success: false, error: 'Failed to fetch boss fight' },
-          { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Failed to fetch boss fight' }, { status: 500 });
       }
       const selectedBoss = pickBoss(weekStartStr);
-      
       const { data: newBoss, error: createError } = await supabase
         .from('boss_fights')
-        .insert({
-          week_start: weekStartStr,
-          boss_key: selectedBoss.key,
-          boss_rarity: selectedBoss.rarity,
-          boss_max_hp: selectedBoss.hp,
-          damage_dealt: 0,
-          status: 'active',
-        })
+        .insert({ week_start: weekStartStr, boss_key: selectedBoss.key, boss_rarity: selectedBoss.rarity, boss_max_hp: selectedBoss.hp, damage_dealt: 0, status: 'active' })
         .select('id, boss_key, boss_rarity, boss_max_hp')
         .single();
-      
       if (createError) {
         console.error('[api/boss/attack] Failed to create boss fight:', createError);
-        return NextResponse.json(
-          { success: false, error: 'Failed to create boss fight' },
-          { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Failed to create boss fight' }, { status: 500 });
       }
-      
       bossFight = newBoss;
     }
-    
+
     if (!bossFight) {
-      return NextResponse.json(
-        { success: false, error: 'Boss fight initialization failed' },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: 'Boss fight initialization failed' }, { status: 500 });
     }
-    
-    // Get or create guild-specific boss state
+
     let { data: guildState, error: guildStateError } = await supabase
       .from('boss_guild_state')
       .select('id, current_hp, total_damage, is_defeated')
       .eq('boss_fight_id', bossFight.id)
       .eq('guild_id', guildId)
       .maybeSingle();
-    
-    // If guild hasn't attacked this boss yet, create entry with full HP
+
     if (!guildState) {
       const { data: newState, error: createStateError } = await supabase
         .from('boss_guild_state')
-        .insert({
-          boss_fight_id: bossFight.id,
-          guild_id: guildId,
-          current_hp: bossFight.boss_max_hp,
-          total_damage: 0,
-          is_defeated: false,
-        })
+        .insert({ boss_fight_id: bossFight.id, guild_id: guildId, current_hp: bossFight.boss_max_hp, total_damage: 0, is_defeated: false })
         .select('id, current_hp, total_damage, is_defeated')
         .single();
-      
       if (createStateError) {
         console.error('[api/boss/attack] Failed to create guild state:', createStateError);
-        return NextResponse.json(
-          { success: false, error: 'Failed to initialize guild state' },
-          { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Failed to initialize guild state' }, { status: 500 });
       }
-      
       guildState = newState;
     }
 
-    // Guard: prevent attacking an already-defeated boss
     if (guildState?.is_defeated) {
-      return NextResponse.json(
-        { success: false, error: 'The boss has already been defeated by your guild this week' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'The boss has already been defeated by your guild this week' }, { status: 400 });
     }
+
+    // =====================================================
+    // 5. EVALUATE ANSWER WITH AI
+    // =====================================================
+    const evaluation = await evaluateBossAnswer(bossKey, `Defeat the ${bossKey}`, userAnswer);
+    console.log(`[api/boss/attack] Evaluated score: ${evaluation.score} for user answer`);
     
     // Calculate damage for this attack
     const damageDealt = calculateDamage(evaluation.score, userRole as any);
@@ -281,18 +235,12 @@ export async function POST(request: NextRequest) {
             .in('id', memberIds);
 
           if (memberProfiles) {
-            for (const prof of memberProfiles) {
+            await Promise.all(memberProfiles.map(async (prof) => {
               let xp = (prof.xp ?? 0) + userXpReward;
               let level = prof.level ?? 1;
-              while (xp >= level * 100) {
-                xp -= level * 100;
-                level++;
-              }
-              await supabase
-                .from('profiles')
-                .update({ xp, level })
-                .eq('id', prof.id);
-            }
+              while (xp >= level * 100) { xp -= level * 100; level++; }
+              await supabase.from('profiles').update({ xp, level }).eq('id', prof.id);
+            }));
           }
         }
       } catch (xpErr) {

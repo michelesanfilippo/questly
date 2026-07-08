@@ -1,3 +1,5 @@
+import { callCloudflareAI } from '@/lib/ai';
+
 /**
  * Evaluate a boss quest answer using Ollama/Cloudflare AI
  * Returns score, feedback, and suggestions
@@ -13,26 +15,9 @@ export async function evaluateBossAnswer(
   questText: string,
   userAnswer: string
 ): Promise<BossEvaluation> {
-  const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const CF_AI_TOKEN = process.env.CLOUDFLARE_AI_TOKEN;
-  const CF_MODEL = '@cf/meta/llama-3.1-8b-instruct';
+  const DEFAULT: BossEvaluation = { score: 75, feedback: 'Your answer shows solid understanding of the challenge.', suggestions: [] };
 
-  if (!CF_ACCOUNT_ID || !CF_AI_TOKEN) {
-    console.warn('[evaluateBossAnswer] Missing Cloudflare credentials, using default');
-    return {
-      score: 75,
-      feedback: 'Your answer shows solid understanding of the challenge.',
-      suggestions: [],
-    };
-  }
-
-  if (!questText || !userAnswer) {
-    return {
-      score: 0,
-      feedback: 'Please provide a complete answer.',
-      suggestions: [],
-    };
-  }
+  if (!questText || !userAnswer) return { score: 0, feedback: 'Please provide a complete answer.', suggestions: [] };
 
   const systemPrompt = `You are an expert evaluator for fantasy quest answers. Evaluate the quality of the user's answer to the quest.
 
@@ -62,84 +47,27 @@ ${userAnswer}
 
 Evaluate this answer and respond with JSON only.`;
 
+  const jsonStr = await callCloudflareAI(
+    [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMessage }],
+    10000,
+  );
+  if (!jsonStr) return DEFAULT;
+
   try {
-    const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/${CF_MODEL}`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${CF_AI_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage },
-          ],
-          max_tokens: 512,
-          temperature: 0.3,
-        }),
-        signal: AbortSignal.timeout(10000),
-      }
-    );
-
-    if (!response.ok) {
-      console.warn('[evaluateBossAnswer] API error, using default');
-      return {
-        score: 75,
-        feedback: 'Your answer shows solid understanding of the challenge.',
-        suggestions: [],
-      };
-    }
-
-    const data = (await response.json()) as any;
-    const raw = (
-      data?.result?.choices?.[0]?.message?.content ??
-      data?.result?.response
-    )?.trim();
-
-    if (!raw) {
-      console.warn('[evaluateBossAnswer] No response from AI, using default');
-      return {
-        score: 75,
-        feedback: 'Your answer shows solid understanding of the challenge.',
-        suggestions: [],
-      };
-    }
-
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      console.warn('[evaluateBossAnswer] No JSON in response, using default');
-      return {
-        score: 75,
-        feedback: 'Your answer shows solid understanding of the challenge.',
-        suggestions: [],
-      };
-    }
-
-    const parsed = JSON.parse(jsonMatch[0]) as {
+    const parsed = JSON.parse(jsonStr) as {
       score: number;
       feedback: string;
       suggestions: string[];
     };
     const score = Math.max(0, Math.min(100, Math.round(parsed.score)));
-
-    console.log(
-      `[evaluateBossAnswer] Score: ${score} for answer: ${userAnswer.substring(0, 50)}...`
-    );
+    console.log(`[evaluateBossAnswer] Score: ${score} for answer: ${userAnswer.substring(0, 50)}...`);
     return {
       score,
       feedback: parsed.feedback || 'Your answer was evaluated.',
-      suggestions: Array.isArray(parsed.suggestions)
-        ? parsed.suggestions.slice(0, 3)
-        : [],
+      suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 3) : [],
     };
   } catch (err) {
-    console.error('[evaluateBossAnswer] Error:', err);
-    return {
-      score: 75,
-      feedback: 'Your answer shows solid understanding of the challenge.',
-      suggestions: [],
-    }; // Default on error
+    console.error('[evaluateBossAnswer] Parse error:', err);
+    return DEFAULT;
   }
 }

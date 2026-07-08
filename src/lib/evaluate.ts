@@ -1,19 +1,7 @@
 import type { Mission, EvaluationResult, EvaluationScore, CoachingEntry } from '@/types';
-
-const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
-const CF_AI_TOKEN = process.env.CLOUDFLARE_AI_TOKEN;
-const CF_MODEL = '@cf/meta/llama-3.1-8b-instruct';
-
-interface CFResponse {
-  result?: {
-    response?: string;
-    choices?: { message?: { content?: string } }[];
-  };
-}
+import { callCloudflareAI } from '@/lib/ai';
 
 async function evaluateWithAI(userPrompt: string, mission: Mission): Promise<EvaluationResult | null> {
-  if (!CF_ACCOUNT_ID || !CF_AI_TOKEN) return null;
-
   const systemPrompt = `You are an expert prompt engineering evaluator. You evaluate user-written prompts based on how well they solve a given quest/task.
 
 You must respond ONLY with a valid JSON object in this exact format, no other text:
@@ -45,42 +33,14 @@ ${userPrompt}
 
 Evaluate this prompt and respond with JSON only.`;
 
+  const jsonStr = await callCloudflareAI(
+    [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMessage }],
+    15000,
+  );
+  if (!jsonStr) return null;
+
   try {
-    const res = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/${CF_MODEL}`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${CF_AI_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage },
-          ],
-          max_tokens: 512,
-          temperature: 0.3,
-        }),
-        signal: AbortSignal.timeout(15000),
-      }
-    );
-
-    if (!res.ok) return null;
-
-    const data = await res.json() as CFResponse;
-    // Support both response formats
-    const raw = (
-      data?.result?.choices?.[0]?.message?.content ??
-      data?.result?.response
-    )?.trim();
-    if (!raw) return null;
-
-    // Extract JSON from response (model might add extra text)
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-
-    const parsed = JSON.parse(jsonMatch[0]) as {
+    const parsed = JSON.parse(jsonStr) as {
       creativity: number;
       precision: number;
       context: number;

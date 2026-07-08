@@ -253,16 +253,24 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     fetchBossState(true); // isInitialLoad=true
   }, [fetchBossState]);
 
-  // Polling: Fetch boss state every 4 seconds (HP updates from other guild members)
+  // Realtime: subscribe to boss_guild_state changes for this guild
   useEffect(() => {
     if (!boss || boss.is_defeated) return;
 
-    const pollInterval = setInterval(() => {
-      fetchBossState(false); // isInitialLoad=false → never resets boss/showAttackResult
-    }, 4000);
+    const channel = supabase
+      .channel(`boss-guild-${guildId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'boss_guild_state', filter: `guild_id=eq.${guildId}` },
+        (payload) => {
+          const row = payload.new as { current_hp: number; total_damage: number; is_defeated: boolean };
+          setBoss((prev) => prev ? { ...prev, current_hp: row.current_hp, total_damage: row.total_damage, is_defeated: row.is_defeated } : prev);
+        }
+      )
+      .subscribe();
 
-    return () => clearInterval(pollInterval);
-  }, [boss, fetchBossState]);
+    return () => { void supabase.removeChannel(channel); };
+  }, [boss?.is_defeated, guildId]);
 
   // Handle attack button click - show inline quest
   const handleAttackClick = () => {
