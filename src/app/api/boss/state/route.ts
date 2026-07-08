@@ -7,10 +7,11 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 /**
  * GET /api/boss/state?guildId=<uuid>
  *
- * Fetches the current boss fight state for a guild this weekend.
+ * Fetches the GLOBAL boss fight state for this weekend.
+ * (guildId is still passed for RLS verification, but boss is global for all guilds)
  *
  * Query params:
- * - guildId: uuid of the guild
+ * - guildId: uuid of the guild (for RLS verification)
  *
  * Returns:
  * {
@@ -22,7 +23,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
  *     current_hp: number
  *     total_damage: number
  *     is_defeated: boolean
- *     attempted_count: number (members who attempted)
+ *     total_attempts: number (all guilds combined)
  *   }
  *   error?: string
  * }
@@ -72,12 +73,11 @@ export async function GET(request: NextRequest) {
     const weekStartStr = weekStart.toISOString().split('T')[0];
 
     // =====================================================
-    // FETCH BOSS FIGHT STATE
+    // FETCH GLOBAL BOSS FIGHT STATE (no guild_id filter)
     // =====================================================
     const { data: bossData, error: bossError } = await supabase
       .from('boss_fights')
       .select('id, boss_key, boss_rarity, boss_max_hp, damage_dealt, status')
-      .eq('guild_id', guildId)
       .eq('week_start', weekStartStr)
       .single();
 
@@ -103,9 +103,9 @@ export async function GET(request: NextRequest) {
     }
 
     // =====================================================
-    // COUNT MEMBERS WHO ATTEMPTED
+    // COUNT ALL ATTEMPTS (from all guilds)
     // =====================================================
-    const { count: attemptCount } = await supabase
+    const { count: totalAttempts } = await supabase
       .from('boss_attempts')
       .select('id', { count: 'exact' })
       .eq('boss_fight_id', bossData.id);
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
           current_hp: currentHp,
           total_damage: bossData.damage_dealt,
           is_defeated: isDefeated,
-          attempted_count: attemptCount || 0,
+          total_attempts: totalAttempts || 0,
         },
       },
       { status: 200 }
