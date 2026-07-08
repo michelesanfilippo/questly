@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useI18n } from '@/i18n';
 
 interface BossMission {
   id: string;
@@ -21,6 +22,7 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
   onClose,
   isSubmitting,
 }) => {
+  const { t } = useI18n();
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(50);
 
@@ -34,11 +36,11 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-xl border-2 border-amber-700 bg-gradient-to-br from-amber-950 to-amber-900/50 p-6 shadow-2xl">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-lg border-2 border-amber-700 bg-gradient-to-b from-gray-900 to-gray-800 p-6 shadow-2xl">
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between border-b border-amber-700 pb-4">
+        <div className="mb-4 flex items-center justify-between border-b border-amber-700/30 pb-4">
           <h2 className="text-2xl font-bold text-amber-100">
-            ⚔️ Challenge: {bossName.toUpperCase()}
+            ⚔️ {bossName.toUpperCase()}
           </h2>
           <button
             onClick={onClose}
@@ -50,17 +52,17 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
         </div>
 
         {/* Quest Title */}
-        <h3 className="mb-2 text-lg font-semibold text-amber-200">{quest.title}</h3>
+        <h3 className="mb-3 text-lg font-semibold text-amber-200">{quest.title}</h3>
 
         {/* Quest Text */}
-        <div className="mb-6 rounded-lg bg-amber-950/50 p-4">
-          <p className="whitespace-pre-wrap text-amber-100 leading-relaxed">
+        <div className="mb-6 rounded-lg bg-gray-800 p-4">
+          <p className="whitespace-pre-wrap text-gray-200 leading-relaxed">
             {quest.text}
           </p>
         </div>
 
         {/* Answer Input */}
-        <div className="mb-4">
+        <div className="mb-6">
           <label className="mb-2 block text-amber-200 font-semibold">
             Your Answer:
           </label>
@@ -70,15 +72,15 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
             disabled={isSubmitting}
             placeholder="Type your answer here..."
             rows={4}
-            className="w-full rounded-lg border border-amber-600 bg-amber-950 px-3 py-2 text-amber-100 placeholder-amber-600 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:opacity-50"
+            className="w-full rounded-lg border border-amber-700/50 bg-gray-800 px-3 py-2 text-gray-100 placeholder-gray-600 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:opacity-50"
           />
         </div>
 
-        {/* Score Slider */}
+        {/* Quality Score Slider */}
         <div className="mb-6">
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <label className="text-amber-200 font-semibold">
-              Confidence Level:
+              Answer Quality:
             </label>
             <span className="text-lg font-bold text-amber-300">{score}%</span>
           </div>
@@ -89,12 +91,10 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
             value={score}
             onChange={(e) => setScore(parseInt(e.target.value))}
             disabled={isSubmitting}
-            className="w-full cursor-pointer"
+            className="w-full cursor-pointer accent-amber-600"
           />
-          <div className="mt-1 flex justify-between text-xs text-amber-400">
-            <span>Low</span>
-            <span>Medium</span>
-            <span>High</span>
+          <div className="mt-2 text-xs text-amber-400/70">
+            Score represents answer quality. Role bonuses apply: Wizard +50%, Royal Knight +20%
           </div>
         </div>
 
@@ -105,12 +105,12 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
             disabled={isSubmitting || !answer.trim()}
             className="flex-1 rounded-lg border border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Attack'}
+            {isSubmitting ? 'Attacking...' : 'Submit Attack'}
           </button>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex-1 rounded-lg border border-amber-600 bg-amber-900 px-4 py-2 font-bold text-amber-100 transition-colors hover:bg-amber-800 disabled:opacity-50"
+            className="flex-1 rounded-lg border border-amber-600 bg-gray-800 px-4 py-2 font-bold text-amber-100 transition-colors hover:bg-gray-700 disabled:opacity-50"
           >
             Cancel
           </button>

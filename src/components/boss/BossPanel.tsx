@@ -353,7 +353,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       {showQuestModal && selectedQuest && (
         <BossQuestModal
           quest={selectedQuest}
-          bossName={boss?.boss_key ?? 'Unknown Boss'}
+          bossName={boss?.boss_key ?? 'Mystery Boss'}
           onSubmit={handleQuestAnswerSubmit}
           onClose={() => setShowQuestModal(false)}
           isSubmitting={isSubmitting}

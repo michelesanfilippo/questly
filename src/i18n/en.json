@@ -189,7 +189,8 @@
   },
   "boss": {
     "title": "Weekend Boss Battle",
-    "no_active_boss": "No active boss this weekend",
+    "no_active_boss": "No Active Boss",
+    "summon_prompt": "Be the first to attack and summon a boss!",
     "weekend_only": "Boss battles only available on weekends (Saturday-Sunday UTC)",
     "card": {
       "health": "Health",
@@ -199,23 +200,20 @@
       "guild_xp_reward": "Guild XP Reward"
     },
     "attack_button": "Attack Boss",
+    "submit_attack": "Submit & Attack",
     "attacking": "Attacking...",
     "defeated": "✓ DEFEATED",
     "boss_defeated": "Boss Defeated! Check rewards.",
     "boss_alive": "Boss fights only available on weekends",
-    "mission_input": {
-      "difficulty": "Select Mission Difficulty",
-      "select_mission": "Select Mission",
-      "available": "available",
-      "no_missions": "No missions available for this difficulty",
-      "score_label": "Mission Score:",
-      "score_poor": "0 (Poor)",
-      "score_good": "50 (Good)",
-      "score_perfect": "100 (Perfect)",
-      "role_bonus": "{role} role: +{bonus}% damage bonus",
-      "submit": "Submit & Attack",
+    "quest_modal": {
+      "your_answer": "Your Answer:",
+      "answer_placeholder": "Type your answer here...",
+      "answer_quality": "Answer Quality:",
+      "score_hint": "Score represents answer quality. Role bonuses apply: Wizard +50%, Royal Knight +20%",
+      "submit_attack": "Submit Attack",
       "submitting": "Submitting...",
-      "help_text": "Higher scores = more damage. Choose missions and score based on your skill!"
+      "please_answer": "Please provide an answer",
+      "cancel": "Cancel"
     },
     "result": {
       "hit_for": "⚔️ Hit for {damage} damage!",
