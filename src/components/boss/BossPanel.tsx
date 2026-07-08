@@ -4,6 +4,7 @@ import { isBossWeekend } from '@/lib/boss';
 import { supabase } from '@/lib/supabase';
 import { BossQuestModal } from './BossQuestModal';
 import { BossSummonPopup } from './BossSummonPopup';
+import { BossAttackResult } from './BossAttackResult';
 import bossMissionsData from '@/data/boss_missions.json';
 
 interface BossState {
@@ -47,6 +48,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [attackResult, setAttackResult] = useState<any>(null);
   const [showSummonPopup, setShowSummonPopup] = useState(false);
   const [summonedBoss, setSummonedBoss] = useState<BossState | null>(null);
+  const [hasUserAttacked, setHasUserAttacked] = useState(false);
+  const [showAttackResult, setShowAttackResult] = useState(false);
+  const [userLastScore, setUserLastScore] = useState(0);
 
   // Get Supabase auth token
   const getAuthToken = async (): Promise<string | null> => {
@@ -138,8 +142,21 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     fetchBossState();
   }, [fetchBossState]);
 
+  // Polling: Fetch boss state every 4 seconds to keep global state updated
+  useEffect(() => {
+    if (!boss || boss.is_defeated) return; // Stop polling if no boss or defeated
+
+    const pollInterval = setInterval(() => {
+      fetchBossState();
+    }, 4000); // Poll every 4 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [boss, fetchBossState]);
+
   // Handle attack button click - open quest modal
   const handleAttackClick = () => {
+    if (hasUserAttacked) return; // Don't proceed if already attacked
+    
     if (!boss && !selectedQuest) {
       // First attack - select random quest from goblin (default)
       const bossKey = 'goblin';
@@ -163,7 +180,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
   // Handle quest answer submission
   const handleQuestAnswerSubmit = useCallback(
-    async (answer: string, score: number) => {
+    async (answer: string, _score: number) => {
       setIsSubmitting(true);
       setError(null);
 
@@ -173,7 +190,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           throw new Error('Not authenticated');
         }
 
-        // Call attack endpoint
+        // Call attack endpoint with the user's answer
+        // Score will be determined by Ollama validation on backend
         const response = await fetch('/api/boss/attack', {
           method: 'POST',
           headers: {
@@ -182,7 +200,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           },
           body: JSON.stringify({
             guildId,
-            missionScore: score,
+            userAnswer: answer,
+            bossKey: boss?.boss_key || 'goblin',
             userRole,
           }),
         });
@@ -196,13 +215,17 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         // Update boss state
         setAttackResult(data);
         
-        // Check if this is the first boss summon (boss was null, now exists)
-        const isBossSummoned = !boss && data.boss_state;
+        // Mark user as having attacked
+        setHasUserAttacked(true);
+        setUserLastScore(data.attack.score); // Use actual score from validation
         
-        if (isBossSummoned) {
-          setSummonedBoss(data.boss_state);
-          setShowSummonPopup(true);
-        }
+        // Close quest modal and show attack result
+        setSelectedQuest(null);
+        setShowQuestModal(false);
+        setShowAttackResult(true);
+        
+        // Don't show summon popup anymore - show result instead
+        setShowSummonPopup(false);
         
         setBoss((prev) => {
           if (!prev && data.boss_state) {
@@ -218,10 +241,6 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           };
         });
 
-        // Clear selected quest
-        setSelectedQuest(null);
-        setShowQuestModal(false);
-
         // Trigger victory callback if defeated
         if (data.boss_state.is_defeated) {
           onVictory?.();
@@ -236,7 +255,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setIsSubmitting(false);
       }
     },
-    [guildId, userRole, onVictory, fetchBossState]
+    [guildId, userRole, onVictory, fetchBossState, boss?.boss_key]
   );
 
   // If not weekend, show message
@@ -323,10 +342,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             {!boss.is_defeated && (
               <button
                 onClick={handleAttackClick}
-                disabled={isSubmitting}
-                className="w-full rounded-lg border border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                disabled={isSubmitting || hasUserAttacked}
+                className="w-full rounded-lg border border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Attacking...' : 'Submit & Attack'}
+                {hasUserAttacked ? 'Already Attacked' : isSubmitting ? 'Attacking...' : 'Submit & Attack'}
               </button>
             )}
 
@@ -352,10 +371,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             </p>
             <button
               onClick={handleAttackClick}
-              disabled={isSubmitting}
-              className="rounded-lg border border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+              disabled={isSubmitting || hasUserAttacked}
+              className="rounded-lg border border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Summoning...' : 'Submit & Attack'}
+              {hasUserAttacked ? 'Already Attacked' : isSubmitting ? 'Summoning...' : 'Submit & Attack'}
             </button>
           </div>
         )}
@@ -378,6 +397,20 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           bossName={summonedBoss.boss_key}
           bossRarity={summonedBoss.boss_rarity}
           onClose={() => setShowSummonPopup(false)}
+        />
+      )}
+
+      {/* Attack Result Modal */}
+      {showAttackResult && attackResult && boss && (
+        <BossAttackResult
+          bossName={boss.boss_key}
+          bossRarity={boss.boss_rarity}
+          maxHp={boss.max_hp}
+          currentHp={boss.current_hp}
+          damageDealt={attackResult.attack.damage_dealt}
+          totalDamage={boss.total_damage}
+          userScore={userLastScore}
+          onClose={() => setShowAttackResult(false)}
         />
       )}
     </>

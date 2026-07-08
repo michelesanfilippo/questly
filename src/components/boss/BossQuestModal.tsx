@@ -24,14 +24,14 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
 }) => {
   const { t } = useI18n();
   const [answer, setAnswer] = useState('');
-  const [score, setScore] = useState(50);
 
   const handleSubmit = async () => {
     if (!answer.trim()) {
       alert('Please provide an answer');
       return;
     }
-    await onSubmit(answer, score);
+    // Pass answer to parent; score will be determined by Ollama validation
+    await onSubmit(answer, 75); // 75 is placeholder, actual score comes from validation
   };
 
   return (
@@ -80,21 +80,11 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
         <div className="mb-6">
           <div className="mb-3 flex items-center justify-between">
             <label className="text-amber-200 font-semibold">
-              Answer Quality:
+              Role Bonuses
             </label>
-            <span className="text-lg font-bold text-amber-300">{score}%</span>
           </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={score}
-            onChange={(e) => setScore(parseInt(e.target.value))}
-            disabled={isSubmitting}
-            className="w-full cursor-pointer accent-amber-600"
-          />
-          <div className="mt-2 text-xs text-amber-400/70">
-            Score represents answer quality. Role bonuses apply: Wizard +50%, Royal Knight +20%
+          <div className="text-xs text-amber-400/70">
+            Wizard +50%, Royal Knight +20%
           </div>
         </div>
 

@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { evaluateBossAnswer } from '@/lib/boss-evaluate';
+import bossMissionsData from '@/data/boss_missions.json';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -12,14 +14,15 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
  * Request body:
  * {
  *   guildId: string (uuid)
- *   missionScore: number (0-100)
+ *   userAnswer: string (the user's quest answer)
+ *   bossKey: string (the boss key for getting quest context)
  *   userRole?: string ('leader' | 'royal_knight' | 'wizard' | 'member', default: 'member')
  * }
  *
  * Returns:
  * {
  *   success: boolean
- *   attack?: { mission_score, user_role, damage_dealt, calculation }
+ *   attack?: { mission_score, user_role, damage_dealt, score, calculation }
  *   boss_state?: { boss_key, boss_rarity, max_hp, current_hp, total_damage, is_defeated }
  *   rewards?: { guild_xp?, user_xp?, message }
  *   error?: string (if success=false)
@@ -41,7 +44,7 @@ export async function POST(request: NextRequest) {
     const token = authHeader.slice(7);
     const body = await request.json();
 
-    const { guildId, missionScore, userRole = 'member' } = body;
+    const { guildId, userAnswer, bossKey, userRole = 'member' } = body;
 
     if (!guildId || typeof guildId !== 'string') {
       return NextResponse.json(
@@ -50,9 +53,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (typeof missionScore !== 'number' || missionScore < 0 || missionScore > 100) {
+    if (!userAnswer || typeof userAnswer !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'Invalid missionScore (must be number 0-100)' },
+        { success: false, error: 'Missing or invalid userAnswer' },
+        { status: 400 }
+      );
+    }
+
+    if (userAnswer.trim().length < 10) {
+      return NextResponse.json(
+        { success: false, error: 'Answer must be at least 10 characters' },
+        { status: 400 }
+      );
+    }
+
+    if (!bossKey || typeof bossKey !== 'string') {
+      return NextResponse.json(
+        { success: false, error: 'Missing or invalid bossKey' },
         { status: 400 }
       );
     }
@@ -88,11 +105,28 @@ export async function POST(request: NextRequest) {
     }
 
     // =====================================================
-    // 4. CALL RPC FUNCTION
+    // 4. EVALUATE ANSWER WITH OLLAMA
+    // =====================================================
+    // Get a quest for the boss to use as context
+    const bossMissions = (bossMissionsData as any).boss_missions?.[bossKey]?.[1];
+    const questContext = Array.isArray(bossMissions) && bossMissions.length > 0
+      ? bossMissions[0].text
+      : `Defeat the ${bossKey}`;
+
+    const evaluatedScore = await evaluateBossAnswer(
+      bossKey,
+      questContext,
+      userAnswer
+    );
+
+    console.log(`[api/boss/attack] Evaluated score: ${evaluatedScore} for user answer`);
+
+    // =====================================================
+    // 5. CALL RPC FUNCTION WITH EVALUATED SCORE
     // =====================================================
     const { data, error } = await supabase.rpc('attack_boss', {
       p_guild_id: guildId,
-      p_mission_score: missionScore,
+      p_mission_score: evaluatedScore,
       p_user_role: userRole,
     });
 
@@ -118,12 +152,15 @@ export async function POST(request: NextRequest) {
     }
 
     // =====================================================
-    // 5. RETURN SUCCESS
+    // 6. RETURN SUCCESS
     // =====================================================
     return NextResponse.json(
       {
         success: true,
-        attack: data.attack,
+        attack: {
+          ...data.attack,
+          score: evaluatedScore, // Include the evaluated score
+        },
         boss_state: data.boss_state,
         rewards: data.rewards,
       },

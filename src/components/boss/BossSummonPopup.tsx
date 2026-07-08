@@ -20,17 +20,17 @@ export const BossSummonPopup: React.FC<BossSummonPopupProps> = ({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 pointer-events-none">
-      <div className="animate-bounce rounded-lg border-2 border-yellow-500 bg-gradient-to-b from-yellow-600 to-yellow-700 px-8 py-6 shadow-2xl text-center pointer-events-auto">
-        <p className="mb-2 text-2xl font-bold text-white">⚡ Il boss si è fatto avanti! ⚡</p>
-        <h1 className="mb-3 text-4xl font-black text-yellow-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 pointer-events-none">
+      <div className="animate-bounce rounded-lg border-2 border-amber-600 bg-gradient-to-b from-amber-700 to-amber-800 px-6 py-4 shadow-xl text-center pointer-events-auto max-w-sm">
+        <p className="mb-1 text-lg font-bold text-amber-100">⚡ Il boss si è fatto avanti! ⚡</p>
+        <h1 className="mb-2 text-2xl font-black text-amber-200">
           🐉 {bossName.toUpperCase()}
         </h1>
-        <p className="text-xl text-yellow-100">
+        <p className="text-lg text-amber-200">
           {rarityEmoji[bossRarity] || '⭐'}
         </p>
-        <p className="mt-4 text-xs text-yellow-900 animate-pulse">
-          (Tutte le gilde combattono lo stesso boss!)
+        <p className="mt-3 text-xs text-amber-300/70 animate-pulse">
+          Tutte le gilde combattono lo stesso boss!
         </p>
       </div>
     </div>
