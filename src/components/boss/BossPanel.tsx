@@ -19,6 +19,7 @@ interface BossState {
   current_hp: number;
   total_damage: number;
   is_defeated: boolean;
+  attempted_count?: number;
 }
 
 interface BossPanelProps {
@@ -69,22 +70,36 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setIsBossWeekendFlag(isWeekend);
 
         if (!isWeekend) {
+          setBoss(null);
           setIsLoading(false);
           return;
         }
 
-        // Fetch boss state from database
-        // TODO: Create GET /api/boss/state endpoint
-        // For now, we'll use local calculation
-        const localBoss = getWeekBoss(guildId);
-        setBoss({
-          boss_key: localBoss.key,
-          boss_rarity: localBoss.rarity,
-          max_hp: localBoss.hp,
-          current_hp: localBoss.hp, // TODO: Fetch actual damage from DB
-          total_damage: 0,
-          is_defeated: false,
+        // Fetch boss state from API endpoint
+        const response = await fetch(`/api/boss/state?guildId=${guildId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.supabaseAccessToken && {
+              Authorization: `Bearer ${session.supabaseAccessToken}`,
+            }),
+          },
         });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          setError(data.error || 'Failed to load boss state');
+          onError?.(data.error);
+          return;
+        }
+
+        if (data.boss) {
+          setBoss(data.boss);
+        } else {
+          // No boss exists yet, will be created on first attack
+          setBoss(null);
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to load boss';
         setError(message);
@@ -96,10 +111,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
     checkWeekendAndFetchBoss();
 
-    // Poll boss state every 5 seconds to detect changes
-    const interval = setInterval(checkWeekendAndFetchBoss, 5000);
+    // Poll boss state every 3 seconds (faster than before for real-time feel)
+    const interval = setInterval(checkWeekendAndFetchBoss, 3000);
     return () => clearInterval(interval);
-  }, [guildId, onError]);
+  }, [guildId, session, onError]);
 
   // Handle mission selection + attack submission
   const handleMissionSelect = useCallback(
@@ -141,12 +156,16 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
         // Update boss state
         setAttackResult(data);
-        setBoss((prev) => ({
-          ...prev!,
-          current_hp: data.boss_state.current_hp,
-          total_damage: data.boss_state.total_damage,
-          is_defeated: data.boss_state.is_defeated,
-        }));
+        setBoss((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            current_hp: data.boss_state.current_hp,
+            total_damage: data.boss_state.total_damage,
+            is_defeated: data.boss_state.is_defeated,
+            attempted_count: (prev.attempted_count || 0) + 1,
+          };
+        });
 
         // Trigger victory callback if defeated
         if (data.boss_state.is_defeated) {

@@ -86,7 +86,7 @@ BEGIN
   v_week_start := v_today - ((EXTRACT(ISODOW FROM v_today)::integer - 1) % 7) * INTERVAL '1 day';
   
   -- =====================================================
-  -- 3. GET OR CREATE BOSS FIGHT
+  -- 3. GET OR CREATE BOSS FIGHT (Auto-create)
   -- =====================================================
   
   -- Try to get existing boss_fight for this guild+week
@@ -97,11 +97,84 @@ BEGIN
     AND week_start = v_week_start
   LIMIT 1;
   
-  -- If no fight exists, create one
-  -- (In real implementation, this would be done by admin/cron job)
-  -- For now, we assume it exists or will be created separately
+  -- If no fight exists, create one automatically
   IF v_boss_fight_id IS NULL THEN
-    RAISE EXCEPTION 'No active boss fight for this guild this week. Contact guild admin.';
+    -- Deterministic boss selection: MD5(guildId:weekStart)
+    -- Maps hash to one of 18 bosses using weighted selection
+    DECLARE
+      v_seed text := p_guild_id || ':' || v_week_start;
+      v_hash text := md5(v_seed);
+      v_seed_num bigint := ('x' || substring(v_hash, 1, 8))::bit(32)::bigint;
+      v_selected_boss text;
+      v_selected_rarity integer;
+      v_selected_hp integer;
+    BEGIN
+      -- Deterministic boss weights (must match src/lib/boss.ts BOSS_TYPES)
+      -- Total weight: 196 (cumulative)
+      -- Selection: use modulo to pick boss
+      v_selected_boss := CASE
+        WHEN (v_seed_num % 196) < 1 THEN 'drago_bianco'
+        WHEN (v_seed_num % 196) < 2 THEN 'drago_nero'
+        WHEN (v_seed_num % 196) < 3 THEN 'drago_rosso'
+        WHEN (v_seed_num % 196) < 5 THEN 'drago_verde'
+        WHEN (v_seed_num % 196) < 7 THEN 'drago_comune'
+        WHEN (v_seed_num % 196) < 9 THEN 'kraken'
+        WHEN (v_seed_num % 196) < 12 THEN 'leviatano'
+        WHEN (v_seed_num % 196) < 17 THEN 'idra'
+        WHEN (v_seed_num % 196) < 24 THEN 'fenice'
+        WHEN (v_seed_num % 196) < 33 THEN 'basilisco'
+        WHEN (v_seed_num % 196) < 43 THEN 'gigante'
+        WHEN (v_seed_num % 196) < 55 THEN 'grifone'
+        WHEN (v_seed_num % 196) < 69 THEN 'ippogrifo'
+        WHEN (v_seed_num % 196) < 85 THEN 'lupo_mannaro'
+        WHEN (v_seed_num % 196) < 104 THEN 'minotauro'
+        WHEN (v_seed_num % 196) < 126 THEN 'gnomo'
+        WHEN (v_seed_num % 196) < 150 THEN 'goblin'
+        ELSE 'fata'
+      END;
+      
+      -- Map boss to rarity and HP (must match src/lib/boss.ts)
+      SELECT rarity, hp INTO v_selected_rarity, v_selected_hp FROM (
+        SELECT 5 as rarity, 2200 as hp WHERE 'drago_bianco' = v_selected_boss
+        UNION SELECT 5, 2150 WHERE 'drago_nero' = v_selected_boss
+        UNION SELECT 5, 2000 WHERE 'drago_rosso' = v_selected_boss
+        UNION SELECT 5, 1900 WHERE 'drago_verde' = v_selected_boss
+        UNION SELECT 5, 1700 WHERE 'drago_comune' = v_selected_boss
+        UNION SELECT 5, 1800 WHERE 'kraken' = v_selected_boss
+        UNION SELECT 5, 1600 WHERE 'leviatano' = v_selected_boss
+        UNION SELECT 4, 1400 WHERE 'idra' = v_selected_boss
+        UNION SELECT 4, 1250 WHERE 'fenice' = v_selected_boss
+        UNION SELECT 4, 1150 WHERE 'basilisco' = v_selected_boss
+        UNION SELECT 3, 1000 WHERE 'gigante' = v_selected_boss
+        UNION SELECT 3, 850 WHERE 'grifone' = v_selected_boss
+        UNION SELECT 3, 750 WHERE 'ippogrifo' = v_selected_boss
+        UNION SELECT 2, 700 WHERE 'lupo_mannaro' = v_selected_boss
+        UNION SELECT 2, 650 WHERE 'minotauro' = v_selected_boss
+        UNION SELECT 2, 550 WHERE 'gnomo' = v_selected_boss
+        UNION SELECT 1, 550 WHERE 'goblin' = v_selected_boss
+        UNION SELECT 1, 450 WHERE 'fata' = v_selected_boss
+      ) AS boss_map LIMIT 1;
+      
+      -- Create the boss_fight record
+      INSERT INTO public.boss_fights (
+        guild_id,
+        week_start,
+        boss_key,
+        boss_rarity,
+        boss_max_hp,
+        damage_dealt,
+        status
+      ) VALUES (
+        p_guild_id,
+        v_week_start,
+        v_selected_boss,
+        v_selected_rarity,
+        v_selected_hp,
+        0,
+        'active'
+      ) RETURNING id, boss_key, boss_rarity, boss_max_hp, damage_dealt, status
+      INTO v_boss_fight_id, v_boss_key, v_boss_rarity, v_boss_max_hp, v_current_damage, v_fight_status;
+    END;
   END IF;
   
   -- Check: Fight is still active
