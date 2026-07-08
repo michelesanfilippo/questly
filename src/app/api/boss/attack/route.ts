@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
     const { error: attemptError } = await supabase
       .from('boss_attempts')
       .insert({
-        user_id: user.id,
+        user_id: user.user.id,
         guild_id: guildId,
         boss_fight_id: bossFight.id,
         mission_score: evaluation.score,
