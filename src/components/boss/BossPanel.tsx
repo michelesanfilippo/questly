@@ -106,8 +106,20 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     try {
       setError(null);
 
-      // Weekend check (calendar only, no config endpoint)
-      const isWeekend = isBossWeekend();
+      // Weekend check: calendar OR force_weekend_testing from boss_config table
+      const isCalendarWeekend = isBossWeekend();
+      let forceWeekend = false;
+      try {
+        const { data: configRow } = await supabase
+          .from('boss_config')
+          .select('force_weekend_testing')
+          .eq('id', 1)
+          .single();
+        forceWeekend = configRow?.force_weekend_testing === true;
+      } catch {
+        // Table may not exist or row missing — ignore
+      }
+      const isWeekend = isCalendarWeekend || forceWeekend;
       setIsBossWeekendFlag(isWeekend);
 
       if (!isWeekend) {
