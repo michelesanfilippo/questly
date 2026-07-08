@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ScoreDisplay } from '@/components/ui/ScoreDisplay';
-import { useQuestTranslation } from '@/hooks/useQuestTranslation';
+import { useI18n } from '@/i18n';
 
 interface Boss {
   boss_key: string;
@@ -40,7 +40,7 @@ export const BossCard: React.FC<BossCardProps> = ({
   isBossWeekend = true,
   currentUserRole = 'member',
 }) => {
-  const { t } = useQuestTranslation();
+  const { t } = useI18n();
   const [healthPercent, setHealthPercent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 

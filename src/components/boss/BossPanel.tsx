@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { BossCard } from './BossCard';
 import { BossMissionInput } from './BossMissionInput';
-import { useQuestTranslation } from '@/hooks/useQuestTranslation';
+import { useI18n } from '@/i18n';
 import { getWeekBoss, isBossWeekend } from '@/lib/boss';
 
 interface BossMission {
@@ -49,7 +49,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   onError,
 }) => {
   const { data: session } = useSession();
-  const { t } = useQuestTranslation();
+  const { t } = useI18n();
 
   const [boss, setBoss] = useState<BossState | null>(null);
   const [isLoading, setIsLoading] = useState(true);

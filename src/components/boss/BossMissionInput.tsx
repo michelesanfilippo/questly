@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { StarRating } from '@/components/ui/StarRating';
-import { useQuestTranslation } from '@/hooks/useQuestTranslation';
+import { useI18n } from '@/i18n';
 import bossMissionsData from '@/data/boss_missions.json';
 
 interface BossMission {
@@ -37,7 +37,7 @@ export const BossMissionInput: React.FC<BossMissionInputProps> = ({
   isLoading = false,
   currentUserRole = 'member',
 }) => {
-  const { t } = useQuestTranslation();
+  const { t } = useI18n();
   const [selectedDifficulty, setSelectedDifficulty] = useState<number>(3);
   const [selectedMission, setSelectedMission] = useState<BossMission | null>(null);
   const [score, setScore] = useState<number>(50);
