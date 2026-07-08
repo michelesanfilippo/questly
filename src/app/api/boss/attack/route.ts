@@ -1,12 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { evaluateBossAnswer } from '@/lib/boss-evaluate';
 import type { BossEvaluation } from '@/lib/boss-evaluate';
 import { getWeekStart, pickBoss, calculateDamage } from '@/lib/boss';
+import { requireUser, createSupabaseAdminClient } from '@/lib/supabaseServer';
 import bossMissionsData from '@/data/boss_missions.json';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
 
 /**
  * POST /api/boss/attack
@@ -33,19 +32,16 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export async function POST(request: NextRequest) {
   try {
     // =====================================================
-    // 1. VALIDATE REQUEST
+    // 1. AUTHENTICATE USER
     // =====================================================
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { success: false, error: 'Missing or invalid Authorization header' },
-        { status: 401 }
-      );
-    }
+    const auth = await requireUser(request);
+    if (auth.error) return auth.error;
+    const userId = auth.user.id;
 
-    const token = authHeader.slice(7);
+    // =====================================================
+    // 2. VALIDATE REQUEST
+    // =====================================================
     const body = await request.json();
-
     const { guildId, userAnswer, bossKey, userRole = 'member' } = body;
 
     if (!guildId || typeof guildId !== 'string') {
@@ -84,27 +80,9 @@ export async function POST(request: NextRequest) {
     }
 
     // =====================================================
-    // 2. CREATE AUTHENTICATED CLIENT
+    // 3. GET ADMIN DB CLIENT
     // =====================================================
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-
-    // =====================================================
-    // 3. VERIFY AUTHENTICATION
-    // =====================================================
-    const { data: user, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication failed' },
-        { status: 401 }
-      );
-    }
+    const supabase = await createSupabaseAdminClient();
 
     // =====================================================
     // 4. EVALUATE ANSWER WITH OLLAMA
@@ -249,7 +227,7 @@ export async function POST(request: NextRequest) {
     const { error: attemptError } = await supabase
       .from('boss_attempts')
       .insert({
-        user_id: user.user.id,
+        user_id: userId,
         guild_id: guildId,
         boss_fight_id: bossFight.id,
         mission_score: evaluation.score,

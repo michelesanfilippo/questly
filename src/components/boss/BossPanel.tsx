@@ -1,10 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react';
+'use client';
+
+'use client';
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n';
 import { isBossWeekend } from '@/lib/boss';
 import { supabase } from '@/lib/supabase';
 import { StarRating } from '@/components/ui/StarRating';
 import { BossSummonPopup } from './BossSummonPopup';
+import { useQuestTranslation } from '@/hooks/useQuestTranslation';
+import type { Mission } from '@/types';
 import bossMissionsData from '@/data/boss_missions.json';
 
 interface BossState {
@@ -36,7 +42,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   onVictory,
   onError,
 }) => {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const [boss, setBoss] = useState<BossState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +61,23 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [userFeedback, setUserFeedback] = useState<string>('');
   const [userSuggestions, setUserSuggestions] = useState<string[]>([]);
   const [damageDealt, setDamageDealt] = useState(0);
+
+  // Adapt boss mission to Mission shape for translation hook
+  const questAsMission = useMemo<Mission | null>(() => {
+    if (!selectedQuest) return null;
+    return {
+      id: selectedQuest.id,
+      title: selectedQuest.title,
+      narrativeDescription: '',
+      task: selectedQuest.text,
+      difficulty: (boss?.boss_rarity ?? 1) as Mission['difficulty'],
+      category: 'prompt-basics',
+      tags: [],
+      weekendOnly: true,
+    };
+  }, [selectedQuest, boss?.boss_rarity]);
+
+  const { translated: translatedQuest, translating: questTranslating } = useQuestTranslation(questAsMission, locale);
 
   // Get Supabase auth token
   const getAuthToken = async (): Promise<string | null> => {
@@ -216,17 +239,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       setError(null);
 
       try {
-        const token = await getAuthToken();
-        if (!token) {
-          throw new Error('Not authenticated');
-        }
-
-        // Call attack endpoint
         const response = await fetch('/api/boss/attack', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             guildId,
@@ -310,7 +326,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
   const bossName = boss?.boss_key
     ? boss.boss_key.charAt(0).toUpperCase() + boss.boss_key.slice(1)
-    : 'Mysterious Beast';
+    : '⚔️ Mysterious Beast';
   const bossRarity = boss?.boss_rarity ?? 1;
   const currentHp = boss?.current_hp ?? 0;
   const maxHp = boss?.max_hp ?? 100;
@@ -400,13 +416,32 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               className="space-y-3"
             >
               <h2 className="text-lg sm:text-xl font-bold text-amber-900 leading-snug font-serif">
-                {selectedQuest.title}
+                {translatedQuest?.title ?? selectedQuest.title}
               </h2>
-              <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-3 sm:p-4">
-                <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">
-                  {selectedQuest.text}
-                </p>
-              </div>
+              {questTranslating ? (
+                <div className="flex flex-col items-center justify-center py-6 gap-3">
+                  <motion.div
+                    animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                    className="text-4xl select-none"
+                  >
+                    🧙
+                  </motion.div>
+                  <motion.p
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="text-xs text-amber-700/70 font-serif italic"
+                  >
+                    The wizards are at work...
+                  </motion.p>
+                </div>
+              ) : (
+                <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-3 sm:p-4">
+                  <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">
+                    {translatedQuest?.task ?? selectedQuest.text}
+                  </p>
+                </div>
+              )}
               <textarea
                 value={questAnswer}
                 onChange={(e) => setQuestAnswer(e.target.value)}

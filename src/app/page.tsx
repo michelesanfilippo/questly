@@ -253,13 +253,11 @@ export default function HomePage() {
 
       {/* Boss Weekend System */}
       {profile && guildId ? (
-        <div className="rounded-sm border-2 border-amber-800/20 bg-amber-50/40 p-4">
-          <BossPanel
-            guildId={guildId}
-            userRole={(guildRole as any) ?? 'member'}
-            onError={(error) => console.error('Boss panel error:', error)}
-          />
-        </div>
+        <BossPanel
+          guildId={guildId}
+          userRole={(guildRole as any) ?? 'member'}
+          onError={(error) => console.error('Boss panel error:', error)}
+        />
       ) : null}
     </div>
   );
