@@ -237,17 +237,26 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         </div>
       )}
 
-      {/* Boss Card */}
-      <BossCard
-        guildId={guildId}
-        boss={boss || undefined}
-        isLoading={isSubmitting}
-        isBossWeekend={isBossWeekendFlag}
-        currentUserRole={userRole}
-        onAttackClick={() => {
-          // This is just a placeholder; actual attack happens in BossMissionInput
-        }}
-      />
+      {/* Boss Card or Placeholder */}
+      {boss ? (
+        <BossCard
+          guildId={guildId}
+          boss={boss}
+          isLoading={isSubmitting}
+          isBossWeekend={isBossWeekendFlag}
+          currentUserRole={userRole}
+          onAttackClick={() => {
+            // This is just a placeholder; actual attack happens in BossMissionInput
+          }}
+        />
+      ) : (
+        <div className="rounded-sm border-2 border-amber-800/30 bg-amber-50/50 p-4 text-center">
+          <p className="text-amber-900 font-semibold mb-2">🐉 No Active Boss This Week</p>
+          <p className="text-sm text-amber-800">
+            Be the first to attack and summon a boss!
+          </p>
+        </div>
+      )}
 
       {/* Attack Result Display */}
       {attackResult && !attackResult.boss_state.is_defeated && (
@@ -278,9 +287,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       )}
 
       {/* Mission Input (only if not defeated) */}
-      {boss && !boss.is_defeated && (
+      {(!boss || !boss.is_defeated) && isBossWeekendFlag && (
         <BossMissionInput
-          bossKey={boss.boss_key}
+          bossKey={boss?.boss_key ?? 'goblin'}
           guildId={guildId}
           onMissionSelect={handleMissionSelect}
           isLoading={isSubmitting}
@@ -289,9 +298,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       )}
 
       {/* Call to Action */}
-      {boss && !boss.is_defeated && (
+      {(!boss || !boss.is_defeated) && isBossWeekendFlag && (
         <p className="text-center text-gray-400 text-sm">
-          Select a mission and complete it to attack the boss!
+          {boss ? 'Select a mission and complete it to attack the boss!' : 'Be the first to attack the boss!'}
         </p>
       )}
     </div>
