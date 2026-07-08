@@ -334,8 +334,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         ) : (
           /* No Boss Yet */
           <div className="rounded-lg border-2 border-amber-700/50 p-6 text-center">
-            <p className="mb-3 text-lg font-bold text-amber-100">🐉 No Active Boss</p>
-            <p className="mb-4 text-sm text-amber-300">
+            <p className="mb-3 text-lg font-bold text-amber-900">🐉 No Active Boss</p>
+            <p className="mb-4 text-sm text-amber-800">
               Be the first to attack and summon a boss!
             </p>
             <button
@@ -350,10 +350,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       </div>
 
       {/* Quest Modal */}
-      {showQuestModal && selectedQuest && boss && (
+      {showQuestModal && selectedQuest && (
         <BossQuestModal
           quest={selectedQuest}
-          bossName={boss.boss_key}
+          bossName={boss?.boss_key ?? 'Unknown Boss'}
           onSubmit={handleQuestAnswerSubmit}
           onClose={() => setShowQuestModal(false)}
           isSubmitting={isSubmitting}
