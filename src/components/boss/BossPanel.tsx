@@ -3,6 +3,7 @@ import { useI18n } from '@/i18n';
 import { isBossWeekend } from '@/lib/boss';
 import { supabase } from '@/lib/supabase';
 import { BossQuestModal } from './BossQuestModal';
+import { BossSummonPopup } from './BossSummonPopup';
 import bossMissionsData from '@/data/boss_missions.json';
 
 interface BossState {
@@ -44,6 +45,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [selectedQuest, setSelectedQuest] = useState<BossMission | null>(null);
   const [attackResult, setAttackResult] = useState<any>(null);
+  const [showSummonPopup, setShowSummonPopup] = useState(false);
+  const [summonedBoss, setSummonedBoss] = useState<BossState | null>(null);
 
   // Get Supabase auth token
   const getAuthToken = async (): Promise<string | null> => {
@@ -192,6 +195,15 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
         // Update boss state
         setAttackResult(data);
+        
+        // Check if this is the first boss summon (boss was null, now exists)
+        const isBossSummoned = !boss && data.boss_state;
+        
+        if (isBossSummoned) {
+          setSummonedBoss(data.boss_state);
+          setShowSummonPopup(true);
+        }
+        
         setBoss((prev) => {
           if (!prev && data.boss_state) {
             return data.boss_state;
@@ -357,6 +369,15 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           onSubmit={handleQuestAnswerSubmit}
           onClose={() => setShowQuestModal(false)}
           isSubmitting={isSubmitting}
+        />
+      )}
+
+      {/* Boss Summon Popup */}
+      {showSummonPopup && summonedBoss && (
+        <BossSummonPopup
+          bossName={summonedBoss.boss_key}
+          bossRarity={summonedBoss.boss_rarity}
+          onClose={() => setShowSummonPopup(false)}
         />
       )}
     </>

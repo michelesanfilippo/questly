@@ -187,70 +187,27 @@
     }
   },
   "boss": {
-    "title": "Bataille du Boss du Fin de Semaine",
-    "no_active_boss": "Pas de boss actif ce week-end",
-    "weekend_only": "Les batailles de boss ne sont disponibles que les fins de semaine (samedi-dimanche UTC)",
+    "title": "Weekend Boss Battle",
+    "no_active_boss": "No Active Boss",
+    "summon_prompt": "Be the first to attack and summon a boss!",
+    "weekend_only": "Boss battles only available on weekends (Saturday-Sunday UTC)",
+    "summon_popup": {
+      "title": "⚡ Le boss est apparu! ⚡",
+      "subtitle": "(Tous les guildes combattent le même boss!)"
+    },
     "card": {
-      "health": "Santé",
-      "total_damage": "Dégâts Totaux",
-      "hp_remaining": "PV Restants",
-      "rarity_level": "Niveau de Rareté",
-      "guild_xp_reward": "Récompense XP de la Guilde"
+      "health": "Health",
+      "total_damage": "Total Damage",
+      "hp_remaining": "HP Remaining",
+      "rarity_level": "Rarity Level",
+      "guild_xp_reward": "Guild XP Reward"
     },
-    "attack_button": "Attaquer le Boss",
-    "attacking": "Attaque en cours...",
-    "defeated": "✓ VAINCU",
-    "boss_defeated": "Boss vaincu! Vérifiez les récompenses.",
-    "boss_alive": "Les batailles de boss ne sont disponibles que les fins de semaine",
-    "mission_input": {
-      "difficulty": "Sélectionner la Difficulté de la Mission",
-      "select_mission": "Sélectionner une Mission",
-      "available": "disponible",
-      "no_missions": "Aucune mission disponible pour cette difficulté",
-      "score_label": "Score de la Mission:",
-      "score_poor": "0 (Faible)",
-      "score_good": "50 (Bon)",
-      "score_perfect": "100 (Parfait)",
-      "role_bonus": "Rôle {role}: +{bonus}% bonus de dégâts",
-      "submit": "Soumettre & Attaquer",
-      "submitting": "Envoi en cours...",
-      "help_text": "Les scores plus élevés = plus de dégâts. Choisissez les missions et le score en fonction de vos compétences!"
-    },
-    "result": {
-      "hit_for": "⚔️ Coup de {damage} dégâts!",
-      "boss_hp": "PV du Boss: {current} / {max}"
-    },
-    "victory": {
-      "title": "🎉 VICTOIRE! 🎉",
-      "guild_reward": "RÉCOMPENSE DE LA GUILDE",
-      "your_reward": "VOTRE RÉCOMPENSE",
-      "your_contribution": "VOTRE CONTRIBUTION",
-      "damage_stats": "{damage} / {total} dégâts",
-      "achievement_text": "Votre guilde a vaincu ensemble {boss}! Bien joué, héros! 🏆",
-      "claim_rewards": "Réclamer les Récompenses",
-      "continue": "Continuer",
-      "flavor_text": "Revenez le prochain week-end pour une autre bataille de boss!"
-    },
-    "badges": {
-      "goblin": "Tueur de Gobelins",
-      "fata": "Conquérant de Fées",
-      "lupo_mannaro": "Chasseur de Loups-Garous",
-      "minotauro": "Tueur de Minotaure",
-      "gnomo": "Broyeur de Gnomes",
-      "gigante": "Tueur de Géants",
-      "grifone": "Dompteur de Griffons",
-      "ippogrifo": "Briseur d'Hippogriffes",
-      "idra": "Collecteur de Têtes d'Hydre",
-      "fenice": "Extincteur de Phénix",
-      "basilisco": "Pétrificateur de Basilics",
-      "kraken": "Profondeurs du Kraken",
-      "leviatano": "Dompteur de Léviathans",
-      "drago_comune": "Tueur de Dragon Commun",
-      "drago_verde": "Tueur de Dragon Vert",
-      "drago_rosso": "Tueur de Dragon Rouge",
-      "drago_nero": "Tueur de Dragon Noir",
-      "drago_bianco": "Tueur de Dragon Blanc"
-    },
+    "attack_button": "Attack Boss",
+    "submit_attack": "Soumettre l'Attaque",
+    "attacking": "Attacking...",
+    "defeated": "✓ DEFEATED",
+    "boss_defeated": "Boss Defeated! Check rewards.",
+    "boss_alive": "Boss fights only available on weekends",
     "quest_modal": {
       "your_answer": "Votre Réponse:",
       "answer_placeholder": "Écrivez votre réponse ici...",
@@ -260,6 +217,41 @@
       "submitting": "Envoi...",
       "please_answer": "Fournissez une réponse",
       "cancel": "Annuler"
+    },
+    "result": {
+      "hit_for": "⚔️ Hit for {damage} damage!",
+      "boss_hp": "Boss HP: {current} / {max}"
+    },
+    "victory": {
+      "title": "🎉 VICTORY! 🎉",
+      "guild_reward": "GUILD REWARD",
+      "your_reward": "YOUR REWARD",
+      "your_contribution": "YOUR CONTRIBUTION",
+      "damage_stats": "{damage} / {total} damage",
+      "achievement_text": "Your guild banded together and defeated {boss}! Well done, heroes! 🏆",
+      "claim_rewards": "Claim Rewards",
+      "continue": "Continue",
+      "flavor_text": "Check back next weekend for another boss battle!"
+    },
+    "badges": {
+      "goblin": "Goblin Slayer",
+      "fata": "Fairy Vanquisher",
+      "lupo_mannaro": "Werewolf Hunter",
+      "minotauro": "Minotaur Slayer",
+      "gnomo": "Gnome Crusher",
+      "gigante": "Giant Killer",
+      "grifone": "Griffin Tamer",
+      "ippogrifo": "Hippogriff Breaker",
+      "idra": "Hydra Head Collector",
+      "fenice": "Phoenix Extinguisher",
+      "basilisco": "Basilisk Petrifier",
+      "kraken": "Kraken Deeps",
+      "leviatano": "Leviathan Tamer",
+      "drago_comune": "Common Dragon Slayer",
+      "drago_verde": "Green Dragon Slayer",
+      "drago_rosso": "Red Dragon Slayer",
+      "drago_nero": "Black Dragon Slayer",
+      "drago_bianco": "White Dragon Slayer"
     }
   }
 }

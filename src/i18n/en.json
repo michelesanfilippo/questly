@@ -192,6 +192,10 @@
     "no_active_boss": "No Active Boss",
     "summon_prompt": "Be the first to attack and summon a boss!",
     "weekend_only": "Boss battles only available on weekends (Saturday-Sunday UTC)",
+    "summon_popup": {
+      "title": "⚡ The boss has appeared! ⚡",
+      "subtitle": "(All guilds battle the same boss!)"
+    },
     "card": {
       "health": "Health",
       "total_damage": "Total Damage",

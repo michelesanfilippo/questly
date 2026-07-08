@@ -91,16 +91,15 @@ export function getWeekStart(date: Date = new Date()): string {
 }
 
 /**
- * Estrae il boss per una gilda in una settimana
+ * Estrae il boss per la settimana (GLOBALE - stesso boss per tutte le gilde)
  * Usa hash deterministico pesato
  *
- * @param guildId ID della gilda
  * @param weekStart Data inizio settimana (YYYY-MM-DD)
  * @returns Boss estratto
  */
-export function pickBoss(guildId: string, weekStart: string): (typeof BOSS_TYPES)[0] {
-  // Crea seed deterministico da guildId + weekStart
-  const seed = `${guildId}:${weekStart}`;
+export function pickBoss(weekStart: string): (typeof BOSS_TYPES)[0] {
+  // Crea seed deterministico SOLO da weekStart (globale per tutte le gilde)
+  const seed = weekStart;
   const hash = crypto.createHash('md5').update(seed).digest('hex');
   const seedNum = parseInt(hash.slice(0, 8), 16);
 
