@@ -18,6 +18,7 @@ import { LoginInviteCard } from '@/components/profile/LoginInviteCard';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
 import { FriendsCard } from '@/components/social/FriendsCard';
 import { GuildPanel } from '@/components/guild/GuildPanel';
+import { BossPanel } from '@/components/boss';
 import { BadgeUnlockPopup } from '@/components/ui/BadgeUnlockPopup';
 import { BADGE_DEFINITIONS, getBadgeImagePath } from '@/lib/badges';
 import type { Mission, EvaluationResult as EvalResultType } from '@/types';
@@ -42,6 +43,7 @@ export default function HomePage() {
   const [missionAlreadyDone, setMissionAlreadyDone] = useState(false);
   const [badgePopupQueue, setBadgePopupQueue] = useState<number[]>([]);
   const [currentBadgePopup, setCurrentBadgePopup] = useState<number | null>(null);
+  const [guildId, setGuildId] = useState<string | null>(null);
 
   // Mission fetch
   useEffect(() => {
@@ -193,36 +195,69 @@ export default function HomePage() {
     });
   }
 
+  // Load guild ID when profile changes
+  useEffect(() => {
+    if (!profile?.id) {
+      setGuildId(null);
+      return;
+    }
+    const loadGuildId = async () => {
+      try {
+        const response = await fetch('/api/guilds?scope=members', { credentials: 'include' });
+        if (response.ok) {
+          const data = await response.json() as { guild?: { id?: string } };
+          setGuildId(data.guild?.id ?? null);
+        }
+      } catch {
+        setGuildId(null);
+      }
+    };
+    void loadGuildId();
+  }, [profile?.id]);
+
   function handleAccept(m: Mission) {
     setMission(m);
     setAccepted(true);
   }
 
   const missionFlow = (
-    <>
-      {loading && (
-        <p className="text-amber-600 animate-pulse text-sm text-center mt-8">
-          {t('mission.loading')}
-        </p>
-      )}
-      {error && !loading && (
-        <p className="text-red-400 text-sm text-center mt-8">{error}</p>
-      )}
-      {!loading && (
-        <>
-          <MissionCard onAccept={handleAccept} disabled={missionAlreadyDone} />
-          {missionAlreadyDone && !evaluation && (
-            <p className="text-center text-base font-medium text-emerald-600 py-2">
-              {t('mission.already_done')}
-            </p>
-          )}
-          {accepted && !evaluation && mission && !missionAlreadyDone && (
-            <MissionInput missionId={mission.id} onResult={setEvaluation} />
-          )}
-          {evaluation && <EvaluationResult result={evaluation} />}
-        </>
-      )}
-    </>
+    <div className="flex flex-col gap-6">
+      <div>
+        {loading && (
+          <p className="text-amber-600 animate-pulse text-sm text-center mt-8">
+            {t('mission.loading')}
+          </p>
+        )}
+        {error && !loading && (
+          <p className="text-red-400 text-sm text-center mt-8">{error}</p>
+        )}
+        {!loading && (
+          <>
+            <MissionCard onAccept={handleAccept} disabled={missionAlreadyDone} />
+            {missionAlreadyDone && !evaluation && (
+              <p className="text-center text-base font-medium text-emerald-600 py-2">
+                {t('mission.already_done')}
+              </p>
+            )}
+            {accepted && !evaluation && mission && !missionAlreadyDone && (
+              <MissionInput missionId={mission.id} onResult={setEvaluation} />
+            )}
+            {evaluation && <EvaluationResult result={evaluation} />}
+          </>
+        )}
+      </div>
+
+      {/* Boss Weekend System */}
+      {profile && guildId ? (
+        <div className="rounded-sm border-2 border-amber-800/20 bg-amber-50/40 p-4">
+          <BossPanel
+            guildId={guildId}
+            userRole={(profile.current_guild_role as any) ?? 'member'}
+            onError={(error) => console.error('Boss panel error:', error)}
+          />
+        </div>
+      ) : null}
+    </div>
   );
 
   return (
