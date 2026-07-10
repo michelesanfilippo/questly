@@ -35,7 +35,7 @@ Sign in with **Google** to unlock your persistent profile, earn badges, track yo
 | **Animations** | Framer Motion 11 |
 | **Auth** | Supabase + Google OAuth |
 | **Database** | Supabase PostgreSQL |
-| **AI Evaluation** | Cloudflare AI |
+| **AI Evaluation** | Ollama evaluation |
 | **Missions** | Custom quests generated (difficulty 1–5 stars) based on npcs |
 
 ---
@@ -110,7 +110,7 @@ src/
 | Post-MVP | Auth + profile + progression + trophies | Done |
 | v2 | Real database (Supabase / PlanetScale) | Done |
 | v2 | Multiple OAuth | Done |
-| v2 | Cloudflare API evaluation | Done |
+| v2 | Ollama API evaluation | Done |
 | v3 | Social leaderboard + friends | Done |
 | v3 | Guild system | In progress |
 | v3 | Boss and PvP system | Planned |
