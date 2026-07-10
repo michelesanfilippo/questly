@@ -73,6 +73,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   // Guild badges
   const [earnedGuildBadges, setEarnedGuildBadges] = useState<string[]>([]);
   const [justEarnedBadges, setJustEarnedBadges] = useState<string[]>([]);
+  // Set to true when THIS specific attack is the killing blow
+  const [bossJustDefeatedByMe, setBossJustDefeatedByMe] = useState(false);
   // Alliance user badge popup
   const [showAllianceBadgePopup, setShowAllianceBadgePopup] = useState(false);
   // Prevent SSR/client hydration mismatch with framer-motion
@@ -375,6 +377,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
 
         // Trigger victory if defeated
         if (data.boss_state.is_defeated) {
+          setBossJustDefeatedByMe(true);
           setVictoryGuildXP(data.rewards?.guild_xp ?? 0);
           setVictoryUserXP(data.rewards?.user_xp ?? 0);
           setShowVictoryPopup(true);
@@ -498,6 +501,11 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                 🎉 Congratulations! You just unlocked new badges!
               </p>
             )}
+            {bossJustDefeatedByMe && justEarnedBadges.length === 0 && earnedGuildBadges.length > 0 && (
+              <p className="text-xs font-semibold text-amber-700 text-center">
+                🏅 Your guild already holds all available badges — great job defending the collection!
+              </p>
+            )}
             {justEarnedBadges.map((badgeKey) => {
               const def = GUILD_BADGE_DEFINITIONS[badgeKey];
               if (!def) return null;
@@ -524,7 +532,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             {/* All earned guild badges (excluding just-earned ones shown above) */}
             {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).length > 0 && (
               <div className="rounded-sm bg-amber-50/60 border border-amber-200/40 p-3 space-y-2">
-                <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wide">Guild Badges</p>
+                <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wide">
+                  {bossJustDefeatedByMe ? '🏆 Guild Badges' : 'Guild Badges'}
+                </p>
                 <div className="flex flex-wrap gap-3 justify-center">
                   {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).map(k => {
                     const def = GUILD_BADGE_DEFINITIONS[k];
