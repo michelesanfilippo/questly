@@ -511,7 +511,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).length > 0 && (
               <div className="rounded-sm bg-amber-50/60 border border-amber-200/40 p-3 space-y-2">
                 <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wide">Guild Badges</p>
-                <div className="flex flex-wrap gap-2 justify-center">
+                <div className="flex flex-wrap gap-3 justify-center">
                   {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).map(k => {
                     const def = GUILD_BADGE_DEFINITIONS[k];
                     return (
@@ -519,8 +519,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                         <Image
                           src={`/images/badges/${k}.png`}
                           alt={def?.name ?? k}
-                          width={40}
-                          height={40}
+                          width={72}
+                          height={72}
                           className="rounded-full border border-amber-300/50 shadow-sm"
                         />
                         {def && (
