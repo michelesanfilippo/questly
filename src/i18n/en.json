@@ -1,7 +1,7 @@
 {
   "nav": {
-    "login": "Login",
-    "signout": "Sign out"
+    "login": "Join the realm",
+    "signout": "Leave the realm"
   },
   "mission": {
     "loading": "Loading your daily mission...",
@@ -76,7 +76,7 @@
     "not_found": "Profile not found",
     "preview_hint": "In the realm, true friendship is forged in shared quests and loyal hearts.",
     "friend_cta": "Add as friend",
-    "friend_soon": "Friend requests will be available soon.",
+    "friend_soon": "",
     "you": "This is you"
   },
   "friends": {

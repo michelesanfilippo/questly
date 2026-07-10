@@ -1,7 +1,7 @@
 {
   "nav": {
-    "login": "Accedi",
-    "signout": "Esci"
+    "login": "Entra nel regno",
+    "signout": "Esci dal regno"
   },
   "mission": {
     "loading": "Caricamento missione...",
@@ -76,7 +76,7 @@
     "not_found": "Profilo non trovato",
     "preview_hint": "Nel regno, l'amicizia vera si forgia tra imprese condivise e cuori leali.",
     "friend_cta": "Aggiungi come amico",
-    "friend_soon": "Le richieste di amicizia arriveranno presto.",
+    "friend_soon": "",
     "you": "Sei tu"
   },
   "friends": {
