@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useI18n } from '@/i18n';
-import { isBossWeekend, BOSS_TYPES } from '@/lib/boss';
+import { isBossWeekend, BOSS_TYPES, getWeekStart } from '@/lib/boss';
 import { supabase } from '@/lib/supabase';
 import { StarRating } from '@/components/ui/StarRating';
 import { BossSummonPopup } from './BossSummonPopup';
@@ -72,7 +72,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [victoryUserXP, setVictoryUserXP] = useState(0);
   // Guild badges
   const [earnedGuildBadges, setEarnedGuildBadges] = useState<string[]>([]);
-  const [justEarnedBadges, setJustEarnedBadges] = useState<string[]>([]);
+  // Badges earned this week (= this boss fight) — shown as "just earned" to all members
+  const [weekEarnedGuildBadges, setWeekEarnedGuildBadges] = useState<string[]>([]);
   // Set to true when THIS specific attack is the killing blow
   const [bossJustDefeatedByMe, setBossJustDefeatedByMe] = useState(false);
   // User badge earned on boss defeat (index 34 = First Alliance Victory)
@@ -162,9 +163,15 @@ export const BossPanel: React.FC<BossPanelProps> = ({
     try {
       const { data } = await supabase
         .from('guild_badges')
-        .select('badge_key')
+        .select('badge_key, created_at')
         .eq('guild_id', guildId);
-      setEarnedGuildBadges((data ?? []).map((r: { badge_key: string }) => r.badge_key));
+      const rows = (data ?? []) as { badge_key: string; created_at: string }[];
+      setEarnedGuildBadges(rows.map(r => r.badge_key));
+      // Badges earned this week = earned in the current boss fight
+      const weekStart = getWeekStart();
+      setWeekEarnedGuildBadges(
+        rows.filter(r => r.created_at >= weekStart).map(r => r.badge_key)
+      );
     } catch {
       // guild_badges table may not exist yet
     }
@@ -386,7 +393,6 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           // Handle new guild badges
           const newBadges: string[] = data.newGuildBadges ?? [];
           if (newBadges.length > 0) {
-            setJustEarnedBadges(newBadges);
             setEarnedGuildBadges(prev => [...new Set([...prev, ...newBadges])]);
           }
           // Show alliance user badge popup if awarded
@@ -498,66 +504,38 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                 </ol>
               </div>
             )}
-            {/* Newly earned guild badge notification */}
-            {(justEarnedBadges.length > 0 || justEarnedUserBadgeIndex != null) && (
-              <p className="text-sm font-bold text-amber-700 text-center">
-                🎉 Congratulations! You just unlocked new badges!
-              </p>
+            {/* Newly earned guild badges this week — visible to all members, persists on reload */}
+            {weekEarnedGuildBadges.length > 0 && (
+              <>
+                <p className="text-sm font-bold text-amber-700 text-center">
+                  🎉 Congratulations! Your guild just unlocked new badges!
+                </p>
+                {weekEarnedGuildBadges.map((badgeKey) => {
+                  const def = GUILD_BADGE_DEFINITIONS[badgeKey];
+                  if (!def) return null;
+                  return (
+                    <div key={badgeKey} className="rounded-sm border-2 border-amber-400/70 bg-gradient-to-b from-amber-50 to-yellow-50 p-4 text-center space-y-2">
+                      <div className="flex justify-center">
+                        <Image
+                          src={`/images/badges/${badgeKey}.png`}
+                          alt={def.name}
+                          width={80}
+                          height={80}
+                          className="rounded-full shadow-[0_0_20px_rgba(217,119,6,0.5)] border-2 border-amber-300/70"
+                        />
+                      </div>
+                      <p className="font-serif text-base font-bold text-amber-900">{def.name}</p>
+                      <p className="text-xs text-stone-600 italic">{def.description}</p>
+                      <p className="text-[10px] text-stone-400 italic">The guild leader can set this as the guild icon.</p>
+                    </div>
+                  );
+                })}
+              </>
             )}
-            {bossJustDefeatedByMe && justEarnedBadges.length === 0 && justEarnedUserBadgeIndex == null && earnedGuildBadges.length > 0 && (
-              <p className="text-xs font-semibold text-amber-700 text-center">
-                🏅 Your guild already holds all available badges — great job defending the collection!
-              </p>
-            )}
-            {/* User badge card (First Alliance Victory) */}
-            {justEarnedUserBadgeIndex != null && (() => {
-              const def = BADGE_DEFINITIONS.find(b => b.index === justEarnedUserBadgeIndex);
-              if (!def) return null;
-              return (
-                <div className="rounded-sm border-2 border-amber-400/70 bg-gradient-to-b from-amber-50 to-yellow-50 p-4 text-center space-y-2">
-                  <div className="flex justify-center">
-                    <Image
-                      src={getBadgeImagePath(justEarnedUserBadgeIndex)}
-                      alt={def.name}
-                      width={80}
-                      height={80}
-                      className="rounded-full shadow-[0_0_20px_rgba(217,119,6,0.5)] border-2 border-amber-300/70"
-                    />
-                  </div>
-                  <p className="font-serif text-base font-bold text-amber-900">{def.name}</p>
-                  <p className="text-xs text-stone-600 italic">{def.description}</p>
-                  <p className="text-[10px] text-stone-400 italic">Added to your personal badge collection.</p>
-                </div>
-              );
-            })()}
-            {justEarnedBadges.map((badgeKey) => {
-              const def = GUILD_BADGE_DEFINITIONS[badgeKey];
-              if (!def) return null;
-              return (
-                <div key={badgeKey} className="rounded-sm border-2 border-amber-400/70 bg-gradient-to-b from-amber-50 to-yellow-50 p-4 text-center space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">
-                    🏅 Congratulations! Your guild has earned a new badge!
-                  </p>
-                  <div className="flex justify-center">
-                    <Image
-                      src={`/images/badges/${badgeKey}.png`}
-                      alt={def.name}
-                      width={80}
-                      height={80}
-                      className="rounded-full shadow-[0_0_20px_rgba(217,119,6,0.5)] border-2 border-amber-300/70"
-                    />
-                  </div>
-                  <p className="font-serif text-base font-bold text-amber-900">{def.name}</p>
-                  <p className="text-xs text-stone-600 italic">{def.description}</p>
-                  <p className="text-[10px] text-stone-400 italic">The guild leader can set this as the guild icon.</p>
-                </div>
-              );
-            })}
-            {/* All earned guild badges (excluding just-earned ones shown above) */}
-            {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).length > 0 && (
+            {/* All earned guild badges (excluding this-week ones shown above) */}
+            {earnedGuildBadges.filter(k => !weekEarnedGuildBadges.includes(k)).length > 0 && (
               <div className="rounded-sm bg-amber-50/60 border border-amber-200/40 p-3 space-y-2">
-                <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wide">
-                  {bossJustDefeatedByMe ? '🏆 Guild Badges' : 'Guild Badges'}
+                <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wide">Guild Badges</p>
                 </p>
                 <div className="flex flex-wrap gap-3 justify-center">
                   {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).map(k => {
