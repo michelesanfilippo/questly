@@ -464,9 +464,21 @@ export async function awardAllianceBadgeToParticipants(
     badge_index: ALLIANCE_VICTORY_BADGE_INDEX,
   }));
 
+  // Fetch which users already have this badge to avoid duplicates
+  const { data: existing } = await supabase
+    .from('user_badges')
+    .select('user_id')
+    .in('user_id', participantIds)
+    .eq('badge_index', ALLIANCE_VICTORY_BADGE_INDEX);
+
+  const alreadyHave = new Set<string>((existing ?? []).map((r: { user_id: string }) => r.user_id));
+  const toInsert = rows.filter(r => !alreadyHave.has(r.user_id));
+
+  if (toInsert.length === 0) return;
+
   const { error: insertError } = await supabase
     .from('user_badges')
-    .upsert(rows, { onConflict: 'user_id,badge_index', ignoreDuplicates: true });
+    .insert(toInsert);
 
   if (insertError) {
     console.error('[awardAllianceBadgeToParticipants] Failed to insert badges:', insertError);

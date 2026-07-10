@@ -201,7 +201,6 @@ export async function POST(request: NextRequest) {
 
     let newGuildLevel = 1;
     let newGuildBadges: string[] = [];
-    let allianceBadgeAwarded = false;
 
     if (justDefeated) {
       try {
@@ -269,7 +268,6 @@ export async function POST(request: NextRequest) {
       // Award "First Alliance Victory" user badge to all participants
       try {
         await awardAllianceBadgeToParticipants(supabase, bossFight.id, guildId);
-        allianceBadgeAwarded = true;
       } catch (userBadgeErr) {
         console.error('[api/boss/attack] Failed to award alliance badge:', userBadgeErr);
       }
@@ -305,7 +303,7 @@ export async function POST(request: NextRequest) {
           message: isDefeated ? 'Boss defeated!' : 'Attack successful!',
         },
         newGuildBadges: justDefeated ? newGuildBadges : [],
-        newUserBadgeIndex: justDefeated && allianceBadgeAwarded ? ALLIANCE_VICTORY_BADGE_INDEX : null,
+        newUserBadgeIndex: justDefeated ? ALLIANCE_VICTORY_BADGE_INDEX : null,
       },
       { status: 200 }
     );
