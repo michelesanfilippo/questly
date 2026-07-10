@@ -7,6 +7,7 @@ import { useI18n } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath } from '@/lib/badges';
 import { friendshipStatus, sendRequest, type FriendshipStatus } from '@/lib/friends';
+import { GUILD_UNLOCK_LEVEL } from '@/lib/gating';
 
 const GUILD_BADGE_IMG = '/images/badges/badge_guild.png';
 
@@ -41,6 +42,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   const [applyStatus, setApplyStatus] = useState<ApplyStatus>('idle');
   const [applyError, setApplyError] = useState<string | null>(null);
   const [currentUserInGuild, setCurrentUserInGuild] = useState(false);
+  const [currentUserLevel, setCurrentUserLevel] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,10 +77,13 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
         if (currentUserId && currentUserId !== userId) {
           const { data: cu } = await supabase
             .from('profiles')
-            .select('guild_id')
+            .select('guild_id,level')
             .eq('id', currentUserId)
             .single();
-          if (!cancelled) setCurrentUserInGuild(Boolean((cu as { guild_id: string | null } | null)?.guild_id));
+          if (!cancelled) {
+            setCurrentUserInGuild(Boolean((cu as { guild_id: string | null } | null)?.guild_id));
+            setCurrentUserLevel((cu as { level: number } | null)?.level ?? 0);
+          }
         }
 
         const status = await friendshipStatus(userId, data.id, currentUserId);
@@ -143,7 +148,8 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   }
 
   const canApply = Boolean(currentUserId && !isMe && guild);
-  const applyDisabled = applyStatus === 'loading' || applyStatus === 'applied' || currentUserInGuild;
+  const belowGuildLevel = currentUserLevel < GUILD_UNLOCK_LEVEL;
+  const applyDisabled = applyStatus === 'loading' || applyStatus === 'applied' || currentUserInGuild || belowGuildLevel;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
@@ -222,7 +228,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
                         type="button"
                         onClick={handleApply}
                         disabled={applyDisabled}
-                        title={currentUserInGuild ? t('guild.already_in_guild') : undefined}
+                        title={belowGuildLevel ? t('guild.locked_title') : currentUserInGuild ? t('guild.already_in_guild') : undefined}
                         className={`shrink-0 rounded-sm border px-2.5 py-1 text-xs font-semibold transition-colors ${
                           applyStatus === 'applied'
                             ? 'cursor-not-allowed border-emerald-400 bg-emerald-100 text-emerald-700'

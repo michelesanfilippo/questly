@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath, BADGE_DEFINITIONS } from '@/lib/badges';
 import { useI18n } from '@/i18n';
 import { UserPreviewPopup } from '@/components/social/UserPreviewPopup';
+import { GUILD_UNLOCK_LEVEL } from '@/lib/gating';
 
 const GUILD_BADGE_IMG = '/images/badges/badge_guild.png';
 
@@ -38,10 +39,11 @@ type Tab = 'Level' | 'Badges' | 'Missions' | 'Guild';
 
 interface LeaderboardProps {
   currentUserId?: string;
+  currentUserLevel?: number;
   isLoggedIn?: boolean;
 }
 
-export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardProps) {
+export function Leaderboard({ currentUserId, currentUserLevel = 0, isLoggedIn = false }: LeaderboardProps) {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<Tab>('Level');
   const [entries, setEntries] = useState<ProfileWithBadgeCount[]>([]);
@@ -277,13 +279,15 @@ export function Leaderboard({ currentUserId, isLoggedIn = false }: LeaderboardPr
                       {isLoggedIn && currentUserId && (() => {
                         const st = guildApplyStates[guild.id] ?? 'idle';
                         const alreadyInGuild = Boolean(currentUserGuildId);
-                        const disabled = alreadyInGuild || st === 'loading' || st === 'applied';
+                        const belowLevel = currentUserLevel < GUILD_UNLOCK_LEVEL;
+                        const disabled = alreadyInGuild || belowLevel || st === 'loading' || st === 'applied';
+                        const titleMsg = belowLevel ? t('guild.locked_title') : alreadyInGuild ? t('guild.already_in_guild') : undefined;
                         return (
                           <button
                             type="button"
                             onClick={() => !disabled && handleGuildApply(guild.id)}
                             disabled={disabled}
-                            title={alreadyInGuild ? t('guild.already_in_guild') : undefined}
+                            title={titleMsg}
                             className={`shrink-0 rounded-sm border px-2 py-0.5 text-[10px] font-semibold transition-colors ${
                               st === 'applied'
                                 ? 'cursor-not-allowed border-emerald-400 bg-emerald-100 text-emerald-700'

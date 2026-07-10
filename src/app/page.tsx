@@ -20,6 +20,7 @@ import { FriendsCard } from '@/components/social/FriendsCard';
 import { GuildPanel } from '@/components/guild/GuildPanel';
 import { BossPanel } from '@/components/boss';
 import { BadgeUnlockPopup } from '@/components/ui/BadgeUnlockPopup';
+import { WelcomePopup } from '@/components/ui/WelcomePopup';
 import { BADGE_DEFINITIONS, getBadgeImagePath } from '@/lib/badges';
 import type { Mission, EvaluationResult as EvalResultType } from '@/types';
 import type { SupabaseProfile } from '@/types';
@@ -43,6 +44,7 @@ export default function HomePage() {
   const [missionAlreadyDone, setMissionAlreadyDone] = useState(false);
   const [badgePopupQueue, setBadgePopupQueue] = useState<number[]>([]);
   const [currentBadgePopup, setCurrentBadgePopup] = useState<number | null>(null);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [guildId, setGuildId] = useState<string | null>(null);
   const [guildRole, setGuildRole] = useState<string>('member');
 
@@ -293,8 +295,11 @@ export default function HomePage() {
         <NicknameSetup
           userId={session.user.id}
           email={session.user.email ?? null}
-          onComplete={(p) => { setProfile(p); setShowNicknameSetup(false); }}
+          onComplete={(p) => { setProfile(p); setShowNicknameSetup(false); setShowWelcomePopup(true); }}
         />
+      )}
+      {showWelcomePopup && (
+        <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
       )}
       <main className="flex flex-col min-h-[100dvh]">
         <section className="relative h-[48vh] flex-shrink-0 overflow-hidden w-full">
@@ -305,7 +310,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-4 px-4 sm:px-6 py-6 w-full">
             {/* Leaderboard — visible to all */}
             <div className="order-3 lg:order-1 flex flex-col gap-4">
-              <Leaderboard currentUserId={profile?.id} isLoggedIn={!!profile} />
+              <Leaderboard currentUserId={profile?.id} currentUserLevel={profile?.level} isLoggedIn={!!profile} />
               <GuildPanel profile={profile} onProfileUpdate={(updated) => setProfile(updated)} />
             </div>
             {/* Mission — center */}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useI18n } from '@/i18n';
+import { GUILD_UNLOCK_LEVEL } from '@/lib/gating';
 import type { SupabaseProfile } from '@/types';
 
 interface GuildSummary {
@@ -129,7 +130,8 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
         <button
           type="button"
           onClick={() => setIsCreateOpen(true)}
-          disabled={!currentUserId || !!profile?.guild_id}
+          disabled={!currentUserId || !!profile?.guild_id || (profile?.level ?? 0) < GUILD_UNLOCK_LEVEL}
+          title={(profile?.level ?? 0) < GUILD_UNLOCK_LEVEL ? t('guild.locked_title') : undefined}
           className="rounded-sm bg-amber-700 px-2.5 py-1.5 text-xs font-semibold text-amber-50 disabled:cursor-not-allowed disabled:bg-stone-300"
         >
           {t('guild.create_cta')}
@@ -155,7 +157,8 @@ export function GuildBrowser({ currentUserId, profile, onGuildChanged }: GuildBr
                 <button
                   type="button"
                   onClick={() => { void handleApply(guild.id); }}
-                  disabled={!!profile?.guild_id || applyingGuildId === guild.id || appliedGuildIds.has(guild.id)}
+                  disabled={!!profile?.guild_id || (profile?.level ?? 0) < GUILD_UNLOCK_LEVEL || applyingGuildId === guild.id || appliedGuildIds.has(guild.id)}
+                  title={(profile?.level ?? 0) < GUILD_UNLOCK_LEVEL ? t('guild.locked_title') : !!profile?.guild_id ? t('guild.already_in_guild') : undefined}
                   className="rounded-sm border border-amber-700 px-2 py-1 text-xs font-semibold text-amber-700 disabled:cursor-not-allowed disabled:border-stone-300 disabled:text-stone-400"
                 >
                   {appliedGuildIds.has(guild.id) ? t('guild.applied') : applyingGuildId === guild.id ? t('guild.applying') : t('guild.apply')}

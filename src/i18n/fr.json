@@ -102,8 +102,8 @@
     "locked": "Verrouillé",
     "ready": "Disponible",
     "member": "Membre",
-    "locked_title": "Atteignez le niveau 6 pour débloquer cette compagnie",
-    "locked_message": "Vous n’avez pas encore débloqué les guildes. Atteignez le niveau 6 pour créer ou rejoindre une guilde et rassembler des alliés.",
+    "locked_title": "Atteignez le niveau 5 pour débloquer cette compagnie",
+    "locked_message": "Vous n'avez pas encore débloqué les guildes. Atteignez le niveau 5 pour créer ou rejoindre une guilde et rassembler des alliés.",
     "ready_message": "Créez ou rejoignez une guilde pour rassembler des alliés et affronter le boss du week-end ensemble.",
     "member_message": "Votre guilde est prête. Les fonctionnalités avancées arriveront bientôt.",
     "member_placeholder": "Le nom de la guilde apparaîtra ici",
@@ -160,6 +160,12 @@
     "already_in_guild": "Tu fais déjà partie d'une guilde.",
     "request_sent": "Candidature envoyée !",
     "no_guild": "N'appartient à aucune guilde."
+  },
+  "welcome": {
+    "title": "Bienvenue dans le Royaume",
+    "description": "Questly est votre terrain d'entraînement quotidien pour l'art du prompt engineering. Chaque jour, une nouvelle quête vous attend — accomplissez des missions pour gagner des XP, monter en niveau et forger des alliances dans des guildes.",
+    "badge_hint": "Des badges cachés attendent les dignes. Explorez chaque recoin du royaume pour les découvrir — pouvez-vous tous les trouver ?",
+    "close": "Commencez votre voyage"
   },
   "badge": {
     "unlocked": "Badge Débloqué",

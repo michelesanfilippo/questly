@@ -102,8 +102,8 @@
     "locked": "Bloccata",
     "ready": "Disponibile",
     "member": "Membro",
-    "locked_title": "Raggiungi il livello 6 per sbloccare questa compagnia",
-    "locked_message": "Non hai ancora sbloccato le gilde. Raggiungi il livello 6 per creare o entrare in una gilda e riunire alleati.",
+    "locked_title": "Raggiungi il livello 5 per sbloccare questa compagnia",
+    "locked_message": "Non hai ancora sbloccato le gilde. Raggiungi il livello 5 per creare o entrare in una gilda e riunire alleati.",
     "ready_message": "Crea o entra in una gilda per riunire alleati e affrontare il boss del weekend insieme.",
     "member_message": "La tua gilda è pronta. Le funzionalità avanzate arriveranno presto.",
     "member_placeholder": "Il nome della gilda comparirà qui",
@@ -161,6 +161,12 @@
     "already_in_guild": "Sei già in una gilda.",
     "request_sent": "Candidatura inviata!",
     "no_guild": "Non è in una gilda."
+  },
+  "welcome": {
+    "title": "Benvenuto nel Regno",
+    "description": "Questly è il tuo campo di addestramento quotidiano per l'arte del prompt engineering. Ogni giorno ti attende una nuova missione — completa le quest per guadagnare XP, salire di livello e stringere alleanze nelle gilde.",
+    "badge_hint": "Badge nascosti attendono i degni. Esplora ogni angolo del regno per scoprirli — riesci a trovarli tutti?",
+    "close": "Inizia il tuo viaggio"
   },
   "badge": {
     "unlocked": "Badge Sbloccato",

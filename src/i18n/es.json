@@ -102,8 +102,8 @@
     "locked": "Bloqueado",
     "ready": "Disponible",
     "member": "Miembro",
-    "locked_title": "Alcanza el nivel 6 para desbloquear esta compañía",
-    "locked_message": "Todavía no has desbloqueado los gremios. Alcanza el nivel 6 para crear o unirte a uno y reunir aliados.",
+    "locked_title": "Alcanza el nivel 5 para desbloquear esta compañía",
+    "locked_message": "Todavía no has desbloqueado los gremios. Alcanza el nivel 5 para crear o unirte a uno y reunir aliados.",
     "ready_message": "Crea o únete a un gremio para reunir aliados y enfrentarte al jefe de fin de semana juntos.",
     "member_message": "Tu gremio está listo. Las funciones avanzadas llegarán pronto.",
     "member_placeholder": "El nombre del gremio aparecerá aquí",
@@ -160,6 +160,12 @@
     "already_in_guild": "Ya perteneces a un gremio.",
     "request_sent": "¡Solicitud enviada!",
     "no_guild": "No pertenece a ningún gremio."
+  },
+  "welcome": {
+    "title": "Bienvenido al Reino",
+    "description": "Questly es tu campo de entrenamiento diario para el arte del prompt engineering. Cada día te espera una nueva misión — completa quests para ganar XP, subir de nivel y forjar alianzas en gremios.",
+    "badge_hint": "Insignias ocultas esperan a los dignos. Explora cada rincón del reino para descubrirlas — ¿puedes encontrarlas todas?",
+    "close": "Comienza tu viaje"
   },
   "badge": {
     "unlocked": "Insignia Desbloqueada",

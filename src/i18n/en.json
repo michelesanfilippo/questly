@@ -102,8 +102,8 @@
     "locked": "Locked",
     "ready": "Open",
     "member": "Member",
-    "locked_title": "Reach level 6 to unlock this fellowship",
-    "locked_message": "You have not unlocked guilds yet. Reach level 6 to create or join a guild and gather allies.",
+    "locked_title": "Reach level 5 to unlock this fellowship",
+    "locked_message": "You have not unlocked guilds yet. Reach level 5 to create or join a guild and gather allies.",
     "ready_message": "Create or join a guild to gather allies and face the weekend boss together.",
     "member_message": "Your guild is ready. More guild features will arrive soon.",
     "member_placeholder": "Guild name will appear here",
@@ -161,6 +161,12 @@
     "already_in_guild": "You are already in a guild.",
     "request_sent": "Application sent!",
     "no_guild": "Not in a guild."
+  },
+  "welcome": {
+    "title": "Welcome to the Realm",
+    "description": "Questly is your daily training ground for the art of prompt engineering. Each day, a new quest awaits — complete missions to earn XP, rise in level, and forge alliances in guilds.",
+    "badge_hint": "Hidden badges await the worthy. Explore every corner of the realm to uncover them all — can you find them?",
+    "close": "Begin your journey"
   },
   "badge": {
     "unlocked": "Badge Unlocked",

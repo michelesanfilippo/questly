@@ -102,8 +102,8 @@
     "locked": "Gesperrt",
     "ready": "Verfügbar",
     "member": "Mitglied",
-    "locked_title": "Erreiche Level 6, um diese Gefährtenschaft zu entsperren",
-    "locked_message": "Du hast Gilden noch nicht freigeschaltet. Erreiche Level 6, um eine Gilde zu gründen oder beizutreten und Verbündete zu sammeln.",
+    "locked_title": "Erreiche Level 5, um diese Gefährtenschaft zu entsperren",
+    "locked_message": "Du hast Gilden noch nicht freigeschaltet. Erreiche Level 5, um eine Gilde zu gründen oder beizutreten und Verbündete zu sammeln.",
     "ready_message": "Erstelle oder tritt einer Gilde bei, um Verbündete zu sammeln und den Wochenend-Boss gemeinsam zu bestehen.",
     "member_message": "Deine Gilde ist bereit. Weitere Funktionen folgen bald.",
     "member_placeholder": "Der Gildenname erscheint hier",
@@ -160,6 +160,12 @@
     "already_in_guild": "Du bist bereits Mitglied einer Gilde.",
     "request_sent": "Bewerbung gesendet!",
     "no_guild": "Kein Mitglied einer Gilde."
+  },
+  "welcome": {
+    "title": "Willkommen im Reich",
+    "description": "Questly ist dein täglicher Übungsplatz für die Kunst des Prompt-Engineerings. Jeden Tag wartet eine neue Quest auf dich — absolviere Missionen, um XP zu verdienen, Level aufzusteigen und Allianzen in Gilden zu schmieden.",
+    "badge_hint": "Versteckte Abzeichen warten auf Würdige. Erkunde jeden Winkel des Reichs, um sie zu entdecken — kannst du alle finden?",
+    "close": "Beginne deine Reise"
   },
   "badge": {
     "unlocked": "Abzeichen freigeschaltet",
