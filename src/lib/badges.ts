@@ -13,6 +13,7 @@ export function getBadgeImagePath(index: number): string {
     8:  '/images/badges/badge_streak3.png',
     9:  '/images/badges/badge_sunrise.png',
     10: '/images/badges/badge_nightowl.png',
+    34: '/images/badges/badge_alliance.png',
     11: '/images/badges/badge_student.png',
     12: '/images/badges/badge_bsmithapprentice.png',
     13: '/images/badges/badge_streak10.png',
@@ -39,7 +40,10 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   { index: 13, name: 'Undying Flame',         description: 'Ten days of unbroken dedication to the realm',  requirement: '10 consecutive days login' },
   { index: 14, name: 'Crown Oath',            description: 'Sworn to serve the crown with excellence',      requirement: '5 royal quests, score > 60' },
   { index: 15, name: 'Hydra Slayer',          description: 'Where one head falls, three more were defeated', requirement: '3 missions (★5), score > 60' },
+  { index: 34, name: 'First Alliance Victory', description: 'You fought alongside your guild and defeated a boss', requirement: 'Participate in a guild boss defeat' },
 ];
+
+export const ALLIANCE_VICTORY_BADGE_INDEX = 34;
 
 export interface BadgeCheckContext {
   scores: { creativity: number; precision: number; context: number; total: number };
@@ -427,5 +431,46 @@ export async function assignBossBadges(
         console.error(`Failed to update badge for ${userId}:`, updateError);
       }
     }
+  }
+}
+
+/**
+ * Awards the "First Alliance Victory" user badge (index 34) to all users
+ * who participated in a boss fight (present in boss_attempts).
+ * Duplicate insertions are silently ignored via upsert.
+ */
+export async function awardAllianceBadgeToParticipants(
+  supabase: any,
+  bossFightId: string,
+  guildId: string,
+): Promise<void> {
+  const { data: attempts, error } = await supabase
+    .from('boss_attempts')
+    .select('user_id')
+    .eq('boss_fight_id', bossFightId)
+    .eq('guild_id', guildId);
+
+  if (error) {
+    console.error('[awardAllianceBadgeToParticipants] Failed to fetch participants:', error);
+    return;
+  }
+
+  const participantIds: string[] = [...new Set<string>(
+    (attempts ?? []).map((a: { user_id: string }) => a.user_id)
+  )];
+
+  if (participantIds.length === 0) return;
+
+  const rows = participantIds.map((uid) => ({
+    user_id: uid,
+    badge_index: ALLIANCE_VICTORY_BADGE_INDEX,
+  }));
+
+  const { error: insertError } = await supabase
+    .from('user_badges')
+    .upsert(rows, { onConflict: 'user_id,badge_index', ignoreDuplicates: true });
+
+  if (insertError) {
+    console.error('[awardAllianceBadgeToParticipants] Failed to insert badges:', insertError);
   }
 }

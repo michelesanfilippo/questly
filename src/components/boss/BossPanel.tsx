@@ -10,8 +10,9 @@ import { StarRating } from '@/components/ui/StarRating';
 import { BossSummonPopup } from './BossSummonPopup';
 import { BossVictoryPopup } from './BossVictoryPopup';
 import { useQuestTranslation } from '@/hooks/useQuestTranslation';
-import { GUILD_BADGE_DEFINITIONS } from '@/lib/badges';
-import type { Mission } from '@/types';
+import { GUILD_BADGE_DEFINITIONS, BADGE_DEFINITIONS, getBadgeImagePath } from '@/lib/badges';
+import { BadgeUnlockPopup } from '@/components/ui/BadgeUnlockPopup';
+import type { Mission, SupabaseProfile } from '@/types';
 import bossMissionsData from '@/data/boss_missions.json';
 
 interface BossState {
@@ -33,6 +34,7 @@ interface BossMission {
 
 interface BossPanelProps {
   guildId: string;
+  profile?: SupabaseProfile | null;
   userRole?: 'leader' | 'royal_knight' | 'wizard' | 'member';
   onVictory?: () => void;
   onError?: (error: string) => void;
@@ -40,6 +42,7 @@ interface BossPanelProps {
 
 export const BossPanel: React.FC<BossPanelProps> = ({
   guildId,
+  profile,
   userRole = 'member',
   onVictory,
   onError,
@@ -70,6 +73,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   // Guild badges
   const [earnedGuildBadges, setEarnedGuildBadges] = useState<string[]>([]);
   const [justEarnedBadges, setJustEarnedBadges] = useState<string[]>([]);
+  // Alliance user badge popup
+  const [showAllianceBadgePopup, setShowAllianceBadgePopup] = useState(false);
   // Prevent SSR/client hydration mismatch with framer-motion
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -379,6 +384,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             setJustEarnedBadges(newBadges);
             setEarnedGuildBadges(prev => [...new Set([...prev, ...newBadges])]);
           }
+          // Show alliance user badge popup if awarded
+          if (data.newUserBadgeIndex != null) {
+            setShowAllianceBadgePopup(true);
+          }
           void fetchGuildBadges();
           onVictory?.();
         }
@@ -484,6 +493,11 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               </div>
             )}
             {/* Newly earned guild badge notification */}
+            {justEarnedBadges.length > 0 && (
+              <p className="text-sm font-bold text-amber-700 text-center">
+                🎉 Congratulations! You just unlocked new badges!
+              </p>
+            )}
             {justEarnedBadges.map((badgeKey) => {
               const def = GUILD_BADGE_DEFINITIONS[badgeKey];
               if (!def) return null;
@@ -667,6 +681,21 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         userXP={victoryUserXP}
         top3={guildLeaderboard.slice(0, 3)}
       />
+
+      {/* Alliance Victory badge unlock popup */}
+      {showAllianceBadgePopup && (() => {
+        const def = BADGE_DEFINITIONS.find(b => b.index === 34);
+        if (!def) return null;
+        return (
+          <BadgeUnlockPopup
+            nickname={profile?.nickname ?? 'Adventurer'}
+            badgeName={def.name}
+            badgeDescription={def.description}
+            badgeImagePath={getBadgeImagePath(34)}
+            onClose={() => setShowAllianceBadgePopup(false)}
+          />
+        );
+      })()}
     </>
   );
 };

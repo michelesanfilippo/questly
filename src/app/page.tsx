@@ -256,6 +256,7 @@ export default function HomePage() {
       {profile && guildId ? (
         <BossPanel
           guildId={guildId}
+          profile={profile}
           userRole={(guildRole as any) ?? 'member'}
           onError={(error) => console.error('Boss panel error:', error)}
         />
