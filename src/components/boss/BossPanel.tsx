@@ -75,6 +75,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [justEarnedBadges, setJustEarnedBadges] = useState<string[]>([]);
   // Set to true when THIS specific attack is the killing blow
   const [bossJustDefeatedByMe, setBossJustDefeatedByMe] = useState(false);
+  // User badge earned on boss defeat (index 34 = First Alliance Victory)
+  const [justEarnedUserBadgeIndex, setJustEarnedUserBadgeIndex] = useState<number | null>(null);
   // Alliance user badge popup
   const [showAllianceBadgePopup, setShowAllianceBadgePopup] = useState(false);
   // Prevent SSR/client hydration mismatch with framer-motion
@@ -389,6 +391,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           }
           // Show alliance user badge popup if awarded
           if (data.newUserBadgeIndex != null) {
+            setJustEarnedUserBadgeIndex(data.newUserBadgeIndex as number);
             setShowAllianceBadgePopup(true);
           }
           void fetchGuildBadges();
@@ -496,16 +499,37 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               </div>
             )}
             {/* Newly earned guild badge notification */}
-            {justEarnedBadges.length > 0 && (
+            {(justEarnedBadges.length > 0 || justEarnedUserBadgeIndex != null) && (
               <p className="text-sm font-bold text-amber-700 text-center">
                 🎉 Congratulations! You just unlocked new badges!
               </p>
             )}
-            {bossJustDefeatedByMe && justEarnedBadges.length === 0 && earnedGuildBadges.length > 0 && (
+            {bossJustDefeatedByMe && justEarnedBadges.length === 0 && justEarnedUserBadgeIndex == null && earnedGuildBadges.length > 0 && (
               <p className="text-xs font-semibold text-amber-700 text-center">
                 🏅 Your guild already holds all available badges — great job defending the collection!
               </p>
             )}
+            {/* User badge card (First Alliance Victory) */}
+            {justEarnedUserBadgeIndex != null && (() => {
+              const def = BADGE_DEFINITIONS.find(b => b.index === justEarnedUserBadgeIndex);
+              if (!def) return null;
+              return (
+                <div className="rounded-sm border-2 border-amber-400/70 bg-gradient-to-b from-amber-50 to-yellow-50 p-4 text-center space-y-2">
+                  <div className="flex justify-center">
+                    <Image
+                      src={getBadgeImagePath(justEarnedUserBadgeIndex)}
+                      alt={def.name}
+                      width={80}
+                      height={80}
+                      className="rounded-full shadow-[0_0_20px_rgba(217,119,6,0.5)] border-2 border-amber-300/70"
+                    />
+                  </div>
+                  <p className="font-serif text-base font-bold text-amber-900">{def.name}</p>
+                  <p className="text-xs text-stone-600 italic">{def.description}</p>
+                  <p className="text-[10px] text-stone-400 italic">Added to your personal badge collection.</p>
+                </div>
+              );
+            })()}
             {justEarnedBadges.map((badgeKey) => {
               const def = GUILD_BADGE_DEFINITIONS[badgeKey];
               if (!def) return null;

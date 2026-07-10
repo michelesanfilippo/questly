@@ -360,8 +360,6 @@ export async function checkAndAwardGuildBadges(
       if (condition && !existingBadgeKeys.includes(key)) newBadgeKeys.push(key);
     }
 
-    // First-ever boss kill → alliance badge
-    maybeAward('badge_alliance', totalKills === 1);
     // First dragon kill
     maybeAward('badge_dragon', dragonKeys.includes(defeatedBossKey) && totalDragonKills === 1);
     // 5 dragon kills cumulative
