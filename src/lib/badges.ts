@@ -231,6 +231,162 @@ export function getBossBadgeIndex(bossKey: string): number {
  *       .in('id', userIds);
  *   }
  */
+// ---------------------------------------------------------------------------
+// Guild Badge System
+// Badges awarded at the guild level, stored in guild_badges table
+// ---------------------------------------------------------------------------
+
+export const GUILD_BADGE_DEFINITIONS: Record<string, {
+  key: string;
+  name: string;
+  description: string;
+}> = {
+  badge_alliance: {
+    key: 'badge_alliance',
+    name: 'First Alliance Victory',
+    description: 'Your guild defeated a boss for the very first time',
+  },
+  badge_dragon: {
+    key: 'badge_dragon',
+    name: 'Dragon Slayer',
+    description: 'Your guild defeated a dragon for the first time',
+  },
+  badge_5dragons: {
+    key: 'badge_5dragons',
+    name: 'Dragonbane',
+    description: 'Your guild has vanquished 5 dragons in total',
+  },
+  badge_giant: {
+    key: 'badge_giant',
+    name: 'Attack on Titan',
+    description: 'Your guild brought down the mighty Giant',
+  },
+  badge_goblin: {
+    key: 'badge_goblin',
+    name: 'Goblin Slayer',
+    description: 'Your guild crushed the Goblin horde',
+  },
+  badge_gryphon: {
+    key: 'badge_gryphon',
+    name: 'Griffin Vanquisher',
+    description: 'Your guild defeated the Griffin',
+  },
+  badge_guild5: {
+    key: 'badge_guild5',
+    name: 'Legendary Fellowship',
+    description: 'Your guild has reached level 5',
+  },
+  badge_kraken: {
+    key: 'badge_kraken',
+    name: 'Depth Conqueror',
+    description: 'Your guild defeated the Kraken of the deep',
+  },
+  badge_minotaur: {
+    key: 'badge_minotaur',
+    name: 'Labyrinth Explorer',
+    description: 'Your guild navigated the labyrinth and defeated the Minotaur',
+  },
+  badge_wolf: {
+    key: 'badge_wolf',
+    name: 'Wolfsbane',
+    description: 'Your guild slew the Werewolf under the full moon',
+  },
+  badge_monsterhunter: {
+    key: 'badge_monsterhunter',
+    name: 'Monster Hunter',
+    description: 'Your guild has defeated 4 different types of beasts',
+  },
+};
+
+/** Returns the image path for any guild badge key */
+export function getGuildBadgeImagePath(badgeKey: string): string {
+  return `/images/badges/${badgeKey}.png`;
+}
+
+/**
+ * Checks conditions and awards guild badges after a boss is defeated.
+ * Reads kill history from boss_guild_state + boss_fights.
+ * Writes new badges to the guild_badges table.
+ * Returns the array of newly awarded badge keys.
+ */
+export async function checkAndAwardGuildBadges(
+  supabase: any,
+  guildId: string,
+  defeatedBossKey: string,
+  newGuildLevel: number,
+): Promise<string[]> {
+  try {
+    // 1. Existing guild badges
+    let existingBadgeKeys: string[] = [];
+    const { data: existingData } = await supabase
+      .from('guild_badges')
+      .select('badge_key')
+      .eq('guild_id', guildId);
+    existingBadgeKeys = (existingData ?? []).map((r: { badge_key: string }) => r.badge_key);
+
+    // 2. All defeated boss fight IDs for this guild
+    const { data: defeatedStates } = await supabase
+      .from('boss_guild_state')
+      .select('boss_fight_id')
+      .eq('guild_id', guildId)
+      .eq('is_defeated', true);
+
+    const bossFightIds: string[] = (defeatedStates ?? []).map((r: { boss_fight_id: string }) => r.boss_fight_id);
+
+    // 3. Count kills by boss type
+    const killData: Record<string, number> = {};
+    if (bossFightIds.length > 0) {
+      const { data: bossTypeRows } = await supabase
+        .from('boss_fights')
+        .select('boss_key')
+        .in('id', bossFightIds);
+      for (const row of (bossTypeRows ?? [])) {
+        const k = (row as { boss_key: string }).boss_key;
+        killData[k] = (killData[k] ?? 0) + 1;
+      }
+    }
+
+    const dragonKeys = ['drago_bianco', 'drago_nero', 'drago_rosso', 'drago_verde', 'drago_comune'];
+    const totalDragonKills = dragonKeys.reduce((sum, k) => sum + (killData[k] ?? 0), 0);
+    const totalUniqueTypes = Object.keys(killData).length;
+    const totalKills = Object.values(killData).reduce((sum, v) => sum + v, 0);
+
+    const newBadgeKeys: string[] = [];
+    function maybeAward(key: string, condition: boolean) {
+      if (condition && !existingBadgeKeys.includes(key)) newBadgeKeys.push(key);
+    }
+
+    // First-ever boss kill → alliance badge
+    maybeAward('badge_alliance', totalKills === 1);
+    // First dragon kill
+    maybeAward('badge_dragon', dragonKeys.includes(defeatedBossKey) && totalDragonKills === 1);
+    // 5 dragon kills cumulative
+    maybeAward('badge_5dragons', totalDragonKills >= 5);
+    // First kill of each specific boss type
+    maybeAward('badge_giant',    defeatedBossKey === 'gigante'      && (killData['gigante']      ?? 0) === 1);
+    maybeAward('badge_goblin',   defeatedBossKey === 'goblin'       && (killData['goblin']        ?? 0) === 1);
+    maybeAward('badge_gryphon',  defeatedBossKey === 'grifone'      && (killData['grifone']       ?? 0) === 1);
+    maybeAward('badge_kraken',   defeatedBossKey === 'kraken'       && (killData['kraken']        ?? 0) === 1);
+    maybeAward('badge_minotaur', defeatedBossKey === 'minotauro'    && (killData['minotauro']     ?? 0) === 1);
+    maybeAward('badge_wolf',     defeatedBossKey === 'lupo_mannaro' && (killData['lupo_mannaro']  ?? 0) === 1);
+    // 4 distinct boss types killed
+    maybeAward('badge_monsterhunter', totalUniqueTypes >= 4);
+    // Guild reached level 5
+    maybeAward('badge_guild5', newGuildLevel >= 5);
+
+    if (newBadgeKeys.length > 0) {
+      await supabase
+        .from('guild_badges')
+        .insert(newBadgeKeys.map((key) => ({ guild_id: guildId, badge_key: key })));
+    }
+
+    return newBadgeKeys;
+  } catch (err) {
+    console.error('[checkAndAwardGuildBadges] Error:', err);
+    return [];
+  }
+}
+
 export async function assignBossBadges(
   supabase: any,
   bossKey: string,

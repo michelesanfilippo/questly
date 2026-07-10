@@ -250,8 +250,8 @@ export function Leaderboard({ currentUserId, currentUserLevel = 0, isLoggedIn = 
                       {/* Guild icon with hover zoom */}
                       <div className="relative group shrink-0" style={{ width: 28, height: 28 }}>
                         <div className="rounded-full overflow-hidden border border-amber-800/20 bg-amber-100 flex items-center justify-center" style={{ width: 28, height: 28 }}>
-                          {guild.icon_key === 'badge_guild' ? (
-                            <Image src={GUILD_BADGE_IMG} alt="" width={28} height={28} className="h-full w-full object-cover" />
+                        {guild.icon_key?.startsWith('badge_') ? (
+                            <Image src={`/images/badges/${guild.icon_key}.png`} alt="" width={28} height={28} className="h-full w-full object-cover" />
                           ) : guild.icon_key ? (
                             <span className="text-base leading-none">{guild.icon_key}</span>
                           ) : (
@@ -261,8 +261,8 @@ export function Leaderboard({ currentUserId, currentUserLevel = 0, isLoggedIn = 
                         {/* Hover zoom */}
                         <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-30 hidden group-hover:flex flex-col items-center pointer-events-none">
                           <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-amber-300/60 bg-amber-100 flex items-center justify-center shadow-[0_0_16px_rgba(217,119,6,0.5)]">
-                            {guild.icon_key === 'badge_guild' ? (
-                              <Image src={GUILD_BADGE_IMG} alt="" width={64} height={64} className="h-full w-full object-cover" />
+                            {guild.icon_key?.startsWith('badge_') ? (
+                              <Image src={`/images/badges/${guild.icon_key}.png`} alt="" width={64} height={64} className="h-full w-full object-cover" />
                             ) : guild.icon_key ? (
                               <span className="text-4xl leading-none">{guild.icon_key}</span>
                             ) : (

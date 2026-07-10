@@ -3,6 +3,7 @@ import { evaluateBossAnswer } from '@/lib/boss-evaluate';
 import type { BossEvaluation } from '@/lib/boss-evaluate';
 import { getWeekStart, pickBoss, calculateDamage } from '@/lib/boss';
 import { requireUser, createSupabaseAdminClient } from '@/lib/supabaseServer';
+import { checkAndAwardGuildBadges } from '@/lib/badges';
 import bossMissionsData from '@/data/boss_missions.json';
 
 
@@ -198,6 +199,9 @@ export async function POST(request: NextRequest) {
     const guildXpReward = bossFight.boss_rarity * 75;
     const userXpReward = bossFight.boss_rarity * 20;
 
+    let newGuildLevel = 1;
+    let newGuildBadges: string[] = [];
+
     if (justDefeated) {
       try {
         // --- Guild XP ---
@@ -214,6 +218,7 @@ export async function POST(request: NextRequest) {
             gXp -= gLevel * 100;
             gLevel++;
           }
+          newGuildLevel = gLevel;
           await supabase
             .from('guilds')
             .update({ xp: gXp, level: gLevel })
@@ -247,6 +252,18 @@ export async function POST(request: NextRequest) {
         console.error('[api/boss/attack] Failed to award XP on boss defeat:', xpErr);
         // Non-fatal: don't fail the attack response
       }
+
+      // Check and award guild badges
+      try {
+        newGuildBadges = await checkAndAwardGuildBadges(
+          supabase,
+          guildId,
+          bossFight.boss_key,
+          newGuildLevel,
+        );
+      } catch (badgeErr) {
+        console.error('[api/boss/attack] Failed to award guild badges:', badgeErr);
+      }
     }
 
     // =====================================================
@@ -278,6 +295,7 @@ export async function POST(request: NextRequest) {
           user_xp: justDefeated ? userXpReward : 0,
           message: isDefeated ? 'Boss defeated!' : 'Attack successful!',
         },
+        newGuildBadges: justDefeated ? newGuildBadges : [],
       },
       { status: 200 }
     );

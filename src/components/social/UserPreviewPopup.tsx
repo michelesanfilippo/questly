@@ -138,8 +138,8 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   }
 
   function renderGuildIcon(g: GuildInfo, size: number) {
-    if (g.icon_key === 'badge_guild') {
-      return <Image src={GUILD_BADGE_IMG} alt="" width={size} height={size} className="h-full w-full object-cover" />;
+    if (g.icon_key?.startsWith('badge_')) {
+      return <Image src={`/images/badges/${g.icon_key}.png`} alt="" width={size} height={size} className="h-full w-full object-cover" />;
     }
     if (g.icon_key) {
       return <span style={{ fontSize: size * 0.6 }} className="leading-none">{g.icon_key}</span>;

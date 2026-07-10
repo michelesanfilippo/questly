@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useI18n } from '@/i18n';
 import { GuildBrowser } from '@/components/guild/GuildBrowser';
 import { getGuildAccessState } from '@/lib/guilds';
-import { getBadgeImagePath } from '@/lib/badges';
+import { getBadgeImagePath, GUILD_BADGE_DEFINITIONS } from '@/lib/badges';
+import { supabase } from '@/lib/supabase';
 import { UserPreviewPopup } from '@/components/social/UserPreviewPopup';
 import type { SupabaseProfile } from '@/types';
 
@@ -77,6 +78,8 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
   const [assignError, setAssignError] = useState<string | null>(null);
   // User preview
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
+  // Guild badges (earned via boss kills)
+  const [guildBadges, setGuildBadges] = useState<string[]>([]);
 
   const loadCurrentGuild = useCallback(async () => {
     try {
@@ -96,6 +99,17 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
       setGuildIcon(payload.guild?.icon_key ?? null);
       setMembers(payload.members ?? []);
       setRequestCount(payload.requestCount ?? 0);
+
+      // Fetch guild badges
+      if (payload.guild?.id) {
+        try {
+          const { data: badgeRows } = await supabase
+            .from('guild_badges')
+            .select('badge_key')
+            .eq('guild_id', payload.guild.id);
+          setGuildBadges((badgeRows ?? []).map((b: { badge_key: string }) => b.badge_key));
+        } catch { /* guild_badges table may not exist yet */ }
+      }
     } catch {
       setGuildName(null);
       setGuildRole(null);
@@ -328,8 +342,8 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
                   className={`relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-amber-800/20 bg-amber-100 text-3xl select-none ${isLeader ? 'cursor-pointer hover:border-amber-600 transition-colors' : 'cursor-default'}`}
                   title={isLeader ? 'Change guild icon' : undefined}
                 >
-                {guildIcon === GUILD_BADGE_KEY ? (
-                    <Image src={GUILD_BADGE_IMG} alt="Guild Badge" width={56} height={56} className="h-full w-full object-cover rounded-full" />
+                {guildIcon?.startsWith('badge_') ? (
+                    <Image src={`/images/badges/${guildIcon}.png`} alt="Guild Badge" width={56} height={56} className="h-full w-full object-cover rounded-full" />
                   ) : guildIcon ? (
                     <span>{guildIcon}</span>
                   ) : (
@@ -603,45 +617,81 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
               <h4 className="font-serif text-base font-bold text-amber-900">Choose Guild Icon</h4>
               <button type="button" onClick={() => { setShowIconPicker(false); setIconUpdateError(null); }} className="text-stone-400 hover:text-stone-700">✕</button>
             </div>
-            <div className="mb-4 grid grid-cols-6 gap-2">
-              {/* Guild badge as first special option */}
-              <div className="relative group">
-                <button
-                  type="button"
-                  onClick={() => setPendingIcon(GUILD_BADGE_KEY)}
-                  className={`flex h-10 w-10 items-center justify-center rounded-sm border-2 overflow-hidden transition-colors ${
-                    pendingIcon === GUILD_BADGE_KEY
-                      ? 'border-amber-700 bg-amber-100'
-                      : 'border-transparent bg-amber-50/60 hover:border-amber-400'
-                  }`}
-                  title="Guild Badge"
-                >
-                  <Image src={GUILD_BADGE_IMG} alt="Guild Badge" width={32} height={32} className="h-full w-full object-cover" />
-                </button>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover:flex pointer-events-none">
-                  <div className="h-14 w-14 rounded-sm border-2 border-amber-400/60 overflow-hidden bg-amber-100 shadow-lg">
-                    <Image src={GUILD_BADGE_IMG} alt="" width={56} height={56} className="h-full w-full object-cover" />
+            <div className="mb-4 space-y-3">
+              {/* Guild badges earned via boss kills */}
+              {guildBadges.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">Guild Badges</p>
+                  <div className="grid grid-cols-6 gap-2">
+                    {guildBadges.map((badgeKey) => {
+                      const def = GUILD_BADGE_DEFINITIONS[badgeKey];
+                      return (
+                        <div key={badgeKey} className="relative group">
+                          <button
+                            type="button"
+                            onClick={() => setPendingIcon(badgeKey)}
+                            className={`flex h-10 w-10 items-center justify-center rounded-sm border-2 overflow-hidden transition-colors ${
+                              pendingIcon === badgeKey
+                                ? 'border-amber-700 bg-amber-100'
+                                : 'border-transparent bg-amber-50/60 hover:border-amber-400'
+                            }`}
+                            title={def?.name ?? badgeKey}
+                          >
+                            <Image src={`/images/badges/${badgeKey}.png`} alt={def?.name ?? badgeKey} width={32} height={32} className="h-full w-full object-cover" />
+                          </button>
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover:flex flex-col items-center pointer-events-none">
+                            <div className="h-14 w-14 rounded-sm border-2 border-amber-400/60 overflow-hidden bg-amber-100 shadow-lg">
+                              <Image src={`/images/badges/${badgeKey}.png`} alt="" width={56} height={56} className="h-full w-full object-cover" />
+                            </div>
+                            {def && <span className="mt-1 whitespace-nowrap rounded bg-amber-900/90 px-1.5 py-0.5 text-[10px] text-amber-50">{def.name}</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
+                  <div className="border-t border-amber-200/40 pt-2" />
                 </div>
-              </div>
-              {GUILD_ICONS.map((icon) => (
-                <div key={icon} className="relative group">
+              )}
+              {/* Default badge_guild icon */}
+              <div className="grid grid-cols-6 gap-2">
+                <div className="relative group">
                   <button
                     type="button"
-                    onClick={() => setPendingIcon(icon)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-sm border-2 text-xl transition-colors ${
-                      pendingIcon === icon
+                    onClick={() => setPendingIcon(GUILD_BADGE_KEY)}
+                    className={`flex h-10 w-10 items-center justify-center rounded-sm border-2 overflow-hidden transition-colors ${
+                      pendingIcon === GUILD_BADGE_KEY
                         ? 'border-amber-700 bg-amber-100'
                         : 'border-transparent bg-amber-50/60 hover:border-amber-400'
                     }`}
+                    title="Guild Badge"
                   >
-                    {icon}
+                    <Image src={GUILD_BADGE_IMG} alt="Guild Badge" width={32} height={32} className="h-full w-full object-cover" />
                   </button>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover:flex items-center justify-center pointer-events-none">
-                    <span className="text-5xl leading-none drop-shadow-md">{icon}</span>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover:flex pointer-events-none">
+                    <div className="h-14 w-14 rounded-sm border-2 border-amber-400/60 overflow-hidden bg-amber-100 shadow-lg">
+                      <Image src={GUILD_BADGE_IMG} alt="" width={56} height={56} className="h-full w-full object-cover" />
+                    </div>
                   </div>
                 </div>
-              ))}
+                {GUILD_ICONS.map((icon) => (
+                  <div key={icon} className="relative group">
+                    <button
+                      type="button"
+                      onClick={() => setPendingIcon(icon)}
+                      className={`flex h-10 w-10 items-center justify-center rounded-sm border-2 text-xl transition-colors ${
+                        pendingIcon === icon
+                          ? 'border-amber-700 bg-amber-100'
+                          : 'border-transparent bg-amber-50/60 hover:border-amber-400'
+                      }`}
+                    >
+                      {icon}
+                    </button>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover:flex items-center justify-center pointer-events-none">
+                      <span className="text-5xl leading-none drop-shadow-md">{icon}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
             {iconUpdateError ? <p className="mb-2 text-xs text-red-600">{iconUpdateError}</p> : null}
             <div className="flex justify-end gap-2">

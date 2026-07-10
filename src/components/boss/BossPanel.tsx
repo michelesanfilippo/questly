@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useI18n } from '@/i18n';
 import { isBossWeekend, BOSS_TYPES } from '@/lib/boss';
@@ -9,6 +10,7 @@ import { StarRating } from '@/components/ui/StarRating';
 import { BossSummonPopup } from './BossSummonPopup';
 import { BossVictoryPopup } from './BossVictoryPopup';
 import { useQuestTranslation } from '@/hooks/useQuestTranslation';
+import { GUILD_BADGE_DEFINITIONS } from '@/lib/badges';
 import type { Mission } from '@/types';
 import bossMissionsData from '@/data/boss_missions.json';
 
@@ -65,6 +67,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   const [showVictoryPopup, setShowVictoryPopup] = useState(false);
   const [victoryGuildXP, setVictoryGuildXP] = useState(0);
   const [victoryUserXP, setVictoryUserXP] = useState(0);
+  // Guild badges
+  const [earnedGuildBadges, setEarnedGuildBadges] = useState<string[]>([]);
+  const [justEarnedBadges, setJustEarnedBadges] = useState<string[]>([]);
   // Prevent SSR/client hydration mismatch with framer-motion
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -121,8 +126,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   };
 
   // Fetch top-5 damage leaderboard for the guild
-  const fetchGuildLeaderboard = useCallback(async (bossFightId: string) => {
-    try {
+  const fetchGuildLeaderboard = useCallback(async (bossFightId: string) => {    try {
       const { data } = await supabase
         .from('boss_attempts')
         .select('damage, profiles!user_id(nickname)')
@@ -141,6 +145,19 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       }
     } catch (err) {
       console.warn('[BossPanel] Failed to fetch leaderboard:', err);
+    }
+  }, [guildId]);
+
+  // Fetch all guild badges for display
+  const fetchGuildBadges = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('guild_badges')
+        .select('badge_key')
+        .eq('guild_id', guildId);
+      setEarnedGuildBadges((data ?? []).map((r: { badge_key: string }) => r.badge_key));
+    } catch {
+      // guild_badges table may not exist yet
     }
   }, [guildId]);
 
@@ -236,6 +253,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         } catch (err) {
           console.warn('[fetchBossState] Failed to check attack history:', err);
         }
+
+        // Fetch guild badges on initial load (all members see them)
+        void fetchGuildBadges();
       }
 
       setIsLoading(false);
@@ -245,7 +265,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
       onError?.(message);
       setIsLoading(false);
     }
-  }, [guildId, onError]);
+  }, [guildId, onError, fetchGuildBadges]);
 
   // Initial fetch on mount only
   useEffect(() => {
@@ -353,6 +373,13 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           setVictoryGuildXP(data.rewards?.guild_xp ?? 0);
           setVictoryUserXP(data.rewards?.user_xp ?? 0);
           setShowVictoryPopup(true);
+          // Handle new guild badges
+          const newBadges: string[] = data.newGuildBadges ?? [];
+          if (newBadges.length > 0) {
+            setJustEarnedBadges(newBadges);
+            setEarnedGuildBadges(prev => [...new Set([...prev, ...newBadges])]);
+          }
+          void fetchGuildBadges();
           onVictory?.();
         }
         // No fetchBossState() here — boss state already updated directly above.
@@ -364,7 +391,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setIsSubmitting(false);
       }
     },
-    [guildId, userRole, onVictory, fetchBossState, boss?.boss_key]
+    [guildId, userRole, onVictory, fetchBossState, fetchGuildBadges, boss?.boss_key]
   );
 
   // Loading
@@ -454,6 +481,57 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                     </li>
                   ))}
                 </ol>
+              </div>
+            )}
+            {/* Newly earned guild badge notification */}
+            {justEarnedBadges.map((badgeKey) => {
+              const def = GUILD_BADGE_DEFINITIONS[badgeKey];
+              if (!def) return null;
+              return (
+                <div key={badgeKey} className="rounded-sm border-2 border-amber-400/70 bg-gradient-to-b from-amber-50 to-yellow-50 p-4 text-center space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">
+                    🏅 Congratulations! Your guild has earned a new badge!
+                  </p>
+                  <div className="flex justify-center">
+                    <Image
+                      src={`/images/badges/${badgeKey}.png`}
+                      alt={def.name}
+                      width={80}
+                      height={80}
+                      className="rounded-full shadow-[0_0_20px_rgba(217,119,6,0.5)] border-2 border-amber-300/70"
+                    />
+                  </div>
+                  <p className="font-serif text-base font-bold text-amber-900">{def.name}</p>
+                  <p className="text-xs text-stone-600 italic">{def.description}</p>
+                  <p className="text-[10px] text-stone-400 italic">The guild leader can set this as the guild icon.</p>
+                </div>
+              );
+            })}
+            {/* All earned guild badges (excluding just-earned ones shown above) */}
+            {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).length > 0 && (
+              <div className="rounded-sm bg-amber-50/60 border border-amber-200/40 p-3 space-y-2">
+                <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wide">Guild Badges</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).map(k => {
+                    const def = GUILD_BADGE_DEFINITIONS[k];
+                    return (
+                      <div key={k} className="relative group">
+                        <Image
+                          src={`/images/badges/${k}.png`}
+                          alt={def?.name ?? k}
+                          width={40}
+                          height={40}
+                          className="rounded-full border border-amber-300/50 shadow-sm"
+                        />
+                        {def && (
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-50 hidden group-hover:block pointer-events-none whitespace-nowrap rounded bg-amber-900/90 px-1.5 py-0.5 text-[10px] text-amber-50">
+                            {def.name}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
