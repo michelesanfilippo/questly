@@ -519,9 +519,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                         <Image
                           src={`/images/badges/${k}.png`}
                           alt={def?.name ?? k}
-                          width={72}
-                          height={72}
-                          className="rounded-full border border-amber-300/50 shadow-sm"
+                          width={96}
+                          height={96}
+                          className="h-24 w-24 rounded-full border border-amber-300/50 shadow-sm"
                         />
                         {def && (
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-50 hidden group-hover:block pointer-events-none whitespace-nowrap rounded bg-amber-900/90 px-1.5 py-0.5 text-[10px] text-amber-50">
