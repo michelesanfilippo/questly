@@ -640,8 +640,8 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
                             <Image src={`/images/badges/${badgeKey}.png`} alt={def?.name ?? badgeKey} width={32} height={32} className="h-full w-full object-cover" />
                           </button>
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover:flex flex-col items-center pointer-events-none">
-                            <div className="h-24 w-24 rounded-sm border-2 border-amber-400/60 overflow-hidden bg-amber-100 shadow-lg">
-                              <Image src={`/images/badges/${badgeKey}.png`} alt="" width={96} height={96} className="h-full w-full object-cover" />
+                            <div className="h-48 w-48 rounded-sm border-2 border-amber-400/60 overflow-hidden bg-amber-100 shadow-lg">
+                              <Image src={`/images/badges/${badgeKey}.png`} alt="" width={192} height={192} className="h-full w-full object-cover" />
                             </div>
                             {def && <span className="mt-1 whitespace-nowrap rounded bg-amber-900/90 px-1.5 py-0.5 text-[10px] text-amber-50">{def.name}</span>}
                           </div>
@@ -668,8 +668,8 @@ export function GuildPanel({ profile, onProfileUpdate }: GuildPanelProps) {
                     <Image src={GUILD_BADGE_IMG} alt="Guild Badge" width={32} height={32} className="h-full w-full object-cover" />
                   </button>
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover:flex pointer-events-none">
-                    <div className="h-24 w-24 rounded-sm border-2 border-amber-400/60 overflow-hidden bg-amber-100 shadow-lg">
-                      <Image src={GUILD_BADGE_IMG} alt="" width={96} height={96} className="h-full w-full object-cover" />
+                    <div className="h-48 w-48 rounded-sm border-2 border-amber-400/60 overflow-hidden bg-amber-100 shadow-lg">
+                      <Image src={GUILD_BADGE_IMG} alt="" width={192} height={192} className="h-full w-full object-cover" />
                     </div>
                   </div>
                 </div>
