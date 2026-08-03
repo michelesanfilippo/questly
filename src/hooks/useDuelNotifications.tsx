@@ -78,34 +78,69 @@ export function useDuelNotifications({ currentUserId }: UseDuelNotificationsProp
 
     const channel = supabase
       .channel(`duels-${currentUserId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'duels' }, async (payload) => {
-        const row = payload.new as Record<string, unknown>;
-        if (row.challenged_id === currentUserId && row.status === 'pending') {
-          const id = row.id as string;
-          if (!seenIds.current.has(id)) {
-            seenIds.current.add(id);
-            const enriched = await enrichDuel(row);
-            if (enriched) setPendingChallenge(enriched);
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'duels',
+          filter: `challenged_id=eq.${currentUserId}`,
+        },
+        async (payload) => {
+          const row = payload.new as Record<string, unknown>;
+          if (row.status === 'pending') {
+            const id = row.id as string;
+            if (!seenIds.current.has(id)) {
+              seenIds.current.add(id);
+              const enriched = await enrichDuel(row);
+              if (enriched) setPendingChallenge(enriched);
+            }
           }
         }
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'duels' }, async (payload) => {
-        const row = payload.new as Record<string, unknown>;
-        const id = row.id as string;
-        const isParticipant = row.challenger_id === currentUserId || row.challenged_id === currentUserId;
-        if (!isParticipant) return;
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'duels',
+          filter: `challenged_id=eq.${currentUserId}`,
+        },
+        async (payload) => {
+          const row = payload.new as Record<string, unknown>;
+          const id = row.id as string;
 
-        if (row.status === 'completed' && !seenIds.current.has(`res-${id}`)) {
-          seenIds.current.add(`res-${id}`);
-          const enriched = await enrichDuel(row);
-          if (enriched) { setActiveDuelForAnswer(null); setPendingChallenge(null); setCompletedDuel(enriched); }
+          if (row.status === 'completed' && !seenIds.current.has(`res-${id}`)) {
+            seenIds.current.add(`res-${id}`);
+            const enriched = await enrichDuel(row);
+            if (enriched) { setActiveDuelForAnswer(null); setPendingChallenge(null); setCompletedDuel(enriched); }
+          }
+          if (row.status === 'challenger_answered' && !seenIds.current.has(`ans-${id}`)) {
+            seenIds.current.add(`ans-${id}`);
+            const enriched = await enrichDuel(row);
+            if (enriched) setActiveDuelForAnswer(enriched);
+          }
         }
-        if (row.status === 'challenger_answered' && row.challenged_id === currentUserId && !seenIds.current.has(`ans-${id}`)) {
-          seenIds.current.add(`ans-${id}`);
-          const enriched = await enrichDuel(row);
-          if (enriched) setActiveDuelForAnswer(enriched);
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'duels',
+          filter: `challenger_id=eq.${currentUserId}`,
+        },
+        async (payload) => {
+          const row = payload.new as Record<string, unknown>;
+          const id = row.id as string;
+
+          if (row.status === 'completed' && !seenIds.current.has(`res-${id}`)) {
+            seenIds.current.add(`res-${id}`);
+            const enriched = await enrichDuel(row);
+            if (enriched) { setActiveDuelForAnswer(null); setPendingChallenge(null); setCompletedDuel(enriched); }
+          }
         }
-      })
+      )
       .subscribe();
 
     return () => { void supabase.removeChannel(channel); };
