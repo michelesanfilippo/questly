@@ -241,8 +241,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             weekStart.setUTCHours(0, 0, 0, 0);
             const weekStartStr = weekStart.toISOString().split('T')[0];
 
-            // Check existence only — avoids 400 from missing columns
-            const now = new Date();
+            // Check daily attack limit (1 per day, not per week)
             const todayStr = now.toISOString().split('T')[0]; // UTC today YYYY-MM-DD
             const { data: attempts } = await supabase
               .from('boss_attempts')
