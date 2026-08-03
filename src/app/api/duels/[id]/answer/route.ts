@@ -94,6 +94,9 @@ export async function POST(
     }
     // null = draw
     updatePayload.winner_id = winnerId;
+      // Both players need to see the result
+      updatePayload.challenger_seen = false;
+      updatePayload.challenged_seen = false;
   } else if (isChallenger) {
     updatePayload.status = 'challenger_answered';
   } else {

@@ -12,13 +12,18 @@ interface UseDuelNotificationsProps {
   currentUserId?: string | null;
 }
 
+async function getToken(): Promise<string | undefined> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token;
+}
+
 export function useDuelNotifications({ currentUserId }: UseDuelNotificationsProps) {
   const { locale } = useI18n();
   const [pendingChallenge, setPendingChallenge] = useState<DuelData | null>(null);
   const [activeDuelForAnswer, setActiveDuelForAnswer] = useState<DuelData | null>(null);
   const [completedDuel, setCompletedDuel] = useState<DuelData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const seenIds = useRef<Set<string>>(new Set());
+  const checkedRef = useRef(false);
 
   const enrichDuel = useCallback(async (row: Record<string, unknown>): Promise<DuelData | null> => {
     if (!currentUserId) return null;
@@ -37,10 +42,13 @@ export function useDuelNotifications({ currentUserId }: UseDuelNotificationsProp
     };
   }, [currentUserId]);
 
+  // On login / page load: check for pending or unseen duels
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!currentUserId || checkedRef.current) return;
+    checkedRef.current = true;
+
     (async () => {
-      // Pending challenge aimed at this user
+      // 1. Pending challenge for me (challenged_id)
       const { data: pending } = await supabase
         .from('duels')
         .select('*')
@@ -50,103 +58,46 @@ export function useDuelNotifications({ currentUserId }: UseDuelNotificationsProp
         .limit(1)
         .maybeSingle();
 
-      if (pending && !seenIds.current.has(pending.id as string)) {
+      if (pending) {
         const enriched = await enrichDuel(pending as Record<string, unknown>);
-        if (enriched) { seenIds.current.add(pending.id as string); setPendingChallenge(enriched); }
+        if (enriched) { setPendingChallenge(enriched); return; }
       }
 
-      // Awaiting this user's answer (challenger already answered)
-      const { data: awaitingAnswer } = await supabase
+      // 2. Challenger already answered — challenged user needs to reply
+      const { data: needsAnswer } = await supabase
         .from('duels')
         .select('*')
         .eq('challenged_id', currentUserId)
         .eq('status', 'challenger_answered')
-        .eq('challenged_answer', null)
+        .is('challenged_answer', null)
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (awaitingAnswer && !seenIds.current.has(`ans-${awaitingAnswer.id}`)) {
-        const enriched = await enrichDuel(awaitingAnswer as Record<string, unknown>);
-        if (enriched) { seenIds.current.add(`ans-${awaitingAnswer.id as string}`); setActiveDuelForAnswer(enriched); }
+      if (needsAnswer) {
+        const enriched = await enrichDuel(needsAnswer as Record<string, unknown>);
+        if (enriched) { setActiveDuelForAnswer(enriched); return; }
+      }
+
+      // 3. Completed OR declined duel not yet seen by me
+      const { data: unseen } = await supabase
+        .from('duels')
+        .select('*')
+        .in('status', ['completed', 'declined'])
+        .or(
+          `and(challenger_id.eq.${currentUserId},challenger_seen.eq.false),and(challenged_id.eq.${currentUserId},challenged_seen.eq.false)`
+        )
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (unseen) {
+        const enriched = await enrichDuel(unseen as Record<string, unknown>);
+        if (enriched) setCompletedDuel(enriched);
       }
     })();
   }, [currentUserId, enrichDuel]);
 
-  useEffect(() => {
-    if (!currentUserId) return;
-
-    const channel = supabase
-      .channel(`duels-${currentUserId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'duels',
-          filter: `challenged_id=eq.${currentUserId}`,
-        },
-        async (payload) => {
-          const row = payload.new as Record<string, unknown>;
-          if (row.status === 'pending') {
-            const id = row.id as string;
-            if (!seenIds.current.has(id)) {
-              seenIds.current.add(id);
-              const enriched = await enrichDuel(row);
-              if (enriched) setPendingChallenge(enriched);
-            }
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'duels',
-          filter: `challenged_id=eq.${currentUserId}`,
-        },
-        async (payload) => {
-          const row = payload.new as Record<string, unknown>;
-          const id = row.id as string;
-
-          if (row.status === 'completed' && !seenIds.current.has(`res-${id}`)) {
-            seenIds.current.add(`res-${id}`);
-            const enriched = await enrichDuel(row);
-            if (enriched) { setActiveDuelForAnswer(null); setPendingChallenge(null); setCompletedDuel(enriched); }
-          }
-          if (row.status === 'challenger_answered' && !seenIds.current.has(`ans-${id}`)) {
-            seenIds.current.add(`ans-${id}`);
-            const enriched = await enrichDuel(row);
-            if (enriched) setActiveDuelForAnswer(enriched);
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'duels',
-          filter: `challenger_id=eq.${currentUserId}`,
-        },
-        async (payload) => {
-          const row = payload.new as Record<string, unknown>;
-          const id = row.id as string;
-
-          if (row.status === 'completed' && !seenIds.current.has(`res-${id}`)) {
-            seenIds.current.add(`res-${id}`);
-            const enriched = await enrichDuel(row);
-            if (enriched) { setActiveDuelForAnswer(null); setPendingChallenge(null); setCompletedDuel(enriched); }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => { void supabase.removeChannel(channel); };
-  }, [currentUserId, enrichDuel]);
-
-  const handleAcceptChallenge = useCallback(async () => {
+  const handleAcceptChallenge = useCallback(() => {
     if (!pendingChallenge) return;
     setPendingChallenge(null);
     setActiveDuelForAnswer(pendingChallenge);
@@ -156,10 +107,10 @@ export function useDuelNotifications({ currentUserId }: UseDuelNotificationsProp
     if (!pendingChallenge) return;
     setIsLoading(true);
     try {
-      const { data: session } = await supabase.auth.getSession();
-      await fetch(`/api/duels/${pendingChallenge.id}/answer`, {
-        method: 'DELETE',
-        headers: session.session?.access_token ? { Authorization: `Bearer ${session.session.access_token}` } : {},
+      const token = await getToken();
+      await fetch(`/api/duels/${pendingChallenge.id}/decline`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
     } catch { /* best-effort */ }
     setPendingChallenge(null);
@@ -170,8 +121,7 @@ export function useDuelNotifications({ currentUserId }: UseDuelNotificationsProp
     if (!activeDuelForAnswer) return;
     setIsLoading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
+      const token = await getToken();
       const res = await fetch(`/api/duels/${activeDuelForAnswer.id}/answer`, {
         method: 'POST',
         headers: {
@@ -194,18 +144,24 @@ export function useDuelNotifications({ currentUserId }: UseDuelNotificationsProp
     }
   }, [activeDuelForAnswer, locale, enrichDuel]);
 
+  const markResultSeen = useCallback(async () => {
+    if (!completedDuel || !currentUserId) return;
+    const token = await getToken();
+    await fetch(`/api/duels/${completedDuel.id}/seen`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    setCompletedDuel(null);
+  }, [completedDuel, currentUserId]);
+
   return {
     pendingChallenge, activeDuelForAnswer, completedDuel, isLoading,
     handleAcceptChallenge, handleDeclineChallenge, handleSubmitAnswer,
-    clearResult: () => setCompletedDuel(null),
+    clearResult: markResultSeen,
     clearAnswer: () => setActiveDuelForAnswer(null),
   };
 }
 
-/**
- * Self-contained wrapper that mounts duel popups globally.
- * Gets its own user ID from Supabase session.
- */
 export function DuelNotificationWrapper() {
   const [userId, setUserId] = useState<string | null>(null);
 
