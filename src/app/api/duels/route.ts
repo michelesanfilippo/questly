@@ -97,13 +97,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'You can only duel friends' }, { status: 400 });
   }
 
-  // Check no pending duel between these two
+  // Check no pending duel between these two specifically
+  const sortedLow = [userId, challengedId].sort()[0];
+  const sortedHigh = [userId, challengedId].sort()[1];
   const { data: existingDuel } = await supabase
     .from('duels')
     .select('id')
-    .or(`challenger_id.eq.${userId},challenged_id.eq.${userId}`)
-    .or(`challenger_id.eq.${challengedId},challenged_id.eq.${challengedId}`)
     .in('status', ['pending', 'challenger_answered', 'challenged_answered'])
+    .or(
+      `and(challenger_id.eq.${sortedLow},challenged_id.eq.${sortedHigh}),and(challenger_id.eq.${sortedHigh},challenged_id.eq.${sortedLow})`
+    )
     .maybeSingle();
 
   if (existingDuel) {
