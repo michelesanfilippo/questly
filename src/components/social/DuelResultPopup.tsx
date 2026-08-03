@@ -69,7 +69,7 @@ export function DuelResultPopup({ duel, currentUserId, onClose }: DuelResultPopu
               <div className="rounded-sm bg-white/70 border border-amber-200/60 p-4 space-y-3">
                 {/* VS header */}
                 <div className="flex items-center justify-center gap-3 text-xs font-bold uppercase tracking-wider text-stone-400">
-                  <span className="truncate text-right flex-1">Tu</span>
+                  <span className="truncate text-right flex-1">{t('duel.you')}</span>
                   <span className="text-amber-600">{t('duel.vs')}</span>
                   <span className="truncate flex-1">{duel.opponent_nickname}</span>
                 </div>
