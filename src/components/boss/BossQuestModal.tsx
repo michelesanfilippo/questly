@@ -27,11 +27,10 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
 
   const handleSubmit = async () => {
     if (!answer.trim()) {
-      alert('Please provide an answer');
+      alert(t('boss.quest_modal.please_answer'));
       return;
     }
-    // Pass answer to parent; score will be determined by Ollama validation
-    await onSubmit(answer, 75); // 75 is placeholder, actual score comes from validation
+    await onSubmit(answer, 75);
   };
 
   return (
@@ -64,13 +63,13 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
         {/* Answer Input */}
         <div className="mb-6">
           <label className="mb-2 block text-amber-200 font-semibold">
-            Your Answer:
+            {t('boss.quest_modal.your_answer')}
           </label>
           <textarea
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             disabled={isSubmitting}
-            placeholder="Type your answer here..."
+            placeholder={t('boss.quest_modal.answer_placeholder')}
             rows={4}
             className="w-full rounded-lg border border-amber-700/50 bg-gray-800 px-3 py-2 text-gray-100 placeholder-gray-600 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:opacity-50"
           />
@@ -80,11 +79,11 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
         <div className="mb-6">
           <div className="mb-3 flex items-center justify-between">
             <label className="text-amber-200 font-semibold">
-              Role Bonuses
+              {t('boss.quest_modal.answer_quality')}
             </label>
           </div>
           <div className="text-xs text-amber-400/70">
-            Wizard +50%, Royal Knight +20%
+            {t('boss.quest_modal.score_hint')}
           </div>
         </div>
 
@@ -95,14 +94,14 @@ export const BossQuestModal: React.FC<BossQuestModalProps> = ({
             disabled={isSubmitting || !answer.trim()}
             className="flex-1 rounded-lg border border-amber-600 bg-amber-700 px-4 py-2 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Attacking...' : 'Submit Attack'}
+            {isSubmitting ? t('boss.attacking') : t('boss.quest_modal.submit_attack')}
           </button>
           <button
             onClick={onClose}
             disabled={isSubmitting}
             className="flex-1 rounded-lg border border-amber-600 bg-gray-800 px-4 py-2 font-bold text-amber-100 transition-colors hover:bg-gray-700 disabled:opacity-50"
           >
-            Cancel
+            {t('boss.quest_modal.cancel')}
           </button>
         </div>
       </div>

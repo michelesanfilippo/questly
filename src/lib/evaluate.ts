@@ -1,7 +1,16 @@
 import type { Mission, EvaluationResult, EvaluationScore, CoachingEntry } from '@/types';
 import { callCloudflareAI } from '@/lib/ai';
 
-async function evaluateWithAI(userPrompt: string, mission: Mission): Promise<EvaluationResult | null> {
+const LANG_NAMES: Record<string, string> = {
+  it: 'Italian', fr: 'French', es: 'Spanish', de: 'German', en: 'English',
+};
+
+async function evaluateWithAI(userPrompt: string, mission: Mission, userLocale: string = 'en'): Promise<EvaluationResult | null> {
+  const langName = LANG_NAMES[userLocale] ?? 'English';
+  const langInstruction = userLocale !== 'en'
+    ? `IMPORTANT: Write ALL feedback and suggestions in ${langName}. Do not use English.`
+    : '';
+
   const systemPrompt = `You are an expert prompt engineering evaluator. You evaluate user-written prompts based on how well they solve a given quest/task.
 
 You must respond ONLY with a valid JSON object in this exact format, no other text:
@@ -23,7 +32,8 @@ Scoring criteria:
 - promptEngineering (0-100): overall mastery — role prompting, chain-of-thought, few-shot, format control
 
 Keep feedback in a fantasy/medieval adventure tone (short, encouraging or constructive).
-Suggestions must be actionable and specific (max 3).`;
+Suggestions must be actionable and specific (max 3).
+${langInstruction}`;
 
   const userMessage = `QUEST: ${mission.title}
 QUEST DESCRIPTION: ${mission.task}
@@ -77,9 +87,8 @@ Evaluate this prompt and respond with JSON only.`;
   }
 }
 
-export async function evaluatePrompt(userPrompt: string, mission: Mission): Promise<EvaluationResult> {
-  // Try Cloudflare AI first
-  const aiResult = await evaluateWithAI(userPrompt, mission);
+export async function evaluatePrompt(userPrompt: string, mission: Mission, userLocale: string = 'en'): Promise<EvaluationResult> {
+  const aiResult = await evaluateWithAI(userPrompt, mission, userLocale);
   if (aiResult) return aiResult;
 
   // Fallback: heuristic evaluation

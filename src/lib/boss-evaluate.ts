@@ -1,23 +1,29 @@
 import { callCloudflareAI } from '@/lib/ai';
 
-/**
- * Evaluate a boss quest answer using Ollama/Cloudflare AI
- * Returns score, feedback, and suggestions
- */
 export interface BossEvaluation {
   score: number;
   feedback: string;
   suggestions: string[];
 }
 
+const LANG_NAMES: Record<string, string> = {
+  it: 'Italian', fr: 'French', es: 'Spanish', de: 'German', en: 'English',
+};
+
 export async function evaluateBossAnswer(
   bossName: string,
   questText: string,
-  userAnswer: string
+  userAnswer: string,
+  userLocale: string = 'en'
 ): Promise<BossEvaluation> {
   const DEFAULT: BossEvaluation = { score: 75, feedback: 'Your answer shows solid understanding of the challenge.', suggestions: [] };
 
   if (!questText || !userAnswer) return { score: 0, feedback: 'Please provide a complete answer.', suggestions: [] };
+
+  const langName = LANG_NAMES[userLocale] ?? 'English';
+  const langInstruction = userLocale !== 'en'
+    ? `IMPORTANT: Write ALL feedback and suggestions in ${langName}. Do not use English.`
+    : '';
 
   const systemPrompt = `You are an expert evaluator for fantasy quest answers. Evaluate the quality of the user's answer to the quest.
 
@@ -37,7 +43,8 @@ Scoring criteria:
   - 81-100: Excellent answer, comprehensive and well-reasoned
 
 Feedback should be brief, in a fantasy tone, and either encouraging or constructively critical.
-Suggestions should be 1-3 actionable tips for improvement.`;
+Suggestions should be 1-3 actionable tips for improvement.
+${langInstruction}`;
 
   const userMessage = `BOSS: ${bossName}
 QUEST: ${questText}

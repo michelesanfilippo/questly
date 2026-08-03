@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // 2. VALIDATE REQUEST
     // =====================================================
     const body = await request.json();
-    const { guildId, userAnswer, bossKey, userRole = 'member' } = body;
+    const { guildId, userAnswer, bossKey, userRole = 'member', questText = '', userLocale = 'en' } = body;
 
     if (!guildId || typeof guildId !== 'string') {
       return NextResponse.json(
@@ -143,9 +143,33 @@ export async function POST(request: NextRequest) {
     }
 
     // =====================================================
+    // 5a. CHECK DAILY ATTACK LIMIT (1 per day per user per guild)
+    // =====================================================
+    const todayStr = new Date().toISOString().split('T')[0]; // UTC YYYY-MM-DD
+    const { data: todayAttempt } = await supabase
+      .from('boss_attempts')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('guild_id', guildId)
+      .gte('created_at', todayStr)
+      .limit(1)
+      .maybeSingle();
+
+    if (todayAttempt) {
+      return NextResponse.json(
+        { success: false, error: 'You have already attacked today. Come back tomorrow!' },
+        { status: 400 }
+      );
+    }
+
+    // =====================================================
     // 5. EVALUATE ANSWER WITH AI
     // =====================================================
-    const evaluation = await evaluateBossAnswer(bossKey, `Defeat the ${bossKey}`, userAnswer);
+    // Use the real quest text for contextual evaluation; fallback if not provided
+    const effectiveQuestText = questText.trim().length > 0
+      ? questText
+      : `Defeat the ${bossKey} by demonstrating your prompt engineering mastery`;
+    const evaluation = await evaluateBossAnswer(bossKey, effectiveQuestText, userAnswer, userLocale);
     console.log(`[api/boss/attack] Evaluated score: ${evaluation.score} for user answer`);
     
     // Calculate damage for this attack

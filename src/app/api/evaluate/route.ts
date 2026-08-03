@@ -6,6 +6,7 @@ import type { Mission } from '@/types';
 interface EvaluateRequestBody {
   missionId: string;
   userPrompt: string;
+  userLocale?: string;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const { missionId, userPrompt } = body;
+  const { missionId, userPrompt, userLocale = 'en' } = body;
 
   // Validation
   if (!missionId || typeof missionId !== 'string') {
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const result = await evaluatePrompt(userPrompt, mission);
+    const result = await evaluatePrompt(userPrompt, mission, userLocale);
     return NextResponse.json({ result }, { status: 200 });
   } catch (error) {
     console.error('[POST /api/evaluate]', error);

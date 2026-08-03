@@ -6,6 +6,8 @@ import { useI18n } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath } from '@/lib/badges';
 import { listFriends, listIncomingRequests, removeFriend, respondRequest, subscribeToFriendshipChanges } from '@/lib/friends';
+import { DuelQuestModal } from '@/components/social/DuelQuestModal';
+import type { DuelData } from '@/components/social/DuelChallengePopup';
 
 interface FriendsCardProps {
   currentUserId?: string;
@@ -20,12 +22,17 @@ interface FriendProfile {
 }
 
 export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [friends, setFriends] = useState<FriendProfile[]>([]);
   const [requests, setRequests] = useState<Array<{ userId: string; nickname?: string; requestedBy: string; createdAt: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [friendToRemove, setFriendToRemove] = useState<FriendProfile | null>(null);
   const [removing, setRemoving] = useState(false);
+  // Duel state
+  const [duelTarget, setDuelTarget] = useState<FriendProfile | null>(null);
+  const [duelLoading, setDuelLoading] = useState(false);
+  const [duelError, setDuelError] = useState<string | null>(null);
+  const [activeDuel, setActiveDuel] = useState<DuelData | null>(null);
 
   const loadData = async () => {
     if (!currentUserId) return;
@@ -54,11 +61,68 @@ export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
     if (!currentUserId || !friendToRemove) return;
     setRemoving(true);
     const removed = await removeFriend(friendToRemove.id, currentUserId);
-    if (removed) {
-      await loadData();
-    }
+    if (removed) { await loadData(); }
     setRemoving(false);
     setFriendToRemove(null);
+  }
+
+  async function handleChallenge(friend: FriendProfile) {
+    if (!currentUserId) return;
+    setDuelLoading(true);
+    setDuelError(null);
+    setDuelTarget(friend);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const res = await fetch('/api/duels', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ challengedId: friend.id }),
+      });
+      const data = await res.json() as { duel?: DuelData; error?: string };
+      if (!res.ok) throw new Error(data.error ?? t('duel.error_create'));
+      // Open the quest modal so challenger can also answer immediately
+      if (data.duel) {
+        setActiveDuel({
+          ...data.duel,
+          opponent_id: friend.id,
+          opponent_nickname: friend.nickname,
+          is_challenger: true,
+        });
+      }
+    } catch (err) {
+      setDuelError(err instanceof Error ? err.message : t('duel.error_create'));
+      setDuelTarget(null);
+    } finally {
+      setDuelLoading(false);
+    }
+  }
+
+  async function handleSubmitDuelAnswer(answer: string) {
+    if (!activeDuel) return;
+    setDuelLoading(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const res = await fetch(`/api/duels/${activeDuel.id}/answer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ answer, userLocale: locale }),
+      });
+      if (!res.ok) { const d = await res.json() as { error?: string }; throw new Error(d.error ?? t('duel.error_answer')); }
+      setActiveDuel(null);
+      setDuelTarget(null);
+    } catch (err) {
+      setDuelError(err instanceof Error ? err.message : t('duel.error_answer'));
+    } finally {
+      setDuelLoading(false);
+    }
   }
 
   return (
@@ -95,6 +159,16 @@ export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
                       <p className="truncate text-sm font-semibold text-amber-900">{friend.nickname}</p>
                       <p className="text-xs text-stone-500">{t('user.level', { n: friend.level })}</p>
                     </div>
+                    {/* Duel challenge button */}
+                    <button
+                      type="button"
+                      onClick={() => { void handleChallenge(friend); }}
+                      disabled={duelLoading && duelTarget?.id === friend.id}
+                      title={t('duel.challenge_cta')}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-amber-600 text-sm transition-colors hover:bg-amber-700 disabled:opacity-50"
+                    >
+                      ⚔️
+                    </button>
                     <button
                       type="button"
                       onClick={() => setFriendToRemove(friend)}
@@ -155,9 +229,15 @@ export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
           {profileLevel !== undefined && profileLevel < 6 && (
             <p className="mt-3 text-xs text-stone-500">{t('friends.locked')}</p>
           )}
+
+          {/* Duel error toast */}
+          {duelError && (
+            <p className="mt-2 text-xs text-red-600 text-center">{duelError}</p>
+          )}
         </>
       )}
 
+      {/* Remove confirm modal */}
       {friendToRemove && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-sm border-2 border-amber-800/30 bg-[#faf7f0] p-5 shadow-[2px_4px_16px_rgba(101,67,33,0.25)]">
@@ -184,6 +264,16 @@ export function FriendsCard({ currentUserId, profileLevel }: FriendsCardProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Duel quest modal — challenger submits their answer after creating the duel */}
+      {activeDuel && (
+        <DuelQuestModal
+          duel={activeDuel}
+          onSubmit={handleSubmitDuelAnswer}
+          onClose={() => { setActiveDuel(null); setDuelTarget(null); }}
+          isSubmitting={duelLoading}
+        />
       )}
     </div>
   );

@@ -242,12 +242,14 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             const weekStartStr = weekStart.toISOString().split('T')[0];
 
             // Check existence only — avoids 400 from missing columns
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0]; // UTC today YYYY-MM-DD
             const { data: attempts } = await supabase
               .from('boss_attempts')
               .select('id, damage')
               .eq('user_id', supabaseAuth.user.id)
               .eq('guild_id', guildId)
-              .gte('created_at', weekStartStr)
+              .gte('created_at', todayStr)
               .limit(1);
 
             if (attempts && attempts.length > 0) {
@@ -338,6 +340,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             userAnswer: answer,
             bossKey: boss?.boss_key || 'goblin',
             userRole,
+            questText: selectedQuest?.text ?? '',
+            userLocale: locale,
           }),
         });
 
@@ -406,7 +410,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         setIsSubmitting(false);
       }
     },
-    [guildId, userRole, onVictory, fetchBossState, fetchGuildBadges, boss?.boss_key]
+    [guildId, userRole, onVictory, fetchBossState, fetchGuildBadges, boss?.boss_key, selectedQuest, locale]
   );
 
   // Loading
@@ -425,14 +429,14 @@ export const BossPanel: React.FC<BossPanelProps> = ({
   if (!isBossWeekendFlag) {
     return (
       <div className="w-full rounded-sm border-2 border-amber-800/30 bg-[#faf7f0] p-5 sm:p-6 shadow-[2px_4px_12px_rgba(101,67,33,0.15)] text-center space-y-2">
-        <p className="text-stone-700 font-semibold text-sm">Boss Weekend</p>
-        <p className="text-xs text-stone-500">Bosses appear every Saturday and Sunday (UTC). Come back this weekend!</p>
+        <p className="text-stone-700 font-semibold text-sm">{t('boss.title')}</p>
+        <p className="text-xs text-stone-500">{t('boss.panel.weekend_coming')}</p>
       </div>
     );
   }
 
   const bossEntry = BOSS_TYPES.find(b => b.key === boss?.boss_key);
-  const bossName = bossEntry?.name ?? '⚔️ Mysterious Beast';
+  const bossName = boss?.boss_key ? (t(`boss.names.${boss.boss_key}`) || bossEntry?.name || '⚔️ Mysterious Beast') : '⚔️ Mysterious Beast';
   const bossRarity = boss?.boss_rarity ?? 1;
   const currentHp = boss?.current_hp ?? 0;
   const maxHp = boss?.max_hp ?? 100;
@@ -479,8 +483,8 @@ export const BossPanel: React.FC<BossPanelProps> = ({
         {boss?.is_defeated ? (
           <div className="space-y-3">
             <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 text-center space-y-1">
-              <p className="text-lg font-bold text-amber-900 font-serif">Boss Defeated!</p>
-              <p className="text-xs text-stone-600">Your guild triumphed this week.</p>
+              <p className="text-lg font-bold text-amber-900 font-serif">{t('boss.panel.boss_defeated')}</p>
+              <p className="text-xs text-stone-600">{t('boss.panel.guild_triumphed')}</p>
             </div>
             {guildLeaderboard.length > 0 && (
               <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 space-y-2">
@@ -501,12 +505,12 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             {/* Newly earned guild badge notification */}
             {(justEarnedBadges.length > 0 || justEarnedUserBadgeIndex != null) && (
               <p className="text-sm font-bold text-amber-700 text-center">
-                🎉 Congratulations! You just unlocked new badges!
+                {t('boss.panel.new_badges')}
               </p>
             )}
             {bossJustDefeatedByMe && justEarnedBadges.length === 0 && justEarnedUserBadgeIndex == null && earnedGuildBadges.length > 0 && (
               <p className="text-xs font-semibold text-amber-700 text-center">
-                🏅 Your guild already holds all available badges — great job defending the collection!
+                {t('boss.panel.all_badges_held')}
               </p>
             )}
             {/* User badge card (First Alliance Victory) */}
@@ -526,7 +530,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                   </div>
                   <p className="font-serif text-base font-bold text-amber-900">{def.name}</p>
                   <p className="text-xs text-stone-600 italic">{def.description}</p>
-                  <p className="text-[10px] text-stone-400 italic">Added to your personal badge collection.</p>
+                  <p className="text-[10px] text-stone-400 italic">{t('boss.panel.added_to_collection')}</p>
                 </div>
               );
             })()}
@@ -536,7 +540,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               return (
                 <div key={badgeKey} className="rounded-sm border-2 border-amber-400/70 bg-gradient-to-b from-amber-50 to-yellow-50 p-4 text-center space-y-2">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">
-                    🏅 Congratulations! Your guild has earned a new badge!
+                    {t('boss.panel.guild_new_badge')}
                   </p>
                   <div className="flex justify-center">
                     <Image
@@ -549,7 +553,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                   </div>
                   <p className="font-serif text-base font-bold text-amber-900">{def.name}</p>
                   <p className="text-xs text-stone-600 italic">{def.description}</p>
-                  <p className="text-[10px] text-stone-400 italic">The guild leader can set this as the guild icon.</p>
+                  <p className="text-[10px] text-stone-400 italic">{t('boss.panel.guild_icon_hint')}</p>
                 </div>
               );
             })}
@@ -557,7 +561,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).length > 0 && (
               <div className="rounded-sm bg-amber-50/60 border border-amber-200/40 p-3 space-y-2">
                 <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wide">
-                  {bossJustDefeatedByMe ? '🏆 Guild Badges' : 'Guild Badges'}
+                  {bossJustDefeatedByMe ? '🏆 ' : ''}{t('boss.panel.guild_badges')}
                 </p>
                 <div className="flex flex-wrap gap-3 justify-center">
                   {earnedGuildBadges.filter(k => !justEarnedBadges.includes(k)).map(k => {
@@ -589,32 +593,33 @@ export const BossPanel: React.FC<BossPanelProps> = ({
             <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 space-y-2">
               {damageDealt > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-stone-700 font-semibold">Damage Dealt</span>
+                    <span className="text-stone-700 font-semibold">{t('boss.panel.damage_dealt')}</span>
                   <span className="font-bold text-amber-800">+{damageDealt}</span>
                 </div>
               )}
-              {userSuggestions.length > 0 && (
-                <div className="border-t border-amber-200/60 pt-2 space-y-1">
-                  <p className="text-xs font-semibold text-stone-700">Suggestions:</p>
-                  <ul className="space-y-1">
-                    {userSuggestions.map((s, i) => (
-                      <li key={i} className="text-xs text-stone-600">• {s}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                {userFeedback && (
+                  <p className="text-xs text-stone-600 italic border-t border-amber-200/60 pt-2">{userFeedback}</p>
+                )}
+                {userSuggestions.length > 0 && (
+                  <div className="border-t border-amber-200/60 pt-2 space-y-1">
+                    <p className="text-xs font-semibold text-stone-700">{t('boss.panel.suggestions')}:</p>
+                    <ul className="space-y-1">
+                      {userSuggestions.map((s, i) => (
+                        <li key={i} className="text-xs text-stone-600">• {s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
             </div>
             {/* Guild Top-5 Leaderboard */}
             {guildLeaderboard.length > 0 && (
               <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-4 space-y-2">
-                <p className="text-xs font-semibold text-stone-700 uppercase tracking-wide">Guild Top Attackers</p>
+                <p className="text-xs font-semibold text-stone-700 uppercase tracking-wide">{t('boss.panel.top_attackers')}</p>
                 <ol className="space-y-1">
                   {guildLeaderboard.map((entry, i) => (
                     <li key={i} className="flex items-center justify-between text-xs text-stone-700">
                       <span className="flex items-center gap-1.5">
-                        <span className={`font-bold ${i === 0 ? 'text-amber-700' : i === 1 ? 'text-stone-500' : i === 2 ? 'text-amber-600' : 'text-stone-400'}`}>
-                          #{i + 1}
-                        </span>
+                        <span className={`font-bold ${i === 0 ? 'text-amber-700' : i === 1 ? 'text-stone-500' : i === 2 ? 'text-amber-600' : 'text-stone-400'}`}>#{i + 1}</span>
                         <span>{entry.nickname}</span>
                       </span>
                       <span className="font-semibold text-amber-800">{entry.damage}</span>
@@ -623,7 +628,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                 </ol>
               </div>
             )}
-            <p className="text-center text-xs text-amber-800/60 italic">You already attacked the boss this week.</p>
+            <p className="text-center text-xs text-amber-800/60 italic">{t('boss.panel.attacked_week_recap')}</p>
           </div>
         ) : showInlineQuest && selectedQuest ? (
           /* INLINE QUEST */
@@ -640,7 +645,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                 >
                   🧙
                 </motion.div>
-                <p className="text-xs text-amber-700/70 font-serif italic">The wizards are at work...</p>
+                <p className="text-xs text-amber-700/70 font-serif italic">{t('boss.panel.wizards_working')}</p>
               </div>
             ) : (
               <div className="rounded-sm bg-amber-50/80 border border-amber-200/60 p-3 sm:p-4">
@@ -653,7 +658,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
               value={questAnswer}
               onChange={(e) => setQuestAnswer(e.target.value)}
               disabled={isSubmitting}
-              placeholder="Write your answer, adventurer..."
+              placeholder={t('boss.panel.answer_placeholder')}
               rows={5}
               className="w-full min-h-[120px] rounded-sm border-2 bg-[#faf7f0] text-stone-800 placeholder-stone-400 border-amber-300/60 p-3 sm:p-4 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-500 transition-all duration-200 disabled:opacity-50"
             />
@@ -669,9 +674,9 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                     transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
                     className="inline-block w-4 h-4 border-2 border-amber-200/30 border-t-amber-100 rounded-full"
                   />
-                  Attacking...
+                  {t('boss.panel.attacking')}
                 </span>
-              ) : 'Attack Boss'}
+              ) : t('boss.panel.attack_boss')}
             </button>
           </div>
         ) : (
@@ -679,10 +684,10 @@ export const BossPanel: React.FC<BossPanelProps> = ({
           <div className="space-y-3">
             <p className="text-sm text-stone-600 italic text-center">
               {!boss
-                ? 'Be the first in your guild to summon the weekend boss!'
+                ? t('boss.panel.summon_cta')
                 : hasUserAttacked
-                  ? 'You already attacked the boss this week.'
-                  : 'The boss challenges you. Show your worth!'}
+                  ? t('boss.panel.attacked_today')
+                  : t('boss.panel.challenge_cta')}
             </p>
             {!hasUserAttacked && (
               <button
@@ -690,7 +695,7 @@ export const BossPanel: React.FC<BossPanelProps> = ({
                 disabled={isSubmitting}
                 className="block w-3/4 mx-auto min-h-[38px] rounded-sm bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-amber-50 font-semibold text-xs sm:text-sm border border-amber-600 shadow-[1px_2px_4px_rgba(101,67,33,0.3)] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {boss ? 'Attack Boss' : 'Summon Boss'}
+                {boss ? t('boss.panel.attack_boss') : t('boss.panel.summon_boss')}
               </button>
             )}
           </div>

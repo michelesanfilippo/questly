@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase';
 import { getBadgeImagePath } from '@/lib/badges';
 import { friendshipStatus, sendRequest, type FriendshipStatus } from '@/lib/friends';
 import { GUILD_UNLOCK_LEVEL } from '@/lib/gating';
+import { DuelQuestModal } from '@/components/social/DuelQuestModal';
+import type { DuelData } from '@/components/social/DuelChallengePopup';
 
 const GUILD_BADGE_IMG = '/images/badges/badge_guild.png';
 
@@ -34,7 +36,7 @@ interface GuildInfo {
 type ApplyStatus = 'idle' | 'loading' | 'applied' | 'error';
 
 export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreviewPopupProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [profile, setProfile] = useState<ProfilePreview | null>(null);
   const [guild, setGuild] = useState<GuildInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +45,10 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   const [applyError, setApplyError] = useState<string | null>(null);
   const [currentUserInGuild, setCurrentUserInGuild] = useState(false);
   const [currentUserLevel, setCurrentUserLevel] = useState(0);
+  // Duel
+  const [duelLoading, setDuelLoading] = useState(false);
+  const [duelError, setDuelError] = useState<string | null>(null);
+  const [activeDuel, setActiveDuel] = useState<DuelData | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -137,6 +143,61 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
     return t('social.friend_cta');
   }
 
+  async function handleChallengeDuel() {
+    if (!currentUserId || !userId) return;
+    setDuelLoading(true);
+    setDuelError(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const res = await fetch('/api/duels', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ challengedId: userId }),
+      });
+      const data = await res.json() as { duel?: DuelData; error?: string };
+      if (!res.ok) throw new Error(data.error ?? t('duel.error_create'));
+      if (data.duel) {
+        setActiveDuel({
+          ...data.duel,
+          opponent_id: userId,
+          opponent_nickname: profile?.nickname ?? userId,
+          is_challenger: true,
+        });
+      }
+    } catch (err) {
+      setDuelError(err instanceof Error ? err.message : t('duel.error_create'));
+    } finally {
+      setDuelLoading(false);
+    }
+  }
+
+  async function handleSubmitDuelAnswer(answer: string) {
+    if (!activeDuel) return;
+    setDuelLoading(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const res = await fetch(`/api/duels/${activeDuel.id}/answer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ answer, userLocale: locale }),
+      });
+      if (!res.ok) { const d = await res.json() as { error?: string }; throw new Error(d.error ?? t('duel.error_answer')); }
+      setActiveDuel(null);
+    } catch (err) {
+      setDuelError(err instanceof Error ? err.message : t('duel.error_answer'));
+    } finally {
+      setDuelLoading(false);
+    }
+  }
+
   function renderGuildIcon(g: GuildInfo, size: number) {
     if (g.icon_key?.startsWith('badge_')) {
       return <Image src={`/images/badges/${g.icon_key}.png`} alt="" width={size} height={size} className="h-full w-full object-cover" />;
@@ -152,6 +213,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
   const applyDisabled = applyStatus === 'loading' || applyStatus === 'applied' || currentUserInGuild || belowGuildLevel;
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
       <AnimatePresence>
         <motion.div
@@ -273,6 +335,19 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
               <p className="mt-2 text-center text-[11px] text-stone-500">
                 {friendship === 'friends' ? t('friends.connected') : t('social.friend_soon')}
               </p>
+
+              {/* Duel button — only when friends */}
+              {!isMe && friendship === 'friends' && (
+                <button
+                  type="button"
+                  onClick={() => { void handleChallengeDuel(); }}
+                  disabled={duelLoading}
+                  className="mt-2 w-full rounded-sm border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800 transition-colors hover:bg-amber-100 disabled:opacity-50"
+                >
+                  ⚔️ {t('duel.challenge_cta')}
+                </button>
+              )}
+              {duelError && <p className="mt-1 text-center text-xs text-red-600">{duelError}</p>}
             </>
           ) : (
             <p className="text-sm text-stone-500">{t('social.not_found')}</p>
@@ -280,5 +355,16 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
         </motion.div>
       </AnimatePresence>
     </div>
+
+    {/* Duel quest modal — challenger submits immediately after creating */}
+    {activeDuel && (
+      <DuelQuestModal
+        duel={activeDuel}
+        onSubmit={handleSubmitDuelAnswer}
+        onClose={() => setActiveDuel(null)}
+        isSubmitting={duelLoading}
+      />
+    )}
+  </>
   );
 }

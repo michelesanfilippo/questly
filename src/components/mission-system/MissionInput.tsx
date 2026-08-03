@@ -14,7 +14,7 @@ interface MissionInputProps {
 }
 
 export function MissionInput({ missionId, onResult }: MissionInputProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [prompt, setPrompt] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export function MissionInput({ missionId, onResult }: MissionInputProps) {
       const res = await fetch('/api/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ missionId, userPrompt: prompt }),
+        body: JSON.stringify({ missionId, userPrompt: prompt, userLocale: locale }),
       });
       const data = await res.json() as { result: EvaluationResult };
       if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Evaluation failed');

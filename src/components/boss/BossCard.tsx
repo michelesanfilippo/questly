@@ -58,7 +58,7 @@ export const BossCard: React.FC<BossCardProps> = ({
   if (!boss) {
     return (
       <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
-        <p className="text-gray-400">{t('no_active_boss')}</p>
+        <p className="text-gray-400">{t('boss.no_active_boss')}</p>
       </div>
     );
   }
@@ -99,7 +99,7 @@ export const BossCard: React.FC<BossCardProps> = ({
         </div>
         {isDefeated && (
           <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-            ✓ DEFEATED
+            {t('boss.defeated')}
           </div>
         )}
       </div>
@@ -107,7 +107,7 @@ export const BossCard: React.FC<BossCardProps> = ({
       {/* Health Bar */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-gray-300">Health</span>
+          <span className="text-gray-300">{t('boss.card.health')}</span>
           <span className="text-purple-300 font-mono">
             {Math.max(0, boss.current_hp)} / {boss.max_hp}
           </span>
@@ -127,11 +127,11 @@ export const BossCard: React.FC<BossCardProps> = ({
       {/* Stats: Damage + Guild Contribution */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-gray-700 rounded p-3">
-          <p className="text-gray-400 text-xs">Total Damage</p>
+          <p className="text-gray-400 text-xs">{t('boss.card.total_damage')}</p>
           <p className="text-white font-bold text-lg">{boss.total_damage}</p>
         </div>
         <div className="bg-gray-700 rounded p-3">
-          <p className="text-gray-400 text-xs">HP Remaining</p>
+          <p className="text-gray-400 text-xs">{t('boss.card.hp_remaining')}</p>
           <p className="text-white font-bold text-lg">{Math.max(0, boss.current_hp)}</p>
         </div>
       </div>
@@ -139,7 +139,7 @@ export const BossCard: React.FC<BossCardProps> = ({
       {/* Role Info (if applicable) */}
       {currentUserRole && currentUserRole !== 'member' && (
         <div className="bg-blue-900 bg-opacity-30 border border-blue-600 rounded p-2 mb-4 text-xs text-blue-300">
-          <p>Role Bonus: {currentUserRole}</p>
+          <p>{t('boss.card.role_bonus', { role: currentUserRole })}</p>
         </div>
       )}
 
@@ -150,22 +150,22 @@ export const BossCard: React.FC<BossCardProps> = ({
           disabled={isLoading}
           className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition"
         >
-          {isLoading ? 'Attacking...' : 'Attack Boss'}
+          {isLoading ? t('boss.attacking') : t('boss.attack_button')}
         </Button>
       ) : isDefeated ? (
         <div className="w-full bg-green-600 text-white text-center py-2 rounded font-bold">
-          Boss Defeated! Check rewards.
+          {t('boss.boss_defeated')}
         </div>
       ) : (
         <div className="w-full bg-gray-600 text-gray-300 text-center py-2 rounded font-bold">
-          Boss fights only available on weekends
+          {t('boss.boss_alive')}
         </div>
       )}
 
       {/* Footer: Rarity Info */}
       <div className="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-500">
-        <p>Rarity Level: {boss.boss_rarity}/5</p>
-        <p>Guild XP Reward: {boss.boss_rarity * 75}</p>
+        <p>{t('boss.card.rarity_level')}: {boss.boss_rarity}/5</p>
+        <p>{t('boss.card.guild_xp_reward')}: {boss.boss_rarity * 75}</p>
       </div>
     </div>
   );
