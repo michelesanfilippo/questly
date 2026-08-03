@@ -197,7 +197,7 @@
     }
   },
   "duel": {
-    "challenge_cta": "⚔️ Défier en Duel",
+    "challenge_cta": "⚔️ Défier",
     "new_challenge_title": "⚔️ Nouveau Défi !",
     "new_challenge_text": "{challenger} vous a défié en duel !",
     "quest_label": "Votre Quête",

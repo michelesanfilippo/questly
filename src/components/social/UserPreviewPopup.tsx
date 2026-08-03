@@ -344,7 +344,7 @@ export function UserPreviewPopup({ userId, currentUserId, onClose }: UserPreview
                   disabled={duelLoading}
                   className="mt-2 w-full rounded-sm border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800 transition-colors hover:bg-amber-100 disabled:opacity-50"
                 >
-                  ⚔️ {t('duel.challenge_cta')}
+                  {t('duel.challenge_cta')}
                 </button>
               )}
               {duelError && <p className="mt-1 text-center text-xs text-red-600">{duelError}</p>}

@@ -197,7 +197,7 @@
     }
   },
   "duel": {
-    "challenge_cta": "⚔️ Desafiar a Duelo",
+    "challenge_cta": "⚔️ Desafiar",
     "new_challenge_title": "⚔️ ¡Nuevo Desafío!",
     "new_challenge_text": "¡{challenger} te ha desafiado a un duelo!",
     "quest_label": "Tu Quest",
